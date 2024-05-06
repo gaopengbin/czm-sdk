@@ -1,0 +1,35 @@
+{
+  "name": "czm-sdk",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist",
+    "index.d.ts"
+  ],
+  "main": "./dist/CzmSDK.umd.cjs",
+  "module": "./dist/CzmSDK.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/CzmSDK.js",
+    "require": "./dist/CzmSDK.umd.cjs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vite-plugin-dts": "^3.9.0"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "bootstrap": "^5.3.3",
+    "cesium": "^1.116.0",
+    "sass": "^1.75.0",
+    "vue": "^3.4.25"
+  }
+}
