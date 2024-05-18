@@ -10,7 +10,7 @@ import {
     Event,
     defaultValue,
 } from "cesium";
-import { SSImageryLayerOptions, SSImageryLayer } from "./types";
+import { SSImageryLayerOptions, SSImageryLayer, SceneTreeLeaf } from "./types";
 import { debounce } from "./debounce";
 
 function uuid() {
@@ -64,12 +64,12 @@ class SceneTree {
     }
 
     treeToArray(node: any) {
-        console.log("node", node);
+        // console.log("node", node);
         let result: any[] = [];
         if (node.children) {
             node.children.forEach((child: any) => {
                 if (child.children) {
-                    console.log("child", child);
+                    // console.log("child", child);
                     result.push({
                         name: child.name,
                         guid: child.guid,
@@ -90,7 +90,6 @@ class SceneTree {
         console.log("updateSceneTree");
         // let imageryLayers = (this._viewer.imageryLayers as any)._layers;
         this._imageryLayers = this.treeToArray(this._root);
-        console.log("this._root", this._root, this._imageryLayers);
         this.updateEvent.raiseEvent(this._imageryLayers);
     }, 30, true);
 
@@ -217,7 +216,7 @@ class SceneTree {
             this._viewer.zoomTo(arcGisMapServerLayer);
         }
         this.updateSceneTree();
-        return {
+        const leaf: Leaf = {
             name: options.name,
             index: arcGisMapServerLayer._layerIndex,
             guid: arcGisMapServerLayer.guid,
@@ -231,9 +230,11 @@ class SceneTree {
                 return arcGisMapServerLayer.show;
             },
             set show(value: boolean) {
+                console.log("arcGisMapServerLayer", arcGisMapServerLayer);
                 arcGisMapServerLayer.show = value;
             },
-        };
+        }
+        return leaf;
     }
     // 创建分组用于管理图层
     createGroup(groupName: string) {
@@ -253,23 +254,74 @@ class SceneTree {
     // }
 }
 
+// interface SceneTreeChildren extends Array<SceneTreeChildren> {
+//     name: string;
+//     guid: string;
+//     push: (item: SceneTreeChildren) => number;
+// }
+
+abstract class Leaf implements SceneTreeLeaf {
+    name: string;
+    index?: number;
+    guid?: string;
+    abstract setVisible: (visible: boolean) => void;
+    abstract zoomTo: () => void;
+    show!: boolean;
+    constructor(name: string) {
+        this.name = name;
+    }
+}
+
+// 判断是否符合SceneTreeLeaf接口
+// zoomTo: () => void;
+const isSceneTreeLeaf = (object: any): object is SceneTreeLeaf => {
+    return "name" in object && "setVisible" in object && "zoomTo" in object;
+};
+// 判断是否符合SSImageryLayerOptions接口
+const isSSImageryLayerOptions = (object: any): object is SSImageryLayerOptions => {
+    return "type" in object && "name" in object && "url" in object;
+};
+
+class children extends Array {
+    constructor() {
+        super();
+    }
+
+    push(...items: any[]): number {
+        // 判断items是否符合SceneTreeLeaf接口
+        [...items].forEach(async (item) => {
+            if (isSceneTreeLeaf(item)) {
+                console.log("this is SceneTreeLeaf");
+                super.push(items);
+            }
+            else if (isSSImageryLayerOptions(item)) {
+                console.log("this is SSImageryLayerOptions");
+                // 如果是图层配置，创建图层
+                let leaf = await SceneTree.prototype.addImageryLayer(item);
+                console.log("leaf", leaf);
+                // super.push(items);
+            }
+        })
+
+        return this.length;
+
+    }
+
+    test() {
+        console.log("test");
+    }
+}
+
 class Group {
     name: string;
-    children: any[] = [];
+    children: children = new children();
     guid: string = uuid();
     constructor(name: string) {
         this.name = name;
     }
 
-    // get name() {
-    //     return this.name;
-    // }
-
-    // get children() {
-    //     return this._children;
-    // }
-
     addLayer(layer: any) {
+        // this.children.test
         this.children.push(layer);
     }
 
@@ -279,6 +331,8 @@ class Group {
             this.children.splice(index, 1);
         }
     }
+
+
 }
 export { SceneTree };
 

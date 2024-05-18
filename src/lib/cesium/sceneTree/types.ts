@@ -22,4 +22,13 @@ interface SSImageryLayer extends ImageryLayer {
     guid?: string;
 }
 
-export type { SSImageryLayerOptions, SSImageryLayer }
+interface SceneTreeLeaf {
+    name: string;
+    index?: number;
+    guid?: string;
+    setVisible: (visible: boolean) => void;
+    zoomTo: () => void;
+    show: boolean;
+}
+
+export type { SSImageryLayerOptions, SSImageryLayer, SceneTreeLeaf }

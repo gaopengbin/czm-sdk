@@ -17,7 +17,7 @@ nextTick(() => {
     baseLayerPicker: false,
     baseLayer: false,
   });
-  // window.viewer = viewer;
+  window.viewer = viewer;
   sceneTree = new SceneTree(viewer);
   console.log(sceneTree);
   layers.value = sceneTree.imageryLayers;
@@ -55,6 +55,7 @@ const addImagery = () => {
     })
   );
 };
+
 const addMapserver = async () => {
   let arcgis = await sceneTree.createArcGisMapServerLayer({
     type: "ArcGisMapServer",
@@ -64,8 +65,16 @@ const addMapserver = async () => {
     zoomTo: true,
   });
   sceneTree.root?.addLayer(arcgis);
+  let arcgis1 = await sceneTree.createArcGisMapServerLayer({
+    type: "ArcGisMapServer",
+    name: "宿豫区",
+    url: "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer",
+    show: true,
+    zoomTo: false,
+  });
   let group = sceneTree.createGroup("group1");
-  group.addLayer(arcgis);
+
+  group.addLayer(arcgis1);
   sceneTree.root?.addLayer(group);
   // sceneTree.addImageryLayer({
   //   type: "ArcGisMapServer",
@@ -74,15 +83,22 @@ const addMapserver = async () => {
   //   show: true,
   //   zoomTo: true,
   // });
-  sceneTree.addImageryLayer({
-    type: "ArcGisMapServer",
-    name: "宿豫区",
-    url: "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer",
-    show: true,
-    zoomTo: true,
-  });
+  // sceneTree.addImageryLayer({
+  //   type: "ArcGisMapServer",
+  //   name: "宿豫区",
+  //   url: "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer",
+  //   show: true,
+  //   zoomTo: true,
+  // });
 };
-const nodeProps = ({ option }: { option: TreeOption }) => {
+interface SceneTreeOption extends TreeOption {
+  name: string;
+  children?: Array<TreeOption>;
+  show?: boolean;
+  guid: string;
+  zoomTo: () => void;
+}
+const nodeProps = ({ option }: { option: SceneTreeOption }) => {
   return {
     onClick() {
       console.log("click", option);
@@ -99,6 +115,7 @@ const updateCheckedKeys = (
   }
 ) => {
   if (meta.node) {
+    console.log(meta.node);
     if (meta.node?.children) {
       meta.node.children.forEach((child: any) => {
         // keys.push(child.index)
@@ -131,6 +148,7 @@ const updateCheckedKeys = (
         children-field="children"
         selectable
         checkable
+        cascade
         :checked-keys="defaultCheckedKeys"
         :node-props="nodeProps"
         @update:checked-keys="updateCheckedKeys"
