@@ -9,12 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cesium": "^1.117.0",
+    "naive-ui": "^2.38.2",
     "vue": "^3.4.21"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
     "typescript": "^5.2.2",
-    "vite": "^5.2.0",
+    "vfonts": "^0.0.3",
+    "vite": "5.2.10",
     "vue-tsc": "^2.0.6"
   }
 }

@@ -1,13 +1,9 @@
-import { Component } from './decorators'
-import Template from './test.html?raw';
+// 为这个元素创建类
+class MyCustomElement extends HTMLElement {
+    static observedAttributes = ["color", "size"];
 
-@Component({
-    tagName: 'basic-test',
-    className: 'basic-test',
-    template: Template,
-})
-export default class Test extends HTMLElement {
     constructor() {
+        // 必须首先调用 super 方法
         super();
     }
 
@@ -27,3 +23,5 @@ export default class Test extends HTMLElement {
         console.log(`属性 ${name} 已变更。`);
     }
 }
+
+export default customElements.define("basic-test", MyCustomElement);

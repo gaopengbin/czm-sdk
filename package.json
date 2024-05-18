@@ -11,9 +11,14 @@
   "module": "./dist/CzmSDK.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "import": "./dist/CzmSDK.js",
-    "require": "./dist/CzmSDK.umd.cjs"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/CzmSDK.js",
+      "require": "./dist/CzmSDK.umd.cjs"
+    },
+    "./*": [
+      "./*"
+    ]
   },
   "scripts": {
     "dev": "vite",
@@ -30,6 +35,7 @@
     "bootstrap": "^5.3.3",
     "cesium": "^1.116.0",
     "sass": "^1.75.0",
+    "vite-plugin-externals": "^0.6.2",
     "vue": "^3.4.25"
   }
 }

@@ -1,8 +1,9 @@
 import { Viewer } from '@cesium/widgets'
-
-const initScene = (container: HTMLDivElement) => {
-    const viewer = new Viewer(container)
+// import { Viewer } from 'cesium'
+const initScene = (container: string | Element, options?: Viewer.ConstructorOptions) => {
+    const viewer = new Viewer(container, options)
     return viewer
 }
 
 export { initScene }
+export { SceneTree } from './sceneTree'
