@@ -1,4 +1,4 @@
-import { ImageryLayer } from "cesium";
+import { ImageryLayer } from "@cesium/engine";
 
 /**
  * 自定义图层基础配置，各类型图层配置继承此配置

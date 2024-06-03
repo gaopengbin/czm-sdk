@@ -22,7 +22,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "build2": "vite build"
   },
   "devDependencies": {
     "typescript": "^5.4.5",

@@ -4,6 +4,7 @@ import App from './App.vue'
 // import CzmSDK from 'czm-sdk';
 import CzmSDK from '../../src'
 import 'cesium/Build/Cesium/Widgets/widgets.css'
+import 'bootstrap-icons/font/bootstrap-icons.css'
 // import '../../src/style.css'
 // import '../../src/style.scss'
 import naive from 'naive-ui'

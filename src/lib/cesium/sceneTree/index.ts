@@ -1,15 +1,18 @@
 import {
+    Viewer,
+} from "@cesium/widgets";
+import {
     ArcGisMapServerImageryProvider,
     ImageryLayer,
     Rectangle,
     Resource,
     UrlTemplateImageryProvider,
-    Viewer,
     WebMapServiceImageryProvider,
     defined,
     Event,
     defaultValue,
-} from "cesium";
+} from "@cesium/engine";
+
 import { SSImageryLayerOptions, SSImageryLayer, SceneTreeLeaf } from "./types";
 import { debounce } from "./debounce";
 
@@ -27,6 +30,7 @@ class SceneTree {
     _imageryLayers: any;
 
     updateEvent: Event = new Event();
+    pickEvent: Event = new Event();
     defaultImageryLayerOptions: SSImageryLayerOptions = {
         type: "XYZ",
         name: "新建图层",
@@ -155,7 +159,14 @@ class SceneTree {
                 token: options.token,
             });
         }
-        const jsonResource = resource.getDerivedResource({
+        // const jsonResource = resource.getDerivedResource({
+        //     queryParameters: {
+        //         f: "json",
+        //     },
+        // });
+        const iteminfoUrl = resource.url + "/info/iteminfo";
+        const jsonResource = new Resource({
+            url: iteminfoUrl,
             queryParameters: {
                 f: "json",
             },
@@ -164,44 +175,20 @@ class SceneTree {
         // 获取地图范围
         try {
             const data = await jsonResource.fetchJson();
-            if (data.fullExtent) {
-                console.log("data.fullExtent", data.fullExtent);
-                // 根据wkid或wkt判断坐标系,原生Cesium只支持4326和3857
-                if (data.fullExtent.spatialReference.wkid === 4326) {
-                    rectangle = Rectangle.fromDegrees(
-                        data.fullExtent.xmin,
-                        data.fullExtent.ymin,
-                        data.fullExtent.xmax,
-                        data.fullExtent.ymax
-                    );
-                } else if (data.fullExtent.spatialReference.wkid === 3857 || data.fullExtent.spatialReference.wkid === 102100) {
-                    // 3857坐标系转换为4326
-                    function mercatorTolonlat(mercator: { x: number; y: number; }) {
-                        var lonlat = {
-                            x: 0,
-                            y: 0
-                        };
-                        var x = mercator.x / 20037508.34 * 180;
-                        var y = mercator.y / 20037508.34 * 180;
-                        y = 180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180)) - Math.PI / 2);
-                        lonlat.x = x;
-                        lonlat.y = y;
-                        return lonlat;
-                    }
-                    let min = mercatorTolonlat({ x: data.fullExtent.xmin, y: data.fullExtent.ymin });
-                    let max = mercatorTolonlat({ x: data.fullExtent.xmax, y: data.fullExtent.ymax });
-                    rectangle = Rectangle.fromDegrees(
-                        min.x,
-                        min.y,
-                        max.x,
-                        max.y
-                    );
-                }
+            if (data && data.extent) {
+                rectangle = Rectangle.fromDegrees(
+                    data.extent[0][0],
+                    data.extent[0][1],
+                    data.extent[1][0],
+                    data.extent[1][1]
+                );
             }
         } catch (error) { }
         const esri = await ArcGisMapServerImageryProvider.fromUrl(options.url, {
             rectangle: rectangle,
         });
+
+        // esri.pickFeatures
 
         let arcGisMapServerLayer: SSImageryLayer =
             this._viewer.imageryLayers.addImageryProvider(esri);
@@ -292,7 +279,7 @@ class children extends Array {
         [...items].forEach(async (item) => {
             if (isSceneTreeLeaf(item)) {
                 console.log("this is SceneTreeLeaf");
-                super.push(items);
+                super.push(item);
             }
             else if (isSSImageryLayerOptions(item)) {
                 console.log("this is SSImageryLayerOptions");
@@ -300,6 +287,9 @@ class children extends Array {
                 let leaf = await SceneTree.prototype.addImageryLayer(item);
                 console.log("leaf", leaf);
                 // super.push(items);
+            } else if (item instanceof Group) {
+                console.log("this is not SceneTreeLeaf", item);
+                super.push(item);
             }
         })
 
