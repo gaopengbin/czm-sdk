@@ -1,5 +1,5 @@
 {
-  "name": "czm-sdk",
+  "name": "ssczm",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -7,14 +7,14 @@
     "dist",
     "index.d.ts"
   ],
-  "main": "./dist/CzmSDK.umd.cjs",
-  "module": "./dist/CzmSDK.js",
+  "main": "./dist/ssczm.umd.cjs",
+  "module": "./dist/ssczm.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/CzmSDK.js",
-      "require": "./dist/CzmSDK.umd.cjs"
+      "import": "./dist/ssczm.js",
+      "require": "./dist/ssczm.umd.cjs"
     },
     "./*": [
       "./*"

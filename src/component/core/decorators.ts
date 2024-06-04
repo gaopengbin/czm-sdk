@@ -46,7 +46,6 @@ export class SampleHeader extends BaseWidget {
  * @category Decorator
  */
 export const Component = (manifest: Manifest): any => {
-    console.log("Component", manifest);
     return (target: any) => {
         // 防止重复定义
         if (customElements.get(manifest.tagName)) {
@@ -57,7 +56,6 @@ export const Component = (manifest: Manifest): any => {
         target.manifest = getManifest(manifest);
         // 创建标签
         customElements.define(manifest.tagName, target as CustomElementConstructor);
-        console.log(`标签 "${manifest.tagName}" 创建成功`, target, getManifest(manifest));
         return target as any;
     };
 }
@@ -74,6 +72,5 @@ const getManifest = (manifest: Manifest): Manifest => {
     manifest = Object.assign({
         hasConfig: false
     }, manifest);
-    console.log("getManifest", manifest);
     return manifest;
 }

@@ -11,8 +11,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/index.ts',
-      name: 'CzmSDK',
-      fileName: 'CzmSDK',
+      name: 'ssczm',
+      fileName: 'ssczm',
       formats: ['es', 'umd', 'cjs'],
     },
     rollupOptions: {
@@ -23,6 +23,11 @@ export default defineConfig({
           '@cesium/widgets': '@cesium/widgets'
         }
       }
+    }
+  },
+  resolve:{
+    alias:{
+      '@': '/src'
     }
   }
 })

@@ -1,35 +1,42 @@
 import { Component } from '../core/decorators'
-import Template from './test.html?raw';
-import { initScene } from '../../lib';
+import { initScene, SceneTree } from '../../lib';
 import BaseWidget from "./base-widget"
-// import './test.scss'
+import './base-earth.scss'
 @Component({
     tagName: 'base-earth',
     className: 'base-earth',
-    template: Template,
+    template: `<div id="earth"></div>`,
 })
 
 export default class BaseEarth extends BaseWidget {
-    viewer: any;
     constructor() {
         super();
     }
 
-    async afterInit() {
-        console.log("afterInit", this);
+    public async afterInit() {
         this.initEarth();
     }
 
-    public async earthReady() { }
+    public async earthReady() {
+        // console.log("earthReady", this.viewer);
+    }
 
     initEarth() {
         let viewer = initScene("earth", {
             baseLayerPicker: false,
             baseLayer: false,
-            projectionPicker: true,
+            projectionPicker: false,
+            geocoder: false,
+            homeButton: false,
+            sceneModePicker: false,
+            navigationHelpButton: false,
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
             // infoBox: false,
         });
         this.viewer = viewer;
-        this.earthReady();
+
+        this.sceneTree = new SceneTree(viewer);
     }
 }

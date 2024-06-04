@@ -1,7 +1,9 @@
+import { SceneTree } from "src/lib";
 
-export default class BaseWidget extends HTMLElement {
+export default abstract class BaseWidget extends HTMLElement {
     [x: string]: any;
-
+    static #viewer: any;
+    static #sceneTree: SceneTree;
     constructor() {
         super();
     }
@@ -10,13 +12,33 @@ export default class BaseWidget extends HTMLElement {
         return this._manifest;
     }
 
-    connectedCallback() {
-        console.log("自定义元素添加至页面。",this);
+    get viewer() {
+        return BaseWidget.#viewer;
+    }
+
+    set viewer(value) {
+        if (!BaseWidget.#viewer && value) {
+            BaseWidget.#viewer = value;
+            this.earthReady();
+        }
+    }
+
+    get sceneTree() {
+        return BaseWidget.#sceneTree;
+    }
+
+    set sceneTree(value) {
+        BaseWidget.#sceneTree = value;
+    }
+
+    public earthReady() { }
+
+    async connectedCallback() {
         // 渲染模板
         if (this._manifest.template) {
             this.innerHTML = this._manifest.template;
         }
-        this.afterInit();
+        await this.afterInit();
     }
 
     disconnectedCallback() {
@@ -31,5 +53,24 @@ export default class BaseWidget extends HTMLElement {
         console.log(`属性 ${name} 已变更。`);
     }
 
-    public async afterInit() { }
+    /**
+     * 初始化
+     */
+    public async afterInit() {
+    }
+}
+
+const getViewer = () => {
+    return BaseWidget.prototype.viewer;
+}
+
+const getSceneTree = () => {
+    return BaseWidget.prototype.sceneTree;
+}
+
+
+
+export {
+    getViewer,
+    getSceneTree,
 }

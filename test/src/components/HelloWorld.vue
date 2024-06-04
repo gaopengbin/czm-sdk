@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
-import { initScene, SceneTree } from "../../../src/index";
+import {
+  initScene,
+  SceneTree,
+  BaseWidget,
+  getViewer,
+  getSceneTree,
+} from "../../../src/index";
 import { Tree } from "../../../src/lib/tree/tree";
 import "../../../src/lib/tree/tree-view.scss";
-import { UrlTemplateImageryProvider ,Cesium3DTileset} from "cesium";
+import { UrlTemplateImageryProvider, Cesium3DTileset } from "@cesium/engine";
 import { TreeOption } from "naive-ui";
 let viewer: any = null;
 let sceneTree: SceneTree;
@@ -14,42 +20,42 @@ let layers = ref([
   },
 ]);
 let defaultCheckedKeys = ref<any>([]);
-nextTick(async() => {
-  viewer = initScene("container", {
-    baseLayerPicker: false,
-    baseLayer: false,
-    projectionPicker: true,
-    // infoBox: false,
-  });
-  window.viewer = viewer;
+nextTick(async () => {
+  // let viewer = initScene("container", {
+  //   baseLayerPicker: false,
+  //   baseLayer: false,
+  //   projectionPicker: true,
+  //   // infoBox: false,
+  // });
+  // //   window.viewer = viewer;
 
-  // 加载tileset http://120.48.115.17:81/data/F0001/tileset.json
-  const tileset = await Cesium.Cesium3DTileset.fromUrl(
-     "http://120.48.115.17:81/data/F0001/tileset.json"
-  );
-  viewer.scene.primitives.add(tileset);
+  // //   // 加载tileset http://120.48.115.17:81/data/F0001/tileset.json
+  // const tileset = await Cesium3DTileset.fromUrl(
+  //   "http://120.48.115.17:81/data/F0001/tileset.json"
+  // );
+  // let t = viewer.scene.primitives.add(tileset);
 
-  viewer.zoomTo(tileset);
+  // viewer.zoomTo(t);
 
-  sceneTree = new SceneTree(viewer);
-  console.log(sceneTree);
-  layers.value = sceneTree.imageryLayers;
+  //   sceneTree = new SceneTree(viewer);
+  //   console.log(sceneTree);
+  //   layers.value = sceneTree.imageryLayers;
 
-  sceneTree.updateEvent.addEventListener((val) => {
-    layers.value = val;
-    console.log(val);
-    treeview.updateTree(val);
-    // return;
-    const flatLayers = layers2Flat(val);
-    console.log(flatLayers);
-    defaultCheckedKeys.value = [];
-    flatLayers.forEach((layer: any) => {
-      if (layer.show) {
-        defaultCheckedKeys.value.push(layer.guid);
-      }
-    });
-  });
-  initTreeView();
+  //   sceneTree.updateEvent.addEventListener((val) => {
+  //     layers.value = val;
+  //     console.log(val);
+  //     treeview.updateTree(val);
+  //     // return;
+  //     const flatLayers = layers2Flat(val);
+  //     console.log(flatLayers);
+  //     defaultCheckedKeys.value = [];
+  //     flatLayers.forEach((layer: any) => {
+  //       if (layer.show) {
+  //         defaultCheckedKeys.value.push(layer.guid);
+  //       }
+  //     });
+  //   });
+  //   initTreeView();
 });
 
 const layers2Flat = (layers: any) => {
@@ -73,12 +79,14 @@ const addImagery = () => {
 };
 
 const addMapserver = async () => {
+  // sceneTree = BaseWidget.prototype.sceneTree;
+  sceneTree = getSceneTree();
   let arcgis = await sceneTree.createArcGisMapServerLayer({
     type: "ArcGisMapServer",
     name: "wujiang",
     url: "http://120.48.115.17:6080/arcgis/rest/services/wujiang/MapServer",
     show: true,
-    zoomTo: true,
+    zoomTo: false,
   });
   sceneTree.root?.addLayer(arcgis);
   let arcgis1 = await sceneTree.createArcGisMapServerLayer({
@@ -90,8 +98,17 @@ const addMapserver = async () => {
   });
   let group = sceneTree.createGroup("group1");
   console.log(group, arcgis1);
-  group.addLayer(arcgis1);
+
   sceneTree.root?.addLayer(group);
+  group.addLayer(arcgis1);
+
+  let tileset = await sceneTree.addTilesetLayer({
+    url: "http://120.48.115.17:81/data/F0001/tileset.json",
+    name: "tileset",
+    type: "3dtile",
+  });
+  group.addLayer(tileset);
+
   // sceneTree.addImageryLayer({
   //   type: "ArcGisMapServer",
   //   name: "wujiang",
@@ -188,21 +205,6 @@ const initTreeView = () => {
           },
           show: (node: any) => !node.children,
         },
-        // {
-        //   name: "添加",
-        //   icon: "bi bi-plus",
-        //   onClick: (node: any) => {
-        //     console.log("添加", node);
-        //   },
-        //   show: (node: any) => node.children && node.children.length > 0,
-        // },
-        // {
-        //   name: "删除",
-        //   icon: "bi bi-trash",
-        //   onClick: (node: any) => {
-        //     console.log("删除", node);
-        //   },
-        // },
       ],
     },
   });
@@ -213,7 +215,9 @@ const initTreeView = () => {
 <template>
   <div>
     <basic-test />
-    <div id="container"></div>
+    <base-earth />
+
+    <!-- <div id="container"></div> -->
     <button type="button" class="btn btn-primary" @click="addImagery">
       Primary
     </button>
@@ -223,7 +227,8 @@ const initTreeView = () => {
     <!-- <basic-test />
     <w-comp /> -->
     <div class="layerlist">
-      <NTree
+      <layer-list />
+      <!-- <NTree
         block-line
         :data="layers"
         key-field="guid"
@@ -237,7 +242,7 @@ const initTreeView = () => {
         @update:checked-keys="updateCheckedKeys"
         :default-expand-all="true"
       />
-      <div id="test"></div>
+      <div id="test"></div> -->
     </div>
   </div>
 </template>
@@ -248,12 +253,13 @@ const initTreeView = () => {
   height: 80vh;
 }
 .layerlist {
+  margin: 10px;
   position: absolute;
   padding: 10px;
   top: 0;
   right: 0;
   width: 250px;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.541);
+  height: 300px;
+  background-color: rgb(255, 255, 255);
 }
 </style>

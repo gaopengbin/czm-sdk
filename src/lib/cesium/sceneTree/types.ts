@@ -1,9 +1,10 @@
 import { ImageryLayer } from "@cesium/engine";
+import { Cesium3DTile, Cesium3DTileset } from "cesium";
 
 /**
  * 自定义图层基础配置，各类型图层配置继承此配置
  */
-interface SSImageryLayerOptions {
+interface SSLayerOptions {
     token?: any;
     type: string;
     name: string;
@@ -22,6 +23,11 @@ interface SSImageryLayer extends ImageryLayer {
     guid?: string;
 }
 
+interface SSTilesetLayer extends Cesium3DTileset {
+    name?: string;
+    guid?: string;
+}
+
 interface SceneTreeLeaf {
     name: string;
     index?: number;
@@ -31,4 +37,17 @@ interface SceneTreeLeaf {
     show: boolean;
 }
 
-export type { SSImageryLayerOptions, SSImageryLayer, SceneTreeLeaf }
+
+export abstract class Leaf implements SceneTreeLeaf {
+    name: string;
+    index?: number;
+    guid?: string;
+    abstract setVisible: (visible: boolean) => void;
+    abstract zoomTo: () => void;
+    show!: boolean;
+    constructor(name: string) {
+        this.name = name;
+    }
+}
+
+export type { SSLayerOptions, SSImageryLayer, SSTilesetLayer, SceneTreeLeaf }

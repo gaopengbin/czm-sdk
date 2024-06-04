@@ -1,7 +1,5 @@
 import {
     Viewer,
-} from "@cesium/widgets";
-import {
     ArcGisMapServerImageryProvider,
     ImageryLayer,
     Rectangle,
@@ -11,18 +9,20 @@ import {
     defined,
     Event,
     defaultValue,
-} from "@cesium/engine";
+} from "cesium";
 
-import { SSImageryLayerOptions, SSImageryLayer, SceneTreeLeaf } from "./types";
-import { debounce } from "./debounce";
+import { SSLayerOptions, SSImageryLayer, SceneTreeLeaf } from "./types";
+import { debounce } from "../../common/debounce";
+import { ArcGisMapServerLoader, TilesetLoader } from "./load";
+import uuid from "../../common/uuid";
 
-function uuid() {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        var r = (Math.random() * 16) | 0,
-            v = c === "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
-}
+// function uuid() {
+//     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+//         var r = (Math.random() * 16) | 0,
+//             v = c === "x" ? r : (r & 0x3) | 0x8;
+//         return v.toString(16);
+//     });
+// }
 
 class SceneTree {
     _root: any;
@@ -31,7 +31,7 @@ class SceneTree {
 
     updateEvent: Event = new Event();
     pickEvent: Event = new Event();
-    defaultImageryLayerOptions: SSImageryLayerOptions = {
+    defaultImageryLayerOptions: SSLayerOptions = {
         type: "XYZ",
         name: "新建图层",
         url: "",
@@ -68,12 +68,10 @@ class SceneTree {
     }
 
     treeToArray(node: any) {
-        // console.log("node", node);
         let result: any[] = [];
         if (node.children) {
             node.children.forEach((child: any) => {
                 if (child.children) {
-                    // console.log("child", child);
                     result.push({
                         name: child.name,
                         guid: child.guid,
@@ -97,7 +95,7 @@ class SceneTree {
         this.updateEvent.raiseEvent(this._imageryLayers);
     }, 30, true);
 
-    async addImageryLayer(options: SSImageryLayerOptions) {
+    async addImageryLayer(options: SSLayerOptions) {
         switch (options.type) {
             case "WMS":
                 let wmsLayer = this._viewer.imageryLayers.addImageryProvider(
@@ -136,93 +134,29 @@ class SceneTree {
         }
     }
 
-    createWMSLayer(options: SSImageryLayerOptions) {
+    createWMSLayer(options: SSLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         console.log("createWMSLayer", param);
     }
 
-    createXYZLayer(options: SSImageryLayerOptions) {
+    createXYZLayer(options: SSLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         console.log("createXYZLayer", param);
     }
 
-    async createArcGisMapServerLayer(options: SSImageryLayerOptions) {
-        let rectangle: any;
-        const resource = new Resource({
-            url: options.url,
-        });
-        // url后面加上斜杠
-        resource.appendForwardSlash();
-
-        if (defined(options.token)) {
-            resource.setQueryParameters({
-                token: options.token,
-            });
-        }
-        // const jsonResource = resource.getDerivedResource({
-        //     queryParameters: {
-        //         f: "json",
-        //     },
-        // });
-        const iteminfoUrl = resource.url + "/info/iteminfo";
-        const jsonResource = new Resource({
-            url: iteminfoUrl,
-            queryParameters: {
-                f: "json",
-            },
-        });
-
-        // 获取地图范围
-        try {
-            const data = await jsonResource.fetchJson();
-            if (data && data.extent) {
-                rectangle = Rectangle.fromDegrees(
-                    data.extent[0][0],
-                    data.extent[0][1],
-                    data.extent[1][0],
-                    data.extent[1][1]
-                );
-            }
-        } catch (error) { }
-        const esri = await ArcGisMapServerImageryProvider.fromUrl(options.url, {
-            rectangle: rectangle,
-        });
-
-        // esri.pickFeatures
-
-        let arcGisMapServerLayer: SSImageryLayer =
-            this._viewer.imageryLayers.addImageryProvider(esri);
-
-        Object.assign(arcGisMapServerLayer, {
-            name: options.name,
-            show: options.show,
-            guid: uuid(),
-        });
-
-        if (options.zoomTo) {
-            this._viewer.zoomTo(arcGisMapServerLayer);
-        }
+    async createArcGisMapServerLayer(options: SSLayerOptions) {
+        let leaf: Leaf = await ArcGisMapServerLoader(this._viewer, options);
         this.updateSceneTree();
-        const leaf: Leaf = {
-            name: options.name,
-            index: arcGisMapServerLayer._layerIndex,
-            guid: arcGisMapServerLayer.guid,
-            setVisible: (visible: boolean) => {
-                arcGisMapServerLayer.show = visible;
-            },
-            zoomTo: () => {
-                this._viewer.zoomTo(arcGisMapServerLayer);
-            },
-            get show() {
-                return arcGisMapServerLayer.show;
-            },
-            set show(value: boolean) {
-                console.log("arcGisMapServerLayer", arcGisMapServerLayer);
-                arcGisMapServerLayer.show = value;
-            },
-        }
         return leaf;
     }
+
+    async addTilesetLayer(options: SSLayerOptions) {
+        console.log("addTilesetLayer", options);
+        let leaf = await TilesetLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
     // 创建分组用于管理图层
     createGroup(groupName: string) {
         return new Group(groupName);
@@ -264,8 +198,8 @@ abstract class Leaf implements SceneTreeLeaf {
 const isSceneTreeLeaf = (object: any): object is SceneTreeLeaf => {
     return "name" in object && "setVisible" in object && "zoomTo" in object;
 };
-// 判断是否符合SSImageryLayerOptions接口
-const isSSImageryLayerOptions = (object: any): object is SSImageryLayerOptions => {
+// 判断是否符合SSLayerOptions接口
+const isSSLayerOptions = (object: any): object is SSLayerOptions => {
     return "type" in object && "name" in object && "url" in object;
 };
 
@@ -281,8 +215,8 @@ class children extends Array {
                 console.log("this is SceneTreeLeaf");
                 super.push(item);
             }
-            else if (isSSImageryLayerOptions(item)) {
-                console.log("this is SSImageryLayerOptions");
+            else if (isSSLayerOptions(item)) {
+                console.log("this is SSLayerOptions");
                 // 如果是图层配置，创建图层
                 let leaf = await SceneTree.prototype.addImageryLayer(item);
                 console.log("leaf", leaf);

@@ -27,6 +27,7 @@
     "baseUrl": ".",
     "paths": {
       "cesium":["node_modules/cesium"],
+      "@/*": ["src/*"],
     }
   },
   "include": ["src"]
