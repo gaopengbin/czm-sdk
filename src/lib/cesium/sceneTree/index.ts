@@ -1,28 +1,14 @@
 import {
     Viewer,
-    ArcGisMapServerImageryProvider,
-    ImageryLayer,
-    Rectangle,
-    Resource,
-    UrlTemplateImageryProvider,
-    WebMapServiceImageryProvider,
-    defined,
     Event,
     defaultValue,
 } from "cesium";
 
-import { SSLayerOptions, SSImageryLayer, SceneTreeLeaf } from "./types";
+import { SSLayerOptions, SSImageryLayer, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, TilesetLoader } from "./load";
+import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader } from "./load";
 import uuid from "../../common/uuid";
 
-// function uuid() {
-//     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-//         var r = (Math.random() * 16) | 0,
-//             v = c === "x" ? r : (r & 0x3) | 0x8;
-//         return v.toString(16);
-//     });
-// }
 
 class SceneTree {
     _root: any;
@@ -98,32 +84,10 @@ class SceneTree {
     async addImageryLayer(options: SSLayerOptions) {
         switch (options.type) {
             case "WMS":
-                let wmsLayer = this._viewer.imageryLayers.addImageryProvider(
-                    new WebMapServiceImageryProvider({
-                        url: options.url,
-                        layers: options.name,
-                        parameters: {
-                            format: "image/png",
-                            transparent: true,
-                            version: "1.1.1",
-                        },
-                    })
-                );
-                // wmsLayer.name = options.name;
-                wmsLayer.show = defaultValue(options.show, true);
-                // wmsLayer._layerIndex = options.index;
-                this.updateSceneTree();
+                await this.createWMSLayer(options as SSWMSLayerOptions);
                 break;
             case "XYZ":
-                let xyzLayer = this._viewer.imageryLayers.addImageryProvider(
-                    new UrlTemplateImageryProvider({
-                        url: options.url,
-                    })
-                );
-                // xyzLayer.name = options.name;
-                xyzLayer.show = defaultValue(options.show, true);
-                // xyzLayer._layerIndex = options.index;
-                this.updateSceneTree();
+                await this.createXYZLayer(options);
                 break;
             case "ArcGisMapServer":
                 await this.createArcGisMapServerLayer(options);
@@ -134,14 +98,20 @@ class SceneTree {
         }
     }
 
-    createWMSLayer(options: SSLayerOptions) {
+    async createWMSLayer(options: SSWMSLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         console.log("createWMSLayer", param);
+        let leaf: Leaf = await WMSLoader(this._viewer, param);
+        this.updateSceneTree();
+        return leaf;
     }
 
-    createXYZLayer(options: SSLayerOptions) {
+    async createXYZLayer(options: SSXYZLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         console.log("createXYZLayer", param);
+        let leaf: Leaf = await XYZLoader(this._viewer, param);
+        this.updateSceneTree();
+        return leaf;
     }
 
     async createArcGisMapServerLayer(options: SSLayerOptions) {
@@ -153,6 +123,13 @@ class SceneTree {
     async addTilesetLayer(options: SSLayerOptions) {
         console.log("addTilesetLayer", options);
         let leaf = await TilesetLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    async createTerrainLayer(options: SSTerrainLayerOptions) {
+        console.log("createTerrainLayer", options);
+        let leaf = await TerrainLoader(this._viewer, options);
         this.updateSceneTree();
         return leaf;
     }
@@ -254,6 +231,16 @@ class Group {
         if (index > -1) {
             this.children.splice(index, 1);
         }
+    }
+
+    setVisible(visible: boolean) {
+        this.children.forEach((child: any) => {
+            if (isSceneTreeLeaf(child)) {
+                child.setVisible(visible);
+            } else if (child instanceof Group) {
+                child.setVisible(visible);
+            }
+        });
     }
 
 

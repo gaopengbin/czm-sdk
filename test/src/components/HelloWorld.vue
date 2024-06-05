@@ -28,19 +28,15 @@ nextTick(async () => {
   //   // infoBox: false,
   // });
   // //   window.viewer = viewer;
-
   // //   // 加载tileset http://120.48.115.17:81/data/F0001/tileset.json
   // const tileset = await Cesium3DTileset.fromUrl(
   //   "http://120.48.115.17:81/data/F0001/tileset.json"
   // );
   // let t = viewer.scene.primitives.add(tileset);
-
   // viewer.zoomTo(t);
-
   //   sceneTree = new SceneTree(viewer);
   //   console.log(sceneTree);
   //   layers.value = sceneTree.imageryLayers;
-
   //   sceneTree.updateEvent.addEventListener((val) => {
   //     layers.value = val;
   //     console.log(val);
@@ -108,6 +104,49 @@ const addMapserver = async () => {
     type: "3dtile",
   });
   group.addLayer(tileset);
+
+  let wms = await sceneTree.createWMSLayer({
+    type: "WMS",
+    name: "wms",
+    url: "http://120.46.179.233/geoserver/village/wms",
+    layers: "village:合并",
+    rectangle: [
+      113.79589260058276, 35.213881770316036, 113.79991195207892,
+      35.216112772339805,
+    ],
+    tilingScheme: "geographic",
+    parameters: {
+      transparent: true,
+      format: "image/png",
+    },
+  });
+  console.log(wms);
+  group.addLayer(wms);
+
+  let xyz = await sceneTree.createXYZLayer({
+    type: "XYZ",
+    name: "xyz",
+    url: "http://120.48.115.17:81/data/beijing14/{z}/{x}/{y}.png",
+    rectangle: [
+      115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508,
+    ],
+    minimumLevel: 0,
+    maximumLevel: 13,
+  });
+
+  group.addLayer(xyz);
+
+  let terrain = await sceneTree.createTerrainLayer({
+    type: "Terrain",
+    name: "terrain",
+    url: "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path",
+    rectangle: [
+      115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508,
+    ],
+    requestMetadata: true,
+  });
+
+  group.addLayer(terrain);
 
   // sceneTree.addImageryLayer({
   //   type: "ArcGisMapServer",

@@ -1,6 +1,4 @@
-import { ImageryLayer } from "@cesium/engine";
-import { Cesium3DTile, Cesium3DTileset } from "cesium";
-
+import { ImageryLayer, Cesium3DTileset, WebMapServiceImageryProvider, Resource, Rectangle, TilingScheme, UrlTemplateImageryProvider, CesiumTerrainProvider } from "cesium";
 /**
  * 自定义图层基础配置，各类型图层配置继承此配置
  */
@@ -12,6 +10,22 @@ interface SSLayerOptions {
     index?: number;
     show?: boolean;
     zoomTo?: boolean;
+    layers?: string;
+}
+
+type SSWMSLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
+    rectangle?: Rectangle | Array<number>;
+    tilingScheme?: TilingScheme | String;
+}
+
+export type SSXYZLayerOptions = Omit<UrlTemplateImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
+    rectangle?: Rectangle | Array<number>;
+    tilingScheme?: TilingScheme | String;
+}
+
+export type SSTerrainLayerOptions = CesiumTerrainProvider.ConstructorOptions & SSLayerOptions & {
+    rectangle?: Rectangle | Array<number>;
+    show?: boolean;
 }
 
 /**
@@ -45,9 +59,10 @@ export abstract class Leaf implements SceneTreeLeaf {
     abstract setVisible: (visible: boolean) => void;
     abstract zoomTo: () => void;
     show!: boolean;
+    _show?: boolean;
     constructor(name: string) {
         this.name = name;
     }
 }
 
-export type { SSLayerOptions, SSImageryLayer, SSTilesetLayer, SceneTreeLeaf }
+export type { SSLayerOptions, SSWMSLayerOptions, SSImageryLayer, SSTilesetLayer, SceneTreeLeaf }
