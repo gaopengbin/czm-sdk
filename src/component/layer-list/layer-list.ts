@@ -3,7 +3,7 @@ import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import { Tree } from "../../lib/tree/tree";
 import "../../lib/tree/tree-view.scss";
-
+import "./layer-list.scss"
 @Component({
     tagName: "layer-list",
     className: "layer-list",

@@ -1,17 +1,26 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue + TS</title>
-    <script src="node_modules/cesium/Build/Cesium/Cesium.js"></script>
-    <script>
-      Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1OGU2Njk2YS02MzYwLTQwM2YtYTU2ZS1iZGU1YjYzZGMzYzQiLCJpZCI6NDQ0NDAsImlhdCI6MTY3Nzg2MDQyNH0.5HG0SGypQn3kABP4-b_q5X7An087tOOSJvvEFE4ERQs";
-    </script>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + Vue + TS</title>
+  <script src="node_modules/cesium/Build/Cesium/Cesium.js"></script>
+  <script>
+    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1OGU2Njk2YS02MzYwLTQwM2YtYTU2ZS1iZGU1YjYzZGMzYzQiLCJpZCI6NDQ0NDAsImlhdCI6MTY3Nzg2MDQyNH0.5HG0SGypQn3kABP4-b_q5X7An087tOOSJvvEFE4ERQs";
+    window.__WEBGIS_CESIUM_CONFIG__ = {
+      /**
+       * 根路径 默认 ''
+       */
+      baseUrl: '/',
+    };
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

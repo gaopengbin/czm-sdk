@@ -3,63 +3,16 @@ import uuid from "../../common/uuid";
 
 import {
     Viewer,
-    ArcGisMapServerImageryProvider,
-    Cesium3DTileset,
-    HeadingPitchRange,
-    ImageryLayer,
     Rectangle,
-    Resource,
-    UrlTemplateImageryProvider,
-    WebMapServiceImageryProvider,
     defined,
-    Event,
     defaultValue,
-    TilingScheme,
-    GeographicTilingScheme,
-    WebMercatorTilingScheme,
-    CesiumTerrainProvider,
-    Terrain,
-    BoundingSphere,
     EllipsoidTerrainProvider,
 } from "cesium";
+import { createArcGisMapServer, createTerrain, createTileset, createWMS, createXYZ } from "./creator";
 
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOptions) => {
-    let rectangle: any;
-    const resource = new Resource({
-        url: options.url,
-    });
-    // url后面加上斜杠
-    resource.appendForwardSlash();
 
-    if (defined(options.token)) {
-        resource.setQueryParameters({
-            token: options.token,
-        });
-    }
-
-    const iteminfoUrl = resource.url + "/info/iteminfo";
-    const jsonResource = new Resource({
-        url: iteminfoUrl,
-        queryParameters: {
-            f: "json",
-        },
-    });
-
-    // 获取地图范围
-    try {
-        const data = await jsonResource.fetchJson();
-        if (data && data.extent) {
-            rectangle = Rectangle.fromDegrees(
-                data.extent[0][0],
-                data.extent[0][1],
-                data.extent[1][0],
-                data.extent[1][1]
-            );
-        }
-    } catch (error) { }
-    const esri = await ArcGisMapServerImageryProvider.fromUrl(options.url, {
-        rectangle: rectangle,
-    });
+    const esri = await createArcGisMapServer(options);
 
     let arcGisMapServerLayer: SSImageryLayer =
         viewer.imageryLayers.addImageryProvider(esri);
@@ -94,9 +47,7 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
 }
 
 export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
-    const tileset: SSTilesetLayer = await Cesium3DTileset.fromUrl(
-        options.url
-    );
+    const tileset: SSTilesetLayer = await createTileset(options);
     viewer.scene.primitives.add(tileset);
 
     tileset.name = options.name;
@@ -124,22 +75,7 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
 }
 
 export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
-
-    if (Array.isArray(options.rectangle)) {
-        options.rectangle = Rectangle.fromDegrees(...options.rectangle);
-    }
-
-    if (options.tilingScheme) {
-        if (typeof options.tilingScheme === 'string') {
-            if (options.tilingScheme === 'geographic') {
-                options.tilingScheme = new GeographicTilingScheme();
-            } else if (options.tilingScheme === 'webMercator') {
-                options.tilingScheme = new WebMercatorTilingScheme();
-            }
-        }
-    }
-
-    const wms = new WebMapServiceImageryProvider(options as WebMapServiceImageryProvider.ConstructorOptions);
+    const wms = await createWMS(options);
     let wmsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wms);
     wmsLayer.name = options.name;
     wmsLayer.show = defaultValue(options.show, true);
@@ -153,6 +89,7 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
             wmsLayer.show = visible;
         },
         zoomTo: () => {
+            
             viewer.zoomTo(wmsLayer);
         },
         get show() {
@@ -167,22 +104,8 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
 }
 
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
-    if (Array.isArray(options.rectangle)) {
-        options.rectangle = Rectangle.fromDegrees(...options.rectangle);
-    }
-
-    if (options.tilingScheme) {
-        if (typeof options.tilingScheme === 'string') {
-            if (options.tilingScheme === 'geographic') {
-                options.tilingScheme = new GeographicTilingScheme();
-            } else if (options.tilingScheme === 'webMercator') {
-                options.tilingScheme = new WebMercatorTilingScheme();
-            }
-        }
-    }
-    let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(
-        new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions)
-    );
+    let xyz = await createXYZ(options);
+    let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
     xyzLayer.name = options.name;
     xyzLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -208,14 +131,10 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
 }
 
 export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptions) => {
-    if (Array.isArray(options.rectangle)) {
-        options.rectangle = Rectangle.fromDegrees(...options.rectangle);
-    }
 
-    const terrainProvider = CesiumTerrainProvider.fromUrl(options.url, options as CesiumTerrainProvider.ConstructorOptions);
-    let terrain = new Terrain(terrainProvider)
+    let terrainProvider = await createTerrain(options);
 
-    viewer.scene.setTerrain(terrain);
+    viewer.scene.terrainProvider = terrainProvider;
     const nullTerrain =
         new EllipsoidTerrainProvider({})
 
@@ -224,9 +143,8 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
         guid: uuid(),
         _show: true,
         setVisible: (visible: boolean) => {
-            // leaf.show = visible;
             if (visible) {
-                viewer.scene.setTerrain(terrain);
+                viewer.scene.terrainProvider = terrainProvider;
             } else {
                 console.log("nullTerrain", nullTerrain);
                 viewer.scene.terrainProvider = nullTerrain;

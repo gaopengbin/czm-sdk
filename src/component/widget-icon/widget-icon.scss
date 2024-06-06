@@ -1,0 +1,53 @@
+.webgis-widget-icon {
+    position: absolute;
+    z-index: 2;
+
+    .widget-panel {
+        position: absolute;
+        min-width: 105px;
+        min-height: 100px;
+        max-width: unset;
+        max-height: unset;
+        margin-right: 10px; /*防止紧贴图标*/
+
+        .widget-header {
+            cursor: move;
+            height: 2.25rem;
+            .icon {
+                width: 1rem;
+                height: 1rem;
+                background-color: var(--bs-primary);
+                border-radius: 0.125rem;
+                font-size: 1rem;
+                color: var(--bs-white);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        .widget-content {
+            overflow: auto;
+            position: absolute;
+            padding: 0;
+            left: 0;
+            top: 2.25rem;
+            right: 0;
+            bottom: 0;
+        }
+    }
+}
+
+// 打开模块效果
+.webgis-widget-icon.webgis-widget-icon-open {
+    z-index: 3;
+    .widget-icon {
+        color: var(--bs-btn-hover-color);
+        background-color: var(--bs-btn-hover-bg);
+        border-color: var(--bs-btn-hover-border-color);
+    }
+
+    .widget-panel {
+        display: block;
+    }
+}

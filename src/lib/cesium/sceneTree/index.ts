@@ -6,11 +6,12 @@ import {
 
 import { SSLayerOptions, SSImageryLayer, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader } from "./load";
+import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader } from "./loader";
 import uuid from "../../common/uuid";
 
 
 class SceneTree {
+    [x: string]: any;
     _root: any;
     _viewer: Viewer;
     _imageryLayers: any;

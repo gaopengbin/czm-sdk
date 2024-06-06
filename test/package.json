@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/node": "^20.14.2",
     "bootstrap-icons": "^1.11.3",
     "cesium": "^1.117.0",
     "naive-ui": "^2.38.2",

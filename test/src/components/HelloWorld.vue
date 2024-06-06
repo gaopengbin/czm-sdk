@@ -75,7 +75,6 @@ const addImagery = () => {
 };
 
 const addMapserver = async () => {
-  // sceneTree = BaseWidget.prototype.sceneTree;
   sceneTree = getSceneTree();
   let arcgis = await sceneTree.createArcGisMapServerLayer({
     type: "ArcGisMapServer",
@@ -136,32 +135,17 @@ const addMapserver = async () => {
 
   group.addLayer(xyz);
 
-  let terrain = await sceneTree.createTerrainLayer({
-    type: "Terrain",
-    name: "terrain",
-    url: "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path",
-    rectangle: [
-      115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508,
-    ],
-    requestMetadata: true,
-  });
-
-  group.addLayer(terrain);
-
-  // sceneTree.addImageryLayer({
-  //   type: "ArcGisMapServer",
-  //   name: "wujiang",
-  //   url: "http://120.48.115.17:6080/arcgis/rest/services/wujiang/MapServer",
-  //   show: true,
-  //   zoomTo: true,
+  // let terrain = await sceneTree.createTerrainLayer({
+  //   type: "Terrain",
+  //   name: "terrain",
+  //   url: "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path",
+  //   rectangle: [
+  //     115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508,
+  //   ],
+  //   requestMetadata: true,
   // });
-  // sceneTree.addImageryLayer({
-  //   type: "ArcGisMapServer",
-  //   name: "宿豫区",
-  //   url: "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer",
-  //   show: true,
-  //   zoomTo: true,
-  // });
+
+  // group.addLayer(terrain);
 };
 interface SceneTreeOption extends TreeOption {
   name: string;
@@ -254,35 +238,20 @@ const initTreeView = () => {
 <template>
   <div>
     <basic-test />
-    <base-earth />
-
+    <base-earth configUrl="config/config.json" />
+    <!-- <base-layer /> -->
     <!-- <div id="container"></div> -->
-    <button type="button" class="btn btn-primary" @click="addImagery">
-      Primary
-    </button>
-    <button type="button" class="btn btn-primary" @click="addMapserver">
-      addMapserver
-    </button>
+    <div class="btn">
+      <button type="button" class="btn btn-primary" @click="addMapserver">
+        addMapserver
+      </button>
+    </div>
+
     <!-- <basic-test />
     <w-comp /> -->
-    <div class="layerlist">
+    <!-- <div class="layerlist">
       <layer-list />
-      <!-- <NTree
-        block-line
-        :data="layers"
-        key-field="guid"
-        label-field="name"
-        children-field="children"
-        selectable
-        checkable
-        cascade
-        :checked-keys="defaultCheckedKeys"
-        :node-props="nodeProps"
-        @update:checked-keys="updateCheckedKeys"
-        :default-expand-all="true"
-      />
-      <div id="test"></div> -->
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -296,9 +265,13 @@ const initTreeView = () => {
   position: absolute;
   padding: 10px;
   top: 0;
-  right: 0;
+  left: 0;
   width: 250px;
   height: 300px;
   background-color: rgb(255, 255, 255);
+}
+.btn {
+  position: absolute;
+  z-index: 99;
 }
 </style>

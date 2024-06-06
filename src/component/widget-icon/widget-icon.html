@@ -1,0 +1,31 @@
+<!-- 图标 -->
+<button class="btn btn-primary widget-icon" type="button" onclick="this.iconClick(event)" data-bs-trigger="hover"
+    s-data-bs-content="this.title">
+    <If when="$data.isImg">
+        <img s-src="$data.icon">
+    </If>
+    <If when="!$data.isImg">
+        <i class="bi" s-class="$data.icon"></i>
+    </If>
+</button>
+
+<!-- 组件 -->
+<div class="toast widget-panel">
+    <!-- 标题 -->
+    <div class="toast-header widget-header">
+        <If when="$data.isImg">
+            <img s-src="$data.icon" class="me-2 icon">
+        </If>
+        <If when="!$data.isImg">
+            <div class="me-2 icon">
+                <i class="bi" s-class="$data.icon"></i>
+            </div>
+        </If>
+        <strong class="me-auto">{{this.title}}</strong>
+        <button type="button" class="btn-close" onclick="this.closeWidget()"></button>
+    </div>
+    <!-- 内容 -->
+    <div class="toast-body widget-content">
+
+    </div>
+</div>

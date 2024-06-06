@@ -203,9 +203,9 @@
   resolved "https://registry.npmjs.org/@microsoft/tsdoc/-/tsdoc-0.14.2.tgz"
   integrity sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==
 
-"@popperjs/core@^2.11.8":
+"@popperjs/core@^2.11.8", "@popperjs/core@^2.9.2":
   version "2.11.8"
-  resolved "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
@@ -397,6 +397,13 @@
   version "1.0.38"
   resolved "https://registry.npmjs.org/@types/argparse/-/argparse-1.0.38.tgz"
   integrity sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==
+
+"@types/bootstrap@^5.2.10":
+  version "5.2.10"
+  resolved "https://registry.yarnpkg.com/@types/bootstrap/-/bootstrap-5.2.10.tgz#58506463bccc6602bc051487ad8d3a6458f94c6c"
+  integrity sha512-F2X+cd6551tep0MvVZ6nM8v7XgGN/twpdNDjqS1TUM7YFNEtQYWk+dKAnH+T1gr6QgCoGMPl487xw/9hXooa2g==
+  dependencies:
+    "@popperjs/core" "^2.9.2"
 
 "@types/estree@1.0.5", "@types/estree@^1.0.0":
   version "1.0.5"

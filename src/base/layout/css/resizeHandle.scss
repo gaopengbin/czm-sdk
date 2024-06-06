@@ -1,0 +1,49 @@
+.resize-handle {
+    float: right;
+    position: absolute;
+    right: 0.125rem;
+    bottom: 0.125rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    z-index: 20;
+    line-height: 0;
+    cursor: nw-resize;
+    background-size: 1.5rem;
+    background-image: url("icons/resize-bottom-right.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.resize-handle-normal {
+    /*使svg与背景色反色*/
+    filter: invert(100%);
+    mix-blend-mode: difference;
+}
+
+.resize-handle-horizontal {
+    /*使用样式创建虚线*/
+    width: 0.5rem;
+    height: 4rem;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    cursor: e-resize;
+    background-image: radial-gradient(var(--bs-body-color) 0.08rem, transparent 0.08rem);
+    background-size: 0.25rem 0.25rem;
+    background-repeat: repeat;
+    background-position: initial;
+}
+
+.resize-handle-vertical {
+    /*使用样式创建虚线*/
+    width: 4rem;
+    height: 0.5rem;
+    margin: auto;
+    left: 0;
+    right: 0;
+    cursor: n-resize;
+    background-image: radial-gradient(var(--bs-body-color) 0.08rem, transparent 0.08rem);
+    background-size: 0.25rem 0.25rem;
+    background-repeat: repeat;
+    background-position: initial;
+}

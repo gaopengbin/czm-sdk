@@ -20,11 +20,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
-    // "baseUrl": ".",
-    // "paths": {
-    //   "cesium":["node_modules/cesium"],
-    //   "@cesium/widgets":["node_modules/cesium/Build/Cesium/Widgets"],
-    // }
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
