@@ -30,10 +30,14 @@ export default class WidgetManager extends BaseWidget {
     }
 
     async afterInit() {
-
+        console.log("configLoaded", this.config);
         this.config.forEach((_config: WidgetConfig) => {
             this.addWidget(_config);
         });
+    }
+
+    public configLoaded(): void {
+        console.log("configLoaded", this.globalConfig);
     }
 
     /**
@@ -70,7 +74,6 @@ export default class WidgetManager extends BaseWidget {
      */
     addWidget(_config: WidgetConfig) {
         _config = this.#getDefault(_config);
-        console.log(_config);
         try {
             // 生成图标
             if (_config.inPanel) {
@@ -97,10 +100,11 @@ export default class WidgetManager extends BaseWidget {
     createIcon(_config: WidgetConfig): BaseWidget {
         const icon = document.createElement('webgis-widget-icon') as BaseWidget;
         icon.startup({
-            mapView: this.mapView,
-            map: this.map,
+            // mapView: this.mapView,
+            // map: this.map,
             config: _config,
-            mapConfig: this.mapConfig
+            globalConfig: this.globalConfig,
+            viewer: this.viewer,
         });
 
         // 不需要宽高
@@ -127,10 +131,11 @@ export default class WidgetManager extends BaseWidget {
             throw new Error(`没有找到tagName为${_config.tagName}的组件`);
         }
         widget.startup({
-            mapView: this.mapView,
-            map: this.map,
+            // mapView: this.mapView,
+            // map: this.map,
+            viewer: this.viewer,
             config: _config.config,
-            mapConfig: this.mapConfig
+            globalConfig: this.globalConfig
         });
 
         const position = _config.position;

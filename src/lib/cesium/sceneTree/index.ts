@@ -4,7 +4,7 @@ import {
     defaultValue,
 } from "cesium";
 
-import { SSLayerOptions, SSImageryLayer, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
+import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
 import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader } from "./loader";
 import uuid from "../../common/uuid";
@@ -25,11 +25,11 @@ class SceneTree {
         show: true,
     };
     constructor(viewer: Viewer) {
-        console.log("SceneTree constructor");
+        // console.log("SceneTree constructor");
         this._viewer = viewer;
         // 原生方式添加的也进行监听
         viewer.imageryLayers.layerAdded.addEventListener(() => {
-            console.log("layerAdded");
+            // console.log("layerAdded");
             this.updateSceneTree();
         });
 
@@ -76,8 +76,6 @@ class SceneTree {
 
     // 做个防抖处理，避免频繁调用
     updateSceneTree = debounce(() => {
-        console.log("updateSceneTree");
-        // let imageryLayers = (this._viewer.imageryLayers as any)._layers;
         this._imageryLayers = this.treeToArray(this._root);
         this.updateEvent.raiseEvent(this._imageryLayers);
     }, 30, true);
@@ -101,7 +99,6 @@ class SceneTree {
 
     async createWMSLayer(options: SSWMSLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
-        console.log("createWMSLayer", param);
         let leaf: Leaf = await WMSLoader(this._viewer, param);
         this.updateSceneTree();
         return leaf;
@@ -109,27 +106,25 @@ class SceneTree {
 
     async createXYZLayer(options: SSXYZLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
-        console.log("createXYZLayer", param);
         let leaf: Leaf = await XYZLoader(this._viewer, param);
         this.updateSceneTree();
         return leaf;
     }
 
     async createArcGisMapServerLayer(options: SSLayerOptions) {
-        let leaf: Leaf = await ArcGisMapServerLoader(this._viewer, options);
+        const param = defaultValue(options, this.defaultImageryLayerOptions);
+        let leaf: Leaf = await ArcGisMapServerLoader(this._viewer, param);
         this.updateSceneTree();
         return leaf;
     }
 
     async addTilesetLayer(options: SSLayerOptions) {
-        console.log("addTilesetLayer", options);
         let leaf = await TilesetLoader(this._viewer, options);
         this.updateSceneTree();
         return leaf;
     }
 
     async createTerrainLayer(options: SSTerrainLayerOptions) {
-        console.log("createTerrainLayer", options);
         let leaf = await TerrainLoader(this._viewer, options);
         this.updateSceneTree();
         return leaf;
@@ -190,17 +185,17 @@ class children extends Array {
         // 判断items是否符合SceneTreeLeaf接口
         [...items].forEach(async (item) => {
             if (isSceneTreeLeaf(item)) {
-                console.log("this is SceneTreeLeaf");
+                // console.log("this is SceneTreeLeaf");
                 super.push(item);
             }
             else if (isSSLayerOptions(item)) {
-                console.log("this is SSLayerOptions");
+                // console.log("this is SSLayerOptions");
                 // 如果是图层配置，创建图层
                 let leaf = await SceneTree.prototype.addImageryLayer(item);
-                console.log("leaf", leaf);
+                // console.log("leaf", leaf);
                 // super.push(items);
             } else if (item instanceof Group) {
-                console.log("this is not SceneTreeLeaf", item);
+                // console.log("this is not SceneTreeLeaf", item);
                 super.push(item);
             }
         })

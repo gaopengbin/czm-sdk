@@ -8,6 +8,7 @@
         // content: url(../../../assets/images/文件夹@2x.png);
         width: 17.5px;
         margin-right: 10px;
+        color: var(--bs-primary);
     }
 
     .tree-node-content {
@@ -24,6 +25,10 @@
 
             .expand-icon::before {
                 color: white;
+            }
+
+            .icon{
+                color: var(--bs-light);
             }
         }
 

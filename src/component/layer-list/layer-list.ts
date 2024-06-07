@@ -16,16 +16,14 @@ export default class LayerList extends BaseWidget {
     }
 
     public async afterInit() {
-        this.layers = [{
-            name: "123",
-            index: 1,
-        }];
+        this.layers = [];
 
         this.sceneTree.updateEvent.addEventListener((val) => {
             console.log("updateEvent", val, this.treeview);
             this.treeview?.updateTree(val);
         });
 
+        this.layers = this.sceneTree.imageryLayers;
         this.initLayerList();
     }
 

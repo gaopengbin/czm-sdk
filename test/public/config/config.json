@@ -86,9 +86,11 @@
       "tagName": "layer-list",
       "position": {
         "left": 10,
-        "top": 20
+        "top": 20,
+        "width": 300,
+        "height": 350
       },
-      "inPanel": false
+      "inPanel": true
     }
   ]
 }

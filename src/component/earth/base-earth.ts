@@ -26,7 +26,7 @@ export default class BaseEarth extends BaseWidget {
             globalConfig: this.globalConfig
         });
         this.childNodes[0] ? this.insertBefore(widgetManagerEl, this.childNodes[0]) : this.appendChild(widgetManagerEl);
-        
+
     }
 
     public async afterInit() {
@@ -35,6 +35,10 @@ export default class BaseEarth extends BaseWidget {
 
     public async earthReady() {
         // console.log("earthReady", this.viewer);
+    }
+
+    public isReady(): boolean {
+        return true
     }
 
     initViewer() {

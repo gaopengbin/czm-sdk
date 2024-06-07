@@ -1,4 +1,4 @@
-import { ImageryLayer, Cesium3DTileset, WebMapServiceImageryProvider, Resource, Rectangle, TilingScheme, UrlTemplateImageryProvider, CesiumTerrainProvider } from "cesium";
+import { ImageryLayer, Cesium3DTileset, WebMapServiceImageryProvider, Rectangle, TilingScheme, UrlTemplateImageryProvider, CesiumTerrainProvider } from "cesium";
 /**
  * 自定义图层基础配置，各类型图层配置继承此配置
  */

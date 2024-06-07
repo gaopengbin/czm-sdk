@@ -11,17 +11,17 @@ import {
 import { createArcGisMapServer, createTerrain, createTileset, createWMS, createXYZ } from "./creator";
 
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOptions) => {
-
     const esri = await createArcGisMapServer(options);
 
     let arcGisMapServerLayer: SSImageryLayer =
         viewer.imageryLayers.addImageryProvider(esri);
-
+    
     Object.assign(arcGisMapServerLayer, {
         name: options.name,
         show: options.show,
         guid: uuid(),
     });
+    arcGisMapServerLayer.show = defaultValue(options.show, true);
 
     if (options.zoomTo) {
         viewer.zoomTo(arcGisMapServerLayer);
@@ -89,7 +89,7 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
             wmsLayer.show = visible;
         },
         zoomTo: () => {
-            
+
             viewer.zoomTo(wmsLayer);
         },
         get show() {
@@ -99,7 +99,6 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
             wmsLayer.show = value;
         },
     }
-    console.log(leaf);
     return leaf;
 }
 
@@ -146,7 +145,6 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
             if (visible) {
                 viewer.scene.terrainProvider = terrainProvider;
             } else {
-                console.log("nullTerrain", nullTerrain);
                 viewer.scene.terrainProvider = nullTerrain;
             }
         },

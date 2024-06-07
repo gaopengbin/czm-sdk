@@ -9,7 +9,6 @@ import {
     GeographicTilingScheme,
     WebMercatorTilingScheme,
     CesiumTerrainProvider,
-    Terrain,
     TileMapServiceImageryProvider,
     buildModuleUrl,
 } from "cesium";
