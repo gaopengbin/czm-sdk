@@ -29,30 +29,33 @@ export async function createArcGisMapServer(options: SSLayerOptions) {
         });
     }
 
-    const iteminfoUrl = resource.url + "/info/iteminfo";
-    const jsonResource = new Resource({
-        url: iteminfoUrl,
-        queryParameters: {
-            f: "json",
-        },
-    });
-
     // 获取地图范围
-    try {
-        const data = await jsonResource.fetchJson();
-        if (data && data.extent) {
-            rectangle = Rectangle.fromDegrees(
-                data.extent[0][0],
-                data.extent[0][1],
-                data.extent[1][0],
-                data.extent[1][1]
-            );
-        }
-    } catch (error) { }
+    if (options.rectangle && Array.isArray(options.rectangle)) {
+        rectangle = Rectangle.fromDegrees(...options.rectangle);
+    } else {
+        try {
+            const iteminfoUrl = resource.url + "/info/iteminfo";
+            const jsonResource = new Resource({
+                url: iteminfoUrl,
+                queryParameters: {
+                    f: "json",
+                },
+            });
+            const data = await jsonResource.fetchJson();
+            if (data && data.extent) {
+                rectangle = Rectangle.fromDegrees(
+                    data.extent[0][0],
+                    data.extent[0][1],
+                    data.extent[1][0],
+                    data.extent[1][1]
+                );
+            }
+        } catch (error) { }
+    }
+
     const esri = await ArcGisMapServerImageryProvider.fromUrl(options.url, {
         rectangle: rectangle,
     });
-
     return esri;
 }
 

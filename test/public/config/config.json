@@ -1,61 +1,6 @@
 {
   "earth": {
     "layers": [
-      {
-        "type": "arcgismapserver",
-        "name": "宿豫区",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer"
-      },
-      {
-        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-        "name": "tileset",
-        "type": "tileset"
-      },
-      {
-        "type": "wms",
-        "name": "wms",
-        "url": "http://120.46.179.233/geoserver/village/wms",
-        "layers": "village:合并",
-        "rectangle": [
-          113.79589260058276, 35.213881770316036, 113.79991195207892,
-          35.216112772339805
-        ],
-        "tilingScheme": "geographic",
-        "parameters": {
-          "transparent": true,
-          "format": "image/png"
-        }
-      },
-      {
-        "name": "fenzu",
-        "children": [
-          {
-            "type": "wms",
-            "name": "wms",
-            "url": "http://120.46.179.233/geoserver/village/wms",
-            "layers": "village:合并",
-            "rectangle": [
-              113.79589260058276, 35.213881770316036, 113.79991195207892,
-              35.216112772339805
-            ],
-            "tilingScheme": "geographic",
-            "parameters": {
-              "transparent": true,
-              "format": "image/png"
-            }
-          }
-        ]
-      },
-      {
-        "type": "xyz",
-        "name": "xyz",
-        "url": "http://120.48.115.17:81/data/beijing14/{z}/{x}/{y}.png",
-        "rectangle": [
-          115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508
-        ],
-        "minimumLevel": 0,
-        "maximumLevel": 13
-      }
     ],
     "baseLayers": [
       {

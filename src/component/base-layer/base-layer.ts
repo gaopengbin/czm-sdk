@@ -3,7 +3,7 @@ import { createProvider } from "@/lib/cesium/sceneTree/creator";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import "./base-layer.scss";
-import { BaseLayerPicker, ProviderViewModel, buildModuleUrl } from "cesium";
+import { BaseLayerPicker, ProviderViewModel } from "cesium";
 
 @Component({
     tagName: "base-layer",

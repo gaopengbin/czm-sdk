@@ -11,6 +11,8 @@ interface SSLayerOptions {
     show?: boolean;
     zoomTo?: boolean;
     layers?: string;
+    rectangle?: Rectangle | Array<number>;
+    zIndex?: number;
 }
 
 type SSWMSLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {

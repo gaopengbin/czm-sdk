@@ -15,14 +15,13 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
 
     let arcGisMapServerLayer: SSImageryLayer =
         viewer.imageryLayers.addImageryProvider(esri);
-    
+
     Object.assign(arcGisMapServerLayer, {
         name: options.name,
         show: options.show,
         guid: uuid(),
     });
     arcGisMapServerLayer.show = defaultValue(options.show, true);
-
     if (options.zoomTo) {
         viewer.zoomTo(arcGisMapServerLayer);
     }
@@ -34,6 +33,7 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
             arcGisMapServerLayer.show = visible;
         },
         zoomTo: () => {
+            console.log("zoomTo", arcGisMapServerLayer);
             viewer.zoomTo(arcGisMapServerLayer);
         },
         get show() {
@@ -42,6 +42,14 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
         set show(value: boolean) {
             arcGisMapServerLayer.show = value;
         },
+        imageLayer: arcGisMapServerLayer,
+        set zIndex(value: number) {
+            arcGisMapServerLayer.zIndex = value;
+            setLayersZIndex(viewer, viewer.imageryLayers._layers);
+        },
+        get zIndex() {
+            return arcGisMapServerLayer.zIndex;
+        }
     }
     return leaf;
 }
@@ -104,9 +112,12 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
 
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     let xyz = await createXYZ(options);
+    console.log("xyz", xyz);
     let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
+    console.log("xyzLayer", xyzLayer);
     xyzLayer.name = options.name;
     xyzLayer.show = defaultValue(options.show, true);
+    // xyzLayer.rectangle = options.rectangle;
     if (options.zoomTo) {
         viewer.zoomTo(xyzLayer);
     }
@@ -125,6 +136,7 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
         set show(value: boolean) {
             xyzLayer.show = value;
         },
+        imageLayer: xyzLayer,
     }
     return leaf;
 }
@@ -164,4 +176,31 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
         },
     }
     return leaf;
+}
+
+// 根据图层的zIndex属性大小顺序设置图层的顺序
+const setLayersZIndex = (viewer: Viewer, layers: any) => {
+    console.log("setLayersZIndex", layers);
+    layers.sort((a: any, b: any) => {
+        if (a.zIndex === undefined) {
+            a.zIndex = 1;
+        }
+        if (b.zIndex === undefined) {
+            b.zIndex = 1;
+        }
+        if (a.isBaseLayer()) {
+            a.zIndex = 0;
+        }
+        if (b.isBaseLayer()) {
+            b.zIndex = 0;
+        }
+        return a.zIndex - b.zIndex;
+    });
+    for (let i = 0; i < layers.length; i++) {
+        viewer.imageryLayers.lowerToBottom(layers[i]);
+        if (!layers[i].isBaseLayer()) {
+            viewer.imageryLayers.raise(layers[i])
+        }
+
+    }
 }

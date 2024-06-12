@@ -2,16 +2,6 @@
   "earth": {
     "layers": [
       {
-        "type": "arcgismapserver",
-        "name": "宿豫区",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer"
-      },
-      {
-        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-        "name": "tileset",
-        "type": "tileset"
-      },
-      {
         "type": "wms",
         "name": "wms",
         "url": "http://120.46.179.233/geoserver/village/wms",
@@ -27,7 +17,7 @@
         }
       },
       {
-        "name": "fenzu",
+        "name": "标准OGC",
         "children": [
           {
             "type": "wms",
@@ -47,14 +37,65 @@
         ]
       },
       {
-        "type": "xyz",
-        "name": "xyz",
-        "url": "http://120.48.115.17:81/data/beijing14/{z}/{x}/{y}.png",
-        "rectangle": [
-          115.423307418823, 39.4427553831086, 117.514657974243, 41.060909292508
-        ],
-        "minimumLevel": 0,
-        "maximumLevel": 13
+        "name": "影像",
+        "children": [
+          {
+            "type": "xyz",
+            "name": "xyz",
+            "url": "http://120.48.115.17:81/data/beijing14/{z}/{x}/{y}.png",
+            "rectangle": [
+              115.423307418823, 39.4427553831086, 117.514657974243,
+              41.060909292508
+            ],
+            "minimumLevel": 0,
+            "maximumLevel": 13
+          }
+        ]
+      },
+
+      {
+        "name": "ArcgisServer",
+        "children": [
+          {
+            "type": "arcgismapserver",
+            "name": "宿豫区",
+            "url": "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer"
+          }
+        ]
+      },
+      {
+        "name": "自研Server",
+        "children": [
+          {
+            "type": "arcgismapserver",
+            "name": "北京路网",
+            "url": "http://218.24.198.125:41010/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
+            "rectangle": [
+              115.431014, 39.4427553831086, 117.533267, 41.060909292508
+            ]
+          }
+        ]
+      },
+      {
+        "name": "三维",
+        "children": [
+          {
+            "url": "http://120.48.115.17:81/data/F0001/tileset.json",
+            "name": "分层分户白模",
+            "type": "tileset"
+          },
+          {
+            "url": "http://120.48.115.17:81/data/%E5%A4%A7%E9%9B%81%E5%A1%94/tileset.json",
+            "name": "大雁塔倾斜",
+            "type": "tileset"
+          },
+          {
+            "type": "terrain",
+            "name": "超图Terrain",
+            "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png",
+            "url": "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path"
+          }
+        ]
       }
     ],
     "baseLayers": [
@@ -71,12 +112,6 @@
         "name": "Natural Earth II",
         "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
         "url": "NaturalEarthII"
-      },
-      {
-        "type": "terrain",
-        "name": "超图Terrain",
-        "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png",
-        "url": "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path"
       }
     ]
   },
