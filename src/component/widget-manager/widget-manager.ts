@@ -30,7 +30,6 @@ export default class WidgetManager extends BaseWidget {
     }
 
     async afterInit() {
-        console.log("configLoaded", this.config);
         this.config.forEach((_config: WidgetConfig) => {
             this.addWidget(_config);
         });

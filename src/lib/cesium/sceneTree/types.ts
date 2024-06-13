@@ -62,6 +62,10 @@ export abstract class Leaf implements SceneTreeLeaf {
     abstract zoomTo: () => void;
     show!: boolean;
     _show?: boolean;
+    zIndex: number = 0;
+    _zIndex: number = 0;
+    _imageLayer?: SSImageryLayer;
+    _tileset?: SSTilesetLayer;
     constructor(name: string) {
         this.name = name;
     }

@@ -3,6 +3,7 @@ import { initScene, SceneTree } from '../../lib';
 import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
+import { setLayersZIndex } from '@/lib/cesium/sceneTree/loader';
 @Component({
     tagName: 'base-earth',
     className: 'base-earth',
@@ -17,7 +18,11 @@ export default class BaseEarth extends BaseWidget {
 
     public configLoaded(): void {
         this.globalConfig = this.config
-        initEarth(this.sceneTree, this.config.earth);
+        setTimeout(async () => {
+            await initEarth(this.sceneTree, this.config.earth);
+            setLayersZIndex(this.viewer);
+        }, 500);
+
         const widgetManager = this.globalConfig?.widgetManager || 'webgis-widget-manager';
         const widgetManagerEl = document.createElement(widgetManager) as BaseWidget;
         widgetManagerEl.startup({
@@ -34,7 +39,7 @@ export default class BaseEarth extends BaseWidget {
     }
 
     public async earthReady() {
-        // console.log("earthReady", this.viewer);
+
     }
 
     public isReady(): boolean {
@@ -55,8 +60,7 @@ export default class BaseEarth extends BaseWidget {
             fullscreenButton: false,
             // infoBox: false,
         });
-        this.viewer = viewer;
-
         this.sceneTree = new SceneTree(viewer);
+        this.viewer = viewer;
     }
 }

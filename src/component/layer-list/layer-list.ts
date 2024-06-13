@@ -19,7 +19,6 @@ export default class LayerList extends BaseWidget {
         this.layers = [];
 
         this.sceneTree.updateEvent.addEventListener((val) => {
-            console.log("updateEvent", val, this.treeview);
             this.treeview?.updateTree(val);
         });
 
@@ -28,7 +27,6 @@ export default class LayerList extends BaseWidget {
     }
 
     initLayerList() {
-        console.log("initLayerList");
         this.initTreeView();
     }
 
@@ -41,7 +39,7 @@ export default class LayerList extends BaseWidget {
                 parentIcon: "bi bi-folder",
                 childrenIcon: "bi bi-file-earmark-image",
             },
-            defaultExpandAll: true,
+            defaultExpandAll: false,
             props: {
                 label: "name",
                 children: "children",
@@ -59,9 +57,8 @@ export default class LayerList extends BaseWidget {
                 extraBtns: [
                     {
                         name: "显示",
-                        icon: "bi bi-eye",
+                        icon: (node: any) => node.show ? "bi bi-eye" : "bi bi-eye-slash",
                         onClick: (node: any, btn: any) => {
-                            console.log("显示", node, btn);
                             node.show = !node.show;
                             btn.setIcon(node.show ? "bi bi-eye" : "bi bi-eye-slash");
                             // sceneTree.showLayer(node.guid, node.show);
@@ -72,7 +69,6 @@ export default class LayerList extends BaseWidget {
                         name: "定位",
                         icon: "bi bi-geo-alt",
                         onClick: (node: any) => {
-                            console.log("定位", node);
                             node.zoomTo();
                         },
                         show: (node: any) => !node.children,

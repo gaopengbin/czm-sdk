@@ -70,7 +70,6 @@ class Tree {
             handleNodeSelect: this.nodeSelect,
         });
         root.initialize();
-        console.log('tree initialize', root);
         this.registerExpandEvents();
         this.registerOutsideClickEvents();
     }
@@ -201,7 +200,7 @@ class TreeNode {
     data: TreeNodeData | null;
     handleNodeClick: Function;
     handleNodeSelect: Function;
-    expand: boolean;
+    _expand: boolean;
     constructor(options: TreeNodeOptions) {
         this.store = options.store;
         this.label = ''
@@ -210,18 +209,23 @@ class TreeNode {
         this.parent = null;
         this.el = null;
         this.data = null;
-        this.expand = false;
+        this._expand = false;
         this.handleNodeClick = () => { };
         this.handleNodeSelect = () => { };
         for (let key in options) {
             if (options.hasOwnProperty(key)) {
-                this[key] = options[key];
+                if (key === 'expand') {
+                    this._expand = options[key];
+                } else {
+                    this[key] = options[key];
+                }
+
             }
         }
-
     }
 
     initialize() {
+        // this.expand = this._expand;
         if (Array.isArray(this.data)) {
             this.setData(this.data);
         } else {
@@ -237,6 +241,7 @@ class TreeNode {
             icon.classList.add("expand-icon");
 
             if (this.expand) {
+                console.log('expand', icon);
                 icon.classList.add("expand-icon-down");
             }
             contendNode.appendChild(icon);
@@ -333,6 +338,20 @@ class TreeNode {
         this.children.push(child);
     }
 
+    set expand(value: boolean) {
+        // debugger
+        this._expand = value;
+        if (this.el?.classList.contains('rootUL')) return;
+        let groupEL = this.el?.parentElement;
+        groupEL?.querySelector(".expand-icon")?.classList.toggle("expand-icon-down", value);
+        groupEL?.querySelector(".tree-node-children")?.classList.toggle("expand", value);
+        console.log('set expand', value, this.data, this.el);
+    }
+
+    get expand() {
+        return this._expand;
+    }
+
     /**
      * 节点点击事件
      * @param element tree-node-content
@@ -344,7 +363,7 @@ class TreeNode {
                 return;
             }
             if (element.classList.contains('tree-node-content')) {
-                this.handleNodeClick(this.data, element);
+                this.handleNodeClick(this, element);
             }
         });
     }
@@ -368,7 +387,15 @@ class TreeNode {
             for (let btn of this.store.options.props.extraBtns) {
                 let extraBtn: ExtraBtn<HTMLElement> = document.createElement("span");
                 extraBtn.classList.add("extra-btn");
-                extraBtn.innerHTML = `<i class="${btn.icon}"></i>`;
+
+                let icon;
+                if (typeof btn.icon === "function") {
+                    icon = btn.icon(this.data);
+                } else {
+                    icon = btn.icon;
+                }
+
+                extraBtn.innerHTML = `<i class="${icon}"></i>`;
                 extraBtn.setIcon = (icon: string) => {
                     extraBtn.innerHTML = `<i class="${icon}"></i>`;
                 }

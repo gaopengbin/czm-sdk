@@ -9,6 +9,7 @@ import {
     EllipsoidTerrainProvider,
 } from "cesium";
 import { createArcGisMapServer, createTerrain, createTileset, createWMS, createXYZ } from "./creator";
+import { getSceneTree } from "@/component";
 
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const esri = await createArcGisMapServer(options);
@@ -29,11 +30,11 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
         name: options.name,
         index: arcGisMapServerLayer._layerIndex,
         guid: arcGisMapServerLayer.guid,
+        _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             arcGisMapServerLayer.show = visible;
         },
         zoomTo: () => {
-            console.log("zoomTo", arcGisMapServerLayer);
             viewer.zoomTo(arcGisMapServerLayer);
         },
         get show() {
@@ -42,13 +43,13 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOpti
         set show(value: boolean) {
             arcGisMapServerLayer.show = value;
         },
-        imageLayer: arcGisMapServerLayer,
+        _imageLayer: arcGisMapServerLayer,
         set zIndex(value: number) {
-            arcGisMapServerLayer.zIndex = value;
-            setLayersZIndex(viewer, viewer.imageryLayers._layers);
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
         },
         get zIndex() {
-            return arcGisMapServerLayer.zIndex;
+            return leaf._zIndex;
         }
     }
     return leaf;
@@ -66,6 +67,7 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
     const leaf: Leaf = {
         name: options.name,
         guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             tileset.show = visible;
         },
@@ -78,6 +80,14 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
         set show(value: boolean) {
             tileset.show = value;
         },
+        _tileset: tileset,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            // setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
     }
     return leaf;
 }
@@ -93,11 +103,11 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
     const leaf: Leaf = {
         name: options.name,
         guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             wmsLayer.show = visible;
         },
         zoomTo: () => {
-
             viewer.zoomTo(wmsLayer);
         },
         get show() {
@@ -106,24 +116,31 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
         set show(value: boolean) {
             wmsLayer.show = value;
         },
+        _imageLayer: wmsLayer,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
     }
     return leaf;
 }
 
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     let xyz = await createXYZ(options);
-    console.log("xyz", xyz);
     let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
-    console.log("xyzLayer", xyzLayer);
     xyzLayer.name = options.name;
     xyzLayer.show = defaultValue(options.show, true);
-    // xyzLayer.rectangle = options.rectangle;
+
     if (options.zoomTo) {
         viewer.zoomTo(xyzLayer);
     }
     const leaf: Leaf = {
         name: options.name,
         guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             xyzLayer.show = visible;
         },
@@ -136,23 +153,27 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
         set show(value: boolean) {
             xyzLayer.show = value;
         },
-        imageLayer: xyzLayer,
+        _imageLayer: xyzLayer,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
     }
     return leaf;
 }
 
 export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptions) => {
-
     let terrainProvider = await createTerrain(options);
-
     viewer.scene.terrainProvider = terrainProvider;
-    const nullTerrain =
-        new EllipsoidTerrainProvider({})
-
+    const nullTerrain = new EllipsoidTerrainProvider({})
     const leaf: Leaf = {
         name: options.name,
         guid: uuid(),
         _show: true,
+        _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             if (visible) {
                 viewer.scene.terrainProvider = terrainProvider;
@@ -174,33 +195,41 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
             leaf._show = value;
             this.setVisible(value);
         },
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
     }
     return leaf;
 }
 
 // 根据图层的zIndex属性大小顺序设置图层的顺序
-const setLayersZIndex = (viewer: Viewer, layers: any) => {
-    console.log("setLayersZIndex", layers);
-    layers.sort((a: any, b: any) => {
+export const setLayersZIndex = (viewer: Viewer) => {
+    let sceneTree = getSceneTree();
+    if (!sceneTree) {
+        return;
+    }
+
+    let imageryLayers = []
+    let l = sceneTree._imageryCollection.length;
+    for (let i = 0; i < l; ++i) {
+        imageryLayers.push(sceneTree._imageryCollection[i]);
+    }
+
+    imageryLayers.sort((a: any, b: any) => {
         if (a.zIndex === undefined) {
-            a.zIndex = 1;
-        }
-        if (b.zIndex === undefined) {
-            b.zIndex = 1;
-        }
-        if (a.isBaseLayer()) {
             a.zIndex = 0;
         }
-        if (b.isBaseLayer()) {
+        if (b.zIndex === undefined) {
             b.zIndex = 0;
         }
         return a.zIndex - b.zIndex;
     });
-    for (let i = 0; i < layers.length; i++) {
-        viewer.imageryLayers.lowerToBottom(layers[i]);
-        if (!layers[i].isBaseLayer()) {
-            viewer.imageryLayers.raise(layers[i])
-        }
 
-    }
+    imageryLayers.forEach((layer: any) => {
+        viewer.scene.imageryLayers.raiseToTop(layer._imageLayer);
+    })
 }

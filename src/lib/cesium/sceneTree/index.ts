@@ -6,8 +6,9 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader } from "./loader";
+import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
+import { buildLayers } from "./creator";
 
 
 class SceneTree {
@@ -15,7 +16,8 @@ class SceneTree {
     _root: any;
     _viewer: Viewer;
     _imageryLayers: any;
-
+    _imageryCollection: any;
+    _tilesetCollection: any;
     updateEvent: Event = new Event();
     pickEvent: Event = new Event();
     defaultImageryLayerOptions: SSLayerOptions = {
@@ -25,18 +27,16 @@ class SceneTree {
         show: true,
     };
     constructor(viewer: Viewer) {
-        // console.log("SceneTree constructor");
         this._viewer = viewer;
         // 原生方式添加的也进行监听
         viewer.imageryLayers.layerAdded.addEventListener(() => {
-            // console.log("layerAdded");
             this.updateSceneTree();
         });
 
         this.root = new Group("root");
     }
 
-    get root() {
+    get root(): Group {
         return this._root;
     }
 
@@ -62,23 +62,48 @@ class SceneTree {
                     result.push({
                         name: child.name,
                         guid: child.guid,
+                        expand: child.expand,
                         children: this.treeToArray(child),
                     });
                 } else {
                     result.push(child);
+                    if (child._imageLayer) {
+                        this._imageryCollection.push(child);
+                    } else if (child._tileset) {
+                        this._tilesetCollection.push(child);
+                    }
                 }
             });
         } else {
             result.push(node);
+            if (node._imageLayer) {
+                this._imageryCollection.push(node);
+            } else if (node._tileset) {
+                this._tilesetCollection.push(node);
+            }
+
         }
         return result;
     }
 
     // 做个防抖处理，避免频繁调用
     updateSceneTree = debounce(() => {
+        this._imageryCollection = [];
+        this._tilesetCollection = [];
         this._imageryLayers = this.treeToArray(this._root);
         this.updateEvent.raiseEvent(this._imageryLayers);
     }, 30, true);
+
+    /**
+     * 添加图层
+     * @param options 图层配置
+     */
+    async addLayer(options: SSLayerOptions) {
+        let node = await buildLayers(this, options);
+        this.root.addLayer(node);
+        setLayersZIndex(this._viewer);
+        return node;
+    }
 
     async addImageryLayer(options: SSLayerOptions) {
         switch (options.type) {
@@ -203,18 +228,23 @@ class children extends Array {
         return this.length;
 
     }
-
-    test() {
-        console.log("test");
-    }
 }
 
 class Group {
     name: string;
     children: children = new children();
     guid: string = uuid();
+    _expand: boolean = false;
     constructor(name: string) {
         this.name = name;
+    }
+
+    set expand(value: boolean) {
+        this._expand = value;
+    }
+
+    get expand() {
+        return this._expand;
     }
 
     addLayer(layer: any) {
@@ -231,11 +261,11 @@ class Group {
 
     setVisible(visible: boolean) {
         this.children.forEach((child: any) => {
-            if (isSceneTreeLeaf(child)) {
-                child.setVisible(visible);
-            } else if (child instanceof Group) {
-                child.setVisible(visible);
-            }
+            // if (isSceneTreeLeaf(child)) {
+            //     child.setVisible(visible);
+            // } else if (child instanceof Group) {
+            child.setVisible(visible);
+            // }
         });
     }
 

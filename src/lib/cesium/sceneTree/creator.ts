@@ -147,19 +147,20 @@ export const initEarth = async (sceneTree: SceneTree, config: any) => {
     }
 }
 
-const buildLayers = async (sceneTree: SceneTree, layer: any) => {
+export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
     let node = null;
     if (layer.children) {
         layer.type = "group";
         let group = sceneTree.createGroup(layer.name);
+        group.expand = layer.expand;
         for (const child of layer.children) {
             let childLayer = await buildLayers(sceneTree, child);
             group.addLayer(childLayer);
         }
         node = group;
     } else {
+        layer.type = layer.type.toLowerCase();
         node = await sceneTree[initObjects[layer.type]](layer);
     }
-
     return node;
 }
