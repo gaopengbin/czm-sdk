@@ -27,7 +27,7 @@
                 color: white;
             }
 
-            .icon{
+            .icon {
                 color: var(--bs-light);
             }
         }
@@ -79,33 +79,39 @@
 
     .expand-icon::before {
         margin-left: 5px;
-        content: "\25E2";
+        // content: "\25E2";
+        // content: url(./expand-icon.svg);
+        content: url(./右-三角.svg);
         color: rgb(88, 88, 88);
         font-size: 16px;
         line-height: 22px;
         display: inline-block;
         margin-right: 6px;
-        -ms-transform: rotate(-45deg);
+        // -ms-transform: rotate(-45deg);
         /* IE 9 */
-        -webkit-transform: rotate(-45deg);
+        // -webkit-transform: rotate(-45deg);
         /* Safari */
-        transform: rotate(-45deg);
-        vertical-align: text-bottom;
+        // transform: rotate(-45deg);
+        // vertical-align: text-bottom;
     }
 
     .expand-icon-down::before {
-        -ms-transform: rotate(45deg);
+        -ms-transform: rotate(90deg);
         /* IE 9 */
-        -webkit-transform: rotate(45deg);
+        -webkit-transform: rotate(90deg);
         /* Safari */
-        transform: rotate(45deg);
+        transform: rotate(90deg);
     }
 
     .tree-node-children {
         display: none;
+        transition: all 0.3s ease-in-out;
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
 
         &.expand {
             display: block;
+            transition: all 0.3s ease-in-out;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         }
     }
 }

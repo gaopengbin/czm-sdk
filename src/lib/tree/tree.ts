@@ -101,9 +101,31 @@ class Tree {
         for (i = 0; i < toggler.length; i++) {
             toggler[i].addEventListener("click", function (evt) {
                 let e = evt as HTMLElementEvent<HTMLElement>;
-                e.target?.parentElement?.parentElement?.querySelector(".tree-node-children")?.classList.toggle("expand");
+                // 创建动画过渡效果
+                let node = e.target?.parentElement?.parentElement?.querySelector(".tree-node-children");
+                if (node) {
+                    node.setAttribute("style", "display:block");
+                    if (!node.classList.contains("expand")) {
+                        setTimeout(() => {
+                            const func = () => {
+                                node.removeEventListener("transitionend", func);
+                            }
+                            node.addEventListener("transitionend", func);
+                            node.classList.toggle("expand");
+                        }, 0);
+                    } else {
+                        setTimeout(() => {
+                            const func = () => {
+                                node.setAttribute("style", "display:none");
+                                node.removeEventListener("transitionend", func);
+                            }
+                            node.addEventListener("transitionend", func);
+                            node.classList.toggle("expand");
+                        }, 0);
+                    }
+                }
                 e.target?.classList.toggle("expand-icon-down");
-            });
+            })
         }
     }
 
@@ -241,7 +263,6 @@ class TreeNode {
             icon.classList.add("expand-icon");
 
             if (this.expand) {
-                console.log('expand', icon);
                 icon.classList.add("expand-icon-down");
             }
             contendNode.appendChild(icon);
@@ -339,13 +360,11 @@ class TreeNode {
     }
 
     set expand(value: boolean) {
-        // debugger
         this._expand = value;
         if (this.el?.classList.contains('rootUL')) return;
         let groupEL = this.el?.parentElement;
         groupEL?.querySelector(".expand-icon")?.classList.toggle("expand-icon-down", value);
         groupEL?.querySelector(".tree-node-children")?.classList.toggle("expand", value);
-        console.log('set expand', value, this.data, this.el);
     }
 
     get expand() {

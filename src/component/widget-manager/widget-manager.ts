@@ -29,6 +29,9 @@ export default class WidgetManager extends BaseWidget {
         super();
     }
 
+    public isReady(): boolean {
+        return true;
+    }
     async afterInit() {
         this.config.forEach((_config: WidgetConfig) => {
             this.addWidget(_config);

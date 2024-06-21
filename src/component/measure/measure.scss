@@ -1,0 +1,21 @@
+czm-measure {
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .measure-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100px;
+        height: 30px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #f0f0f0;
+        }
+    }
+}

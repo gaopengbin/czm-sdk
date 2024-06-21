@@ -35,7 +35,7 @@
             ],
             "minimumLevel": 0,
             "maximumLevel": 13,
-            "zIndex": 9
+            "zIndex": 0
           }
         ]
       },
@@ -43,6 +43,11 @@
       {
         "name": "ArcgisServer",
         "children": [
+          {
+            "type": "arcgismapserver",
+            "name": "吴江",
+            "url": "http://120.48.115.17:6080/arcgis/rest/services/wujiang/MapServer"
+          },
           {
             "type": "arcgismapserver",
             "name": "宿豫区",
@@ -98,7 +103,7 @@
       {
         "type": "xyz",
         "name": "Natural Earth II",
-        "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "iconUrl": "http://localhost:5174/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
         "url": "NaturalEarthII"
       }
     ]
@@ -113,6 +118,16 @@
         "top": 20
       },
       "inPanel": true
+    },
+    {
+      "label":"量测",
+      "tagName":"czm-measure",
+      "icon":"bi-ruler",
+      "position":{
+        "left":10,
+        "top":60
+      },
+      "inPanel":false
     },
     {
       "label": "底图",

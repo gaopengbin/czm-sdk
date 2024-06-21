@@ -23,7 +23,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build2": "vite build"
+    "build2": "vite build && npm pack"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
