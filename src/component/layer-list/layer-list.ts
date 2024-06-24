@@ -44,7 +44,12 @@ export default class LayerList extends BaseWidget {
                 label: "name",
                 children: "children",
                 labelRender: (data: any) => {
-                    return data.name;
+                    if (data.status && data.status === "error") {
+                        return `<font color='gray'><i class="bi bi-exclamation-circle"></i>${data.name}</font>`;
+                    } else {
+                        return data.name;
+                    }
+
                     // if (data.children) {
                     //   return `<font style="color:var(--bs-emphasis-color)">${data.label}</font>`;
                     // } else {

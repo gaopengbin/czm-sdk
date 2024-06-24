@@ -216,11 +216,14 @@ class children extends Array {
             else if (isSSLayerOptions(item)) {
                 // console.log("this is SSLayerOptions");
                 // 如果是图层配置，创建图层
-                let leaf = await SceneTree.prototype.addImageryLayer(item);
+                // let leaf = await SceneTree.prototype.addImageryLayer(item);
                 // console.log("leaf", leaf);
-                // super.push(items);
+                super.push(item);
             } else if (item instanceof Group) {
                 // console.log("this is not SceneTreeLeaf", item);
+                super.push(item);
+            }else{
+                // console.log("this is wrong SceneTreeLeaf", item);
                 super.push(item);
             }
         })

@@ -11,9 +11,12 @@ import {
     CesiumTerrainProvider,
     TileMapServiceImageryProvider,
     buildModuleUrl,
+    Cartesian2,
 } from "cesium";
 import { SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
 import { SceneTree } from ".";
+import GCJ02TilingScheme from "../tilingScheme/GCJ02TilingScheme";
+import BD09TilingScheme from "../tilingScheme/BD09TilingScheme";
 
 export async function createArcGisMapServer(options: SSLayerOptions) {
     let rectangle: any;
@@ -94,10 +97,59 @@ export async function createXYZ(options: SSXYZLayerOptions) {
                 options.tilingScheme = new GeographicTilingScheme();
             } else if (options.tilingScheme === 'webMercator') {
                 options.tilingScheme = new WebMercatorTilingScheme();
+            } else if (options.tilingScheme === 'gcj02') {
+                options.tilingScheme = new GCJ02TilingScheme();
+            } else if (options.tilingScheme === 'bd09') {
+                let resolutions = []
+                let maxResolution = options.maximumLevel ? options.maximumLevel : 19
+                for (let i = 0; i < maxResolution; i++) {
+                    resolutions[i] = 256 * Math.pow(2, maxResolution - 1 - i)
+                }
+                options.tilingScheme = new BD09TilingScheme({
+                    resolutions: resolutions,
+                    rectangleSouthwestInMeters: new Cartesian2(-20037726.37, -12474104.17),
+                    rectangleNortheastInMeters: new Cartesian2(20037726.37, 12474104.17),
+                });
+
+                // options.requestImage(x, y, level) {
+                //     let xTiles = options.tilingScheme.getNumberOfXTilesAtLevel(level)
+                //     let yTiles = options.tilingScheme.getNumberOfYTilesAtLevel(level)
+                //     let url = this._url
+                //         .replace('{z}', level)
+                //         .replace('{s}', String(1))
+                //         .replace('{style}', this._style)
+                //     if (this._crs === 'WGS84') {
+                //         url = url.replace('{x}', String(x)).replace('{y}', String(-y))
+                //     } else {
+                //         url = url
+                //             .replace('{x}', String(x - xTiles / 2))
+                //             .replace('{y}', String(yTiles / 2 - y - 1))
+                //     }
+                //     return ImageryProvider.loadImage(this, url)
+                // }
+
             }
         }
     }
     const xyz = new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions);
+    if(options.tilingScheme === 'bd09'){
+        // xyz.requestImage = (x, y, level) => {
+        //     let xTiles = options.tilingScheme.getNumberOfXTilesAtLevel(level)
+        //     let yTiles = options.tilingScheme.getNumberOfYTilesAtLevel(level)
+        //     let url = options.url
+        //         .replace('{z}', level)
+        //         .replace('{s}', String(1))
+        //         .replace('{style}', options.style)
+        //     if (options.crs === 'WGS84') {
+        //         url = url.replace('{x}', String(x)).replace('{y}', String(-y))
+        //     } else {
+        //         url = url
+        //             .replace('{x}', String(x - xTiles / 2))
+        //             .replace('{y}', String(yTiles / 2 - y - 1))
+        //     }
+        //     return xyz.loadImage(url)
+        // }
+    }
     return xyz;
 }
 
@@ -155,12 +207,25 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
         group.expand = layer.expand;
         for (const child of layer.children) {
             let childLayer = await buildLayers(sceneTree, child);
+            console.log(childLayer);
             group.addLayer(childLayer);
         }
         node = group;
     } else {
         layer.type = layer.type.toLowerCase();
-        node = await sceneTree[initObjects[layer.type]](layer);
+        try {
+            // node = sceneTree[initObjects[layer.type]](layer);
+            node = await sceneTree[initObjects[layer.type]](layer);
+        } catch (error) {
+            console.error(error);
+            node = {
+                name: layer.name,
+                ...layer,
+                status: "error",
+            }
+        }
+        // console.log(node);
+
     }
     return node;
 }

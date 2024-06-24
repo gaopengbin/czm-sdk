@@ -39,6 +39,10 @@
             .expand-icon::before {
                 color: white;
             }
+
+            .icon {
+                color: var(--bs-light);
+            }
         }
 
         &.leaf {

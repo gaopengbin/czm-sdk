@@ -61,10 +61,8 @@
           {
             "type": "arcgismapserver",
             "name": "北京路网",
-            "url": "http://218.24.198.125:41010/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
-            "rectangle": [
-              115.431014, 39.4427553831086, 117.533267, 41.060909292508
-            ]
+            "url": "http://218.24.198.125:41010/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer"
+           
           }
         ]
       },
@@ -75,18 +73,26 @@
           {
             "url": "http://120.48.115.17:81/data/F0001/tileset.json",
             "name": "分层分户白模",
+            "show": false,
+            "type": "tileset",
+            "preloadWhenHidden": true
+          },
+          {
+            "url": "http://localhost/data/pointcloud2/tileset.json",
+            "name": "点云",
             "type": "tileset"
+          },
+          {
+            "url": "http://120.48.115.17:81/data/%E6%A1%A5%E6%A2%81BIM/tileset.json",
+            "name": "BIM",
+            "type": "tileset",
+            "preloadWhenHidden": true
           },
           {
             "url": "http://120.48.115.17:81/data/%E5%A4%A7%E9%9B%81%E5%A1%94/tileset.json",
             "name": "大雁塔倾斜",
+            "show": false,
             "type": "tileset"
-          },
-          {
-            "type": "terrain",
-            "name": "超图Terrain",
-            "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png",
-            "url": "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path"
           }
         ]
       }
@@ -98,6 +104,15 @@
         "iconUrl": "/vite.svg",
         "tooltip": "高德地图",
         "url": "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+        "maximumLevel": 18,
+        "tilingScheme":"gcj02"
+      },
+      {
+        "type": "xyz",
+        "name": "百度地图",
+        "iconUrl": "/vite.svg",
+        "tooltip": "百度地图",
+        "url": "https://maponline1.bdimg.com/tile/?qt=vtile&x={x}8&y={y}&z={z}&styles=pl&scaler=2&udt=&from=jsapi2_0",
         "maximumLevel": 18
       },
       {
@@ -106,7 +121,12 @@
         "iconUrl": "http://localhost:5174/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
         "url": "NaturalEarthII"
       }
-    ]
+    ],
+    "viewer": {
+      "ionDefaultToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZmMxOWY4NC03MWY5LTRlZjMtODBlOS1hZTBlMDc4NjhkMjAiLCJpZCI6NDQ0NDAsImlhdCI6MTcxOTAzODQ4OH0.ffZTS_fzwJ3mtqGL2yzt1_4CAyE_oiHQToIWQNqJJwE",
+      "position": [113.797402, 35.214848, 1000],
+      "hpr": [0, -90, 0]
+    }
   },
   "widgets": [
     {
@@ -120,14 +140,14 @@
       "inPanel": true
     },
     {
-      "label":"量测",
-      "tagName":"czm-measure",
-      "icon":"bi-ruler",
-      "position":{
-        "left":10,
-        "top":60
+      "label": "量测",
+      "tagName": "czm-measure",
+      "icon": "bi-ruler",
+      "position": {
+        "left": 10,
+        "top": 60
       },
-      "inPanel":false
+      "inPanel": false
     },
     {
       "label": "底图",

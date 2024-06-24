@@ -1,3 +1,10 @@
-<button class="measure-button" onclick="this.startMeasure('distance')">Length</button>
-<button class="measure-button" onclick="this.startMeasure('area')">Area</button>
-<button class="measure-button" onclick="this.startMeasure('angle')">Angle</button>
+<div class="btn-group-vertical" role="group">
+    <For each="$data.measures" item="item">
+        <input type="radio" name="measurement-radio" class="btn-check" id="measurement-radio" s-id="item.type"
+            autocomplete="off">
+        <label class="btn btn-success widget-icon" s-for="item.type" data-bs-toggle="popover" data-bs-trigger="hover"
+            s-data-bs-content="item.name" onclick="this.startMeasure(item.type)">
+            <i s-class="item.icon"></i>
+        </label>
+    </For>
+</div>
