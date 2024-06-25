@@ -12,13 +12,14 @@ import {
     TileMapServiceImageryProvider,
     buildModuleUrl,
     Cartesian2,
+    WebMapTileServiceImageryProvider,
 } from "cesium";
-import { SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
+import { SSArcGisLayerOptions, SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
 import { SceneTree } from ".";
-import GCJ02TilingScheme from "../tilingScheme/GCJ02TilingScheme";
-import BD09TilingScheme from "../tilingScheme/BD09TilingScheme";
+import GCJ02TilingScheme from "../CustomImageryProvider/tilingScheme/GCJ02TilingScheme";
+import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImageryProvider";
 
-export async function createArcGisMapServer(options: SSLayerOptions) {
+export async function createArcGisMapServer(options: SSArcGisLayerOptions) {
     let rectangle: any;
     const resource = new Resource({
         url: options.url,
@@ -55,8 +56,19 @@ export async function createArcGisMapServer(options: SSLayerOptions) {
             }
         } catch (error) { }
     }
-
+    if (options.tilingScheme) {
+        if (typeof options.tilingScheme === 'string') {
+            if (options.tilingScheme === 'geographic') {
+                options.tilingScheme = new GeographicTilingScheme();
+            } else if (options.tilingScheme === 'webMercator') {
+                options.tilingScheme = new WebMercatorTilingScheme();
+            } else if (options.tilingScheme === 'gcj02') {
+                options.tilingScheme = new GCJ02TilingScheme();
+            }
+        }
+    }
     const esri = await ArcGisMapServerImageryProvider.fromUrl(options.url, {
+        ...options as ArcGisMapServerImageryProvider.ConstructorOptions,
         rectangle: rectangle,
     });
     return esri;
@@ -73,12 +85,35 @@ export async function createWMS(options: SSWMSLayerOptions) {
                 options.tilingScheme = new GeographicTilingScheme();
             } else if (options.tilingScheme === 'webMercator') {
                 options.tilingScheme = new WebMercatorTilingScheme();
+            } else if (options.tilingScheme === 'gcj02') {
+                options.tilingScheme = new GCJ02TilingScheme();
             }
         }
     }
 
     const wms = new WebMapServiceImageryProvider(options as WebMapServiceImageryProvider.ConstructorOptions);
     return wms;
+}
+
+export async function createWMTS(options: any) {
+    if (options.rectangle && Array.isArray(options.rectangle)) {
+        options.rectangle = Rectangle.fromDegrees(...options.rectangle);
+    }
+    if (options.tilingScheme) {
+        if (typeof options.tilingScheme === 'string') {
+            if (options.tilingScheme === 'geographic') {
+                options.tilingScheme = new GeographicTilingScheme();
+            } else if (options.tilingScheme === 'webMercator') {
+                options.tilingScheme = new WebMercatorTilingScheme();
+            } else if (options.tilingScheme === 'gcj02') {
+                options.tilingScheme = new GCJ02TilingScheme();
+            } else if (options.tilingScheme === 'bd09') {
+
+            }
+        }
+    }
+    const wmts = new WebMapTileServiceImageryProvider(options as WebMapTileServiceImageryProvider.ConstructorOptions);
+    return wmts;
 }
 
 export async function createXYZ(options: SSXYZLayerOptions) {
@@ -100,56 +135,16 @@ export async function createXYZ(options: SSXYZLayerOptions) {
             } else if (options.tilingScheme === 'gcj02') {
                 options.tilingScheme = new GCJ02TilingScheme();
             } else if (options.tilingScheme === 'bd09') {
-                let resolutions = []
-                let maxResolution = options.maximumLevel ? options.maximumLevel : 19
-                for (let i = 0; i < maxResolution; i++) {
-                    resolutions[i] = 256 * Math.pow(2, maxResolution - 1 - i)
-                }
-                options.tilingScheme = new BD09TilingScheme({
-                    resolutions: resolutions,
-                    rectangleSouthwestInMeters: new Cartesian2(-20037726.37, -12474104.17),
-                    rectangleNortheastInMeters: new Cartesian2(20037726.37, 12474104.17),
-                });
-
-                // options.requestImage(x, y, level) {
-                //     let xTiles = options.tilingScheme.getNumberOfXTilesAtLevel(level)
-                //     let yTiles = options.tilingScheme.getNumberOfYTilesAtLevel(level)
-                //     let url = this._url
-                //         .replace('{z}', level)
-                //         .replace('{s}', String(1))
-                //         .replace('{style}', this._style)
-                //     if (this._crs === 'WGS84') {
-                //         url = url.replace('{x}', String(x)).replace('{y}', String(-y))
-                //     } else {
-                //         url = url
-                //             .replace('{x}', String(x - xTiles / 2))
-                //             .replace('{y}', String(yTiles / 2 - y - 1))
-                //     }
-                //     return ImageryProvider.loadImage(this, url)
-                // }
 
             }
         }
     }
-    const xyz = new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions);
-    if(options.tilingScheme === 'bd09'){
-        // xyz.requestImage = (x, y, level) => {
-        //     let xTiles = options.tilingScheme.getNumberOfXTilesAtLevel(level)
-        //     let yTiles = options.tilingScheme.getNumberOfYTilesAtLevel(level)
-        //     let url = options.url
-        //         .replace('{z}', level)
-        //         .replace('{s}', String(1))
-        //         .replace('{style}', options.style)
-        //     if (options.crs === 'WGS84') {
-        //         url = url.replace('{x}', String(x)).replace('{y}', String(-y))
-        //     } else {
-        //         url = url
-        //             .replace('{x}', String(x - xTiles / 2))
-        //             .replace('{y}', String(yTiles / 2 - y - 1))
-        //     }
-        //     return xyz.loadImage(url)
-        // }
+    if (options.tilingScheme === 'bd09') {
+        const xyz = new BaiduImageryProvider(options);
+        return xyz;
     }
+    const xyz = new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions);
+
     return xyz;
 }
 
@@ -175,6 +170,7 @@ const Objects: any = {
     "wms": createWMS,
     "xyz": createXYZ,
     "terrain": createTerrain,
+    "wmts": createWMTS,
 }
 
 export const createProvider = async (options: any) => {
@@ -186,6 +182,7 @@ const initObjects: any = {
     "arcgismapserver": "createArcGisMapServerLayer",
     "tileset": "addTilesetLayer",
     "wms": "createWMSLayer",
+    "wmts": "createWMTSLayer",
     "xyz": "createXYZLayer",
     "terrain": "createTerrainLayer",
     "group": "createGroup",

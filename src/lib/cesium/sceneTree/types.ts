@@ -14,8 +14,12 @@ interface SSLayerOptions {
     rectangle?: Rectangle | Array<number>;
     zIndex?: number;
 }
+export type SSArcGisLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
+    rectangle?: Rectangle | Array<number>;
+    tilingScheme?: TilingScheme | String;
+}
 
-type SSWMSLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
+export type SSWMSLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
     rectangle?: Rectangle | Array<number>;
     tilingScheme?: TilingScheme | String;
 }
@@ -71,4 +75,4 @@ export abstract class Leaf implements SceneTreeLeaf {
     }
 }
 
-export type { SSLayerOptions, SSWMSLayerOptions, SSImageryLayer, SSTilesetLayer, SceneTreeLeaf }
+export type { SSLayerOptions, SSImageryLayer, SSTilesetLayer, SceneTreeLeaf }

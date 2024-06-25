@@ -1,4 +1,4 @@
-import { Leaf, SSImageryLayer, SSLayerOptions, SSTerrainLayerOptions, SSTilesetLayer, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
+import { Leaf, SSArcGisLayerOptions, SSImageryLayer, SSLayerOptions, SSTerrainLayerOptions, SSTilesetLayer, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
 import uuid from "../../common/uuid";
 
 import {
@@ -8,10 +8,10 @@ import {
     defaultValue,
     EllipsoidTerrainProvider,
 } from "cesium";
-import { createArcGisMapServer, createTerrain, createTileset, createWMS, createXYZ } from "./creator";
+import { createArcGisMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
-export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const esri = await createArcGisMapServer(options);
 
     let arcGisMapServerLayer: SSImageryLayer =
@@ -128,6 +128,41 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
     return leaf;
 }
 
+export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+    const wmts = await createWMTS(options);
+    let wmtsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wmts);
+    wmtsLayer.name = options.name;
+    wmtsLayer.show = defaultValue(options.show, true);
+    if (options.zoomTo) {
+        viewer.zoomTo(wmtsLayer);
+    }
+    const leaf: Leaf = {
+        name: options.name,
+        guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
+        setVisible: (visible: boolean) => {
+            wmtsLayer.show = visible;
+        },
+        zoomTo: () => {
+            viewer.zoomTo(wmtsLayer);
+        },
+        get show() {
+            return wmtsLayer.show;
+        },
+        set show(value: boolean) {
+            wmtsLayer.show = value;
+        },
+        _imageLayer: wmtsLayer,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
+    }
+    return leaf;
+}
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     let xyz = await createXYZ(options);
     let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);

@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 
@@ -129,6 +129,13 @@ class SceneTree {
         return leaf;
     }
 
+    async createWMTSLayer(options: SSLayerOptions) {
+        const param = defaultValue(options, this.defaultImageryLayerOptions);
+        let leaf: Leaf = await WMTSLoader(this._viewer, param);
+        this.updateSceneTree();
+        return leaf;
+    }
+
     async createXYZLayer(options: SSXYZLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         let leaf: Leaf = await XYZLoader(this._viewer, param);
@@ -222,7 +229,7 @@ class children extends Array {
             } else if (item instanceof Group) {
                 // console.log("this is not SceneTreeLeaf", item);
                 super.push(item);
-            }else{
+            } else {
                 // console.log("this is wrong SceneTreeLeaf", item);
                 super.push(item);
             }
