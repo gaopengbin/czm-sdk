@@ -37,6 +37,7 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "cesium": "^1.116.0",
+    "cesium-navigation-es6": "^3.0.9",
     "sass": "^1.75.0",
     "snabbdom": "^3.6.2",
     "vite-plugin-externals": "^0.6.2",

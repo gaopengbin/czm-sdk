@@ -3,13 +3,13 @@ import { createProvider } from "@/lib/cesium/sceneTree/creator";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import "./base-layer.scss";
-import { BaseLayerPicker, ProviderViewModel } from "cesium";
+import { BaseLayerPicker, ProviderViewModel, createCommand } from "cesium";
 
 @Component({
     tagName: "base-layer",
     className: "base-layer",
     template: "<div id='base-layer'></div>",
-    hasConfig: true
+
 })
 export default class BaseLayer extends BaseWidget {
     _layerList: any = [];
@@ -20,9 +20,15 @@ export default class BaseLayer extends BaseWidget {
 
     public async afterInit() {
         this.layerList = this.globalConfig?.earth?.baseLayers || [];
+        console.log("base-layer afterInit", this);
         // this.initLayerList();
     }
+    public onOpen(): void {
+        console.log("base-layer open", this._baseLayerPicker);
+        // this.initLayerList();
 
+
+    }
     set layerList(value: any) {
         this._layerList = value;
         this.initLayerList();
@@ -74,5 +80,10 @@ export default class BaseLayer extends BaseWidget {
             imageryProviderViewModels: imageryViewModels,
             terrainProviderViewModels: terrainViewModels,
         })
+        if (this._baseLayerPicker) {
+            let title: any = this.querySelector('.cesium-baseLayerPicker-sectionTitle');
+            title.innerHTML = '底图切换';
+
+        }
     }
 }

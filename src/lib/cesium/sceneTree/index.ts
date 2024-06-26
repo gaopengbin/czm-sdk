@@ -9,6 +9,7 @@ import { debounce } from "../../common/debounce";
 import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
+import { getSceneTree } from "@/component";
 
 
 class SceneTree {
@@ -26,6 +27,7 @@ class SceneTree {
         url: "",
         show: true,
     };
+    layersMap: Map<string, any> = new Map();
     constructor(viewer: Viewer) {
         this._viewer = viewer;
         // 原生方式添加的也进行监听
@@ -65,8 +67,10 @@ class SceneTree {
                         expand: child.expand,
                         children: this.treeToArray(child),
                     });
+                    this.layersMap.set(child.guid, child);
                 } else {
                     result.push(child);
+                    this.layersMap.set(child.guid, child);
                     if (child._imageLayer) {
                         this._imageryCollection.push(child);
                     } else if (child._tileset) {
@@ -76,6 +80,7 @@ class SceneTree {
             });
         } else {
             result.push(node);
+            this.layersMap.set(node.guid, node);
             if (node._imageLayer) {
                 this._imageryCollection.push(node);
             } else if (node._tileset) {
@@ -234,7 +239,6 @@ class children extends Array {
                 super.push(item);
             }
         })
-
         return this.length;
 
     }
@@ -257,9 +261,20 @@ class Group {
         return this._expand;
     }
 
-    addLayer(layer: any) {
-        // this.children.test
-        this.children.push(layer);
+    async addLayer(layer: any, item?: any) {
+        if (layer instanceof Promise) {
+            let child = {
+                name: item.name,
+                status: "loading",
+            }
+            let length = this.children.push(child);
+            layer.then((res: any) => {
+                this.children[length - 1] = res;
+                getSceneTree().updateSceneTree();
+            });
+        } else {
+            this.children.push(layer);
+        }
     }
 
     removeLayer(layer: any) {

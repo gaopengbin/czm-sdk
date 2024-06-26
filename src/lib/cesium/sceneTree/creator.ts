@@ -18,6 +18,7 @@ import { SSArcGisLayerOptions, SSLayerOptions, SSTerrainLayerOptions, SSWMSLayer
 import { SceneTree } from ".";
 import GCJ02TilingScheme from "../CustomImageryProvider/tilingScheme/GCJ02TilingScheme";
 import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImageryProvider";
+import WMTSParser from "../parser/WMTSParser";
 
 export async function createArcGisMapServer(options: SSArcGisLayerOptions) {
     let rectangle: any;
@@ -96,18 +97,42 @@ export async function createWMS(options: SSWMSLayerOptions) {
 }
 
 export async function createWMTS(options: any) {
+    let parser = new WMTSParser()
+    options.style = options.style || ''
+    options.format = options.format || 'image/png'
+    try {
+        let res: any = await parser.parser(parser.addUrlParam(options.url))
+        console.log(res)
+        let layer = res.find((item: any) => item.identifier === options.layer)
+        console.log(layer)
+        if (layer) {
+            options.url = layer.urls.find((item: any) => item.format === options.format).template
+            options.tileMatrixSetID = options.tileMatrixSetID || layer.tileMatrixSets[0].tileMatrixSetID
+            options.tileMatrixLabels = options.tileMatrixLabels || layer.tileMatrixSets[0].params.tileMatrixLabels
+            options.tilingScheme = options.tilingScheme || layer.tileMatrixSets[0].params.tilingScheme
+            options.rectangle = options.rectangle || layer.rectangle
+            options.style = options.style || layer.styles.find((item: any) => item.default).id
+            options.maximumLevel = options.maximumLevel || layer.tileMatrixSets[0].params.maximumLevel
+            options.minimumLevel = options.minimumLevel || layer.tileMatrixSets[0].params.minimumLevel
+        }
+
+    } catch (error) {
+
+    }
+
     if (options.rectangle && Array.isArray(options.rectangle)) {
         options.rectangle = Rectangle.fromDegrees(...options.rectangle);
     }
     if (options.tilingScheme) {
         if (typeof options.tilingScheme === 'string') {
-            if (options.tilingScheme === 'geographic') {
+            let tilingScheme = options.tilingScheme.toLowerCase()
+            if (tilingScheme === 'geographic') {
                 options.tilingScheme = new GeographicTilingScheme();
-            } else if (options.tilingScheme === 'webMercator') {
+            } else if (tilingScheme === 'webmercator') {
                 options.tilingScheme = new WebMercatorTilingScheme();
-            } else if (options.tilingScheme === 'gcj02') {
+            } else if (tilingScheme === 'gcj02') {
                 options.tilingScheme = new GCJ02TilingScheme();
-            } else if (options.tilingScheme === 'bd09') {
+            } else if (tilingScheme === 'bd09') {
 
             }
         }
@@ -203,9 +228,9 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
         let group = sceneTree.createGroup(layer.name);
         group.expand = layer.expand;
         for (const child of layer.children) {
-            let childLayer = await buildLayers(sceneTree, child);
-            console.log(childLayer);
-            group.addLayer(childLayer);
+            // let childLayer = await buildLayers(sceneTree, child);
+            let childLayer = buildLayers(sceneTree, child);
+            group.addLayer(childLayer,child);
         }
         node = group;
     } else {

@@ -14,7 +14,7 @@ type TreeOptions = {
         children: string;
         labelRender: Function;
         handleNodeClick: Function;
-        // handleNodeExpand: Function;
+        handleNodeExpand: Function;
         extraBtns: any[];
     }
 }
@@ -38,6 +38,7 @@ class Tree {
                 children: "children",
                 labelRender: () => { },
                 handleNodeClick: () => { },
+                handleNodeExpand: () => { },
                 extraBtns: [],
             }
         };
@@ -97,7 +98,6 @@ class Tree {
         // 折叠,只有点击到三角标才会触发
         let toggler = document.getElementsByClassName("expand-icon");
         let i;
-
         for (i = 0; i < toggler.length; i++) {
             toggler[i].addEventListener("click", function (evt) {
                 let e = evt as HTMLElementEvent<HTMLElement>;
@@ -237,7 +237,7 @@ class TreeNode {
         for (let key in options) {
             if (options.hasOwnProperty(key)) {
                 if (key === 'expand') {
-                    this._expand = options[key];
+                    this._expand = options[key] ?? false;
                 } else {
                     this[key] = options[key];
                 }
@@ -261,6 +261,8 @@ class TreeNode {
             // 创建展开/折叠图标
             let icon = document.createElement("span");
             icon.classList.add("expand-icon");
+
+            icon.addEventListener
 
             if (this.expand) {
                 icon.classList.add("expand-icon-down");
@@ -298,6 +300,7 @@ class TreeNode {
             }
             this.registerClickEvents(contendNode);
             this.registerSelectEvents(contendNode);
+            this.registerExpandEvents(contendNode);
             this.registerExtraBtns(contendNode);
             this.el = parentNode;
             if (this.data) {
@@ -361,10 +364,10 @@ class TreeNode {
 
     set expand(value: boolean) {
         this._expand = value;
-        if (this.el?.classList.contains('rootUL')) return;
-        let groupEL = this.el?.parentElement;
-        groupEL?.querySelector(".expand-icon")?.classList.toggle("expand-icon-down", value);
-        groupEL?.querySelector(".tree-node-children")?.classList.toggle("expand", value);
+        // if (this.el?.classList.contains('rootUL')) return;
+        // let groupEL = this.el?.parentElement;
+        // groupEL?.querySelector(".expand-icon")?.classList.toggle("expand-icon-down", value);
+        // groupEL?.querySelector(".tree-node-children")?.classList.toggle("expand", value);
     }
 
     get expand() {
@@ -399,7 +402,19 @@ class TreeNode {
             this.store.nodeSelect(element);
         });
     }
-
+    /**
+     *  节点展开/折叠事件
+     * @param element tree-node-content
+     */
+    registerExpandEvents(element: HTMLElement | null) {
+        element?.addEventListener("click", (evt) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            if (e.target?.classList.contains('expand-icon')) {
+                this._expand = !this.expand;
+                this.store.options.props.handleNodeExpand(this, this.expand);
+            }
+        });
+    }
 
     registerExtraBtns(contendNode: HTMLElement) {
         if (this.store.options?.props?.extraBtns) {

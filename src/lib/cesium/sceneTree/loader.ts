@@ -131,6 +131,7 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
 export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const wmts = await createWMTS(options);
     let wmtsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wmts);
+    console.log(wmtsLayer);
     wmtsLayer.name = options.name;
     wmtsLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {

@@ -22,19 +22,9 @@
           {
             "type": "wmts",
             "name": "wmts",
-            "url": "http://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/WMTS",
-            "layer": "USGSShadedReliefOnly",
-            "style": "default",
-            "format": "image/jpeg",
-            "tileMatrixSetID": "default028mm",
-            "show": false
-          },
-          {
-            "type": "wmts",
-            "name": "wmts",
-            "url": "http://120.46.179.233/geoserver/gwc/service/wmts/rest/tiger:poly_landmarks/{style}/{TileMatrixSet}/{TileMatrixSet}:{TileMatrix}/{TileRow}/{TileCol}?format=image/png",
+            "url": "http://120.46.179.233/geoserver/gwc/service/wmts",
             "layer": "tiger:poly_landmarks",
-            "style": "default",
+            "style": "",
             "format": "image/png",
             "tileMatrixSetID": "EPSG:4326"
           }
@@ -133,6 +123,26 @@
     ],
     "baseLayers": [
       {
+        "type": "wmts",
+        "name": "天地图矢量",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+        "url": "http://t0.tianditu.gov.cn/vec_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "vec",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c"
+      },
+      {
+        "type": "wmts",
+        "name": "天地图影像",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "url": "http://t0.tianditu.gov.cn/img_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "img",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c"
+      },
+      {
         "type": "xyz",
         "name": "高德地图",
         "iconUrl": "/vite.svg",
@@ -166,12 +176,21 @@
   },
   "widgets": [
     {
+      "label": "底图",
+      "tagName": "base-layer",
+      "position": {
+        "right": 10,
+        "bottom": 10
+      },
+      "inPanel": false
+    },
+    {
       "label": "图层列表",
       "tagName": "layer-list",
       "icon": "bi-map",
       "position": {
         "left": 10,
-        "top": 20
+        "top": 50
       },
       "inPanel": true
     },
@@ -181,42 +200,9 @@
       "icon": "bi-ruler",
       "position": {
         "left": 10,
-        "top": 60
+        "top": 90
       },
       "inPanel": false
-    },
-    {
-      "label": "底图",
-      "tagName": "base-layer",
-      "position": {
-        "right": 10,
-        "top": 10
-      },
-      "inPanel": false,
-      "config": {
-        "baseLayers": [
-          {
-            "type": "xyz",
-            "name": "高德地图",
-            "iconUrl": "/vite.svg",
-            "tooltip": "高德地图",
-            "url": "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
-            "maximumLevel": 18
-          },
-          {
-            "type": "xyz",
-            "name": "Natural Earth II",
-            "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
-            "url": "NaturalEarthII"
-          },
-          {
-            "type": "terrain",
-            "name": "超图Terrain",
-            "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png",
-            "url": "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path"
-          }
-        ]
-      }
     }
   ]
 }

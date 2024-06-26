@@ -17,11 +17,9 @@ export default class LayerList extends BaseWidget {
 
     public async afterInit() {
         this.layers = [];
-
         this.sceneTree.updateEvent.addEventListener((val) => {
             this.treeview?.updateTree(val);
         });
-
         this.layers = this.sceneTree.imageryLayers;
         this.initLayerList();
     }
@@ -35,7 +33,6 @@ export default class LayerList extends BaseWidget {
             el: document.getElementById("layerlist"),
             treeData: this.layers,
             style: {
-                // parentIcon: "src/assets/images/文件夹@2x.png",
                 parentIcon: "bi bi-folder",
                 childrenIcon: "bi bi-file-earmark-image",
             },
@@ -46,7 +43,10 @@ export default class LayerList extends BaseWidget {
                 labelRender: (data: any) => {
                     if (data.status && data.status === "error") {
                         return `<font color='gray'><i class="bi bi-exclamation-circle"></i>${data.name}</font>`;
-                    } else {
+                    } else if (data.status && data.status === "loading") {
+                        return `<font color='gray'><i class="bi bi-hourglass-split"></i>${data.name}</font>`;
+                    }
+                    else {
                         return data.name;
                     }
 
@@ -58,6 +58,10 @@ export default class LayerList extends BaseWidget {
                 },
                 handleNodeClick: (node: any, e: Event) => {
                     console.log("handleNodeClick", node, e);
+                },
+                handleNodeExpand: (node: any, e: boolean) => {
+                    node.data.expand = !node.data.expand
+                    this.sceneTree.layersMap.get(node.data.guid).expand = node.data.expand;
                 },
                 extraBtns: [
                     {

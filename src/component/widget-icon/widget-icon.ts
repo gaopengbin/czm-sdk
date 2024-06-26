@@ -212,10 +212,9 @@ export default class WidgetIcon extends BaseWidget {
         let widget = document.createElement(_config.tagName) as BaseWidget;
         if (widget.startup) {
             widget.startup({
-                mapView: this.mapView,
-                map: this.map,
-                config: _config.config,
-                mapConfig: this.mapConfig
+                viewer: this.viewer,
+                globalConfig: this.globalConfig,
+                config: _config,
             });
         }
         else {

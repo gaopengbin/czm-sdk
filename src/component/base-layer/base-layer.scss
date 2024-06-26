@@ -3,4 +3,19 @@ base-layer {
     position: absolute;
     right: 0;
     top: 0;
+
+    .cesium-baseLayerPicker-dropDown {
+        background-color: rgb(255, 255, 255);
+        right: 0;
+        bottom: 50px;
+        .cesium-baseLayerPicker-sectionTitle{
+            color: black;
+        }
+        .cesium-baseLayerPicker-itemLabel{
+            color: black;
+        }
+        .cesium-baseLayerPicker-selectedItem .cesium-baseLayerPicker-itemLabel{
+            color: rgb(22, 93, 173);
+        }
+    }
 }

@@ -1,7 +1,7 @@
 import x2js from "x2js";
 import { queryToObject, objectToQuery, Resource } from "cesium";
 
-class XbsjWMTSParser {
+class WMTSParser {
     Layers: any[];
     TileMatrixSets: any[];
     url: any;
@@ -53,7 +53,7 @@ class XbsjWMTSParser {
         return ret;
     }
 
-    parser(url: string, proxy: any) {
+    parser(url: string, proxy?: any) {
         return new Promise((resolve, reject) => {
             //使用cesium请求
             Resource.fetchText({ url: url })?.then(text => {
@@ -91,6 +91,7 @@ class XbsjWMTSParser {
     addLayer(Layer: any) {
         let l: any = {
             title: Layer.Title.toString(),
+            identifier: Layer.Identifier.toString(),
             urls: [],
             styles: [],
             tileMatrixSets: []
@@ -332,4 +333,4 @@ class XbsjWMTSParser {
     }
 }
 
-export default XbsjWMTSParser;
+export default WMTSParser;
