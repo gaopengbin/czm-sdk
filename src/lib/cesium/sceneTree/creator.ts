@@ -102,9 +102,7 @@ export async function createWMTS(options: any) {
     options.format = options.format || 'image/png'
     try {
         let res: any = await parser.parser(parser.addUrlParam(options.url))
-        console.log(res)
         let layer = res.find((item: any) => item.identifier === options.layer)
-        console.log(layer)
         if (layer) {
             options.url = layer.urls.find((item: any) => item.format === options.format).template
             options.tileMatrixSetID = options.tileMatrixSetID || layer.tileMatrixSets[0].tileMatrixSetID
@@ -246,7 +244,6 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
                 status: "error",
             }
         }
-        // console.log(node);
 
     }
     return node;

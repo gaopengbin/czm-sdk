@@ -81,7 +81,6 @@ export default abstract class BaseWidget extends HTMLElement {
         this.viewer = args.viewer;
         this.config = args.config;
         this.globalConfig = args.globalConfig;
-        console.log("startup", this, args);
     }
 
     public get manifest() {

@@ -6,4 +6,5 @@ export { default as BaseLayer } from "./base-layer/base-layer";
 export { default as WidgetManager } from "./widget-manager/widget-manager";
 export { default as WidgetIcon } from "./widget-icon/widget-icon";
 export { default as Measure } from "./measure/measure";
+export { default as Identify } from "./identify/identify";
 export { Component } from "./core/decorators";

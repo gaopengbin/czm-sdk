@@ -20,14 +20,6 @@ export default class BaseLayer extends BaseWidget {
 
     public async afterInit() {
         this.layerList = this.globalConfig?.earth?.baseLayers || [];
-        console.log("base-layer afterInit", this);
-        // this.initLayerList();
-    }
-    public onOpen(): void {
-        console.log("base-layer open", this._baseLayerPicker);
-        // this.initLayerList();
-
-
     }
     set layerList(value: any) {
         this._layerList = value;

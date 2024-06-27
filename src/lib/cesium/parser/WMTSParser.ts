@@ -31,7 +31,6 @@ class WMTSParser {
     }
 
     makeTemplate(layer: string) {
-        console.log(layer);
         let ret = this.url + '?REQUEST=GetTile&VERSION=1.0.0&SERVICE=wmts';
 
         ret += '&LAYER=' + layer;
@@ -48,7 +47,6 @@ class WMTSParser {
                 continue;
             ret += '&' + k + '=' + this.queryParameters[k];
         }
-        console.log('make template', ret);
 
         return ret;
     }

@@ -3,6 +3,7 @@
     "layers": [
       {
         "name": "标准OGC",
+        "expand": true,
         "children": [
           {
             "type": "wms",
@@ -86,7 +87,11 @@
             "type": "arcgismapserver",
             "name": "北京路网",
             "url": "http://218.24.198.125:41010/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
-            "tilingScheme": "gcj02"
+            "tilingScheme": "gcj02",
+            "rectangle": [
+              115.423307418823, 39.4427553831086, 117.514657974243,
+              41.060909292508
+            ]
           }
         ]
       },
@@ -170,7 +175,7 @@
     ],
     "viewer": {
       "ionDefaultToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxZmMxOWY4NC03MWY5LTRlZjMtODBlOS1hZTBlMDc4NjhkMjAiLCJpZCI6NDQ0NDAsImlhdCI6MTcxOTAzODQ4OH0.ffZTS_fzwJ3mtqGL2yzt1_4CAyE_oiHQToIWQNqJJwE",
-      "position": [113.797402, 35.214848, 1000],
+      "position": [116.3, 40.3, 170000],
       "hpr": [0, -90, 0]
     }
   },
@@ -203,6 +208,16 @@
         "top": 90
       },
       "inPanel": false
+    },
+    {
+      "label": "识别",
+      "tagName": "czm-identify",
+      "icon": "bi-exclamation-circle-fill",
+      "position": {
+        "left": 10,
+        "top": 250
+      },
+      "inPanel": true
     }
   ]
 }
