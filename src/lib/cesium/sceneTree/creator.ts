@@ -13,13 +13,107 @@ import {
     buildModuleUrl,
     Cartesian2,
     WebMapTileServiceImageryProvider,
+    Entity,
+    Color,
 } from "cesium";
+import proj4 from "proj4";
 import { SSArcGisLayerOptions, SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
 import { SceneTree } from ".";
 import GCJ02TilingScheme from "../CustomImageryProvider/tilingScheme/GCJ02TilingScheme";
 import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImageryProvider";
 import WMTSParser from "../parser/WMTSParser";
+import SSMapServerProvider from "../CustomImageryProvider/provider/SSMapServerProvider";
+import { getProjection } from "../CustomImageryProvider/projection/projection";
 
+export async function createSSMapServer(options: SSArcGisLayerOptions) {
+    let rectangle: any;
+    const resource = new Resource({
+        url: options.url,
+    });
+    // url后面加上斜杠
+    // resource.appendForwardSlash();
+
+    if (defined(options.token)) {
+        resource.setQueryParameters({
+            token: options.token,
+        });
+    }
+
+    // 获取地图范围
+    if (options.rectangle && Array.isArray(options.rectangle)) {
+        rectangle = Rectangle.fromDegrees(...options.rectangle);
+    } else {
+        try {
+            const iteminfoUrl = resource.url;
+            const jsonResource = new Resource({
+                url: iteminfoUrl,
+                queryParameters: {
+                    f: "json",
+                },
+            });
+            const data = await jsonResource.fetchJson();
+            if (data && data.fullExtent) {
+                const wkid =
+                    data.fullExtent.spatialReference &&
+                        data.fullExtent.spatialReference.wkid
+                        ? data.fullExtent.spatialReference.wkid
+                        : 4326;
+                if (wkid === 4326 || wkid === 4490) {
+                    rectangle = Rectangle.fromDegrees(
+                        data.fullExtent.xmin,
+                        data.fullExtent.ymin,
+                        data.fullExtent.xmax,
+                        data.fullExtent.ymax
+                    );
+                } else {
+                    if (proj4.defs(`EPSG:${wkid}`) === undefined && !getProjection(`EPSG:${wkid}`)) {
+                        console.error('不支持的投影：', wkid)
+                    } else {
+                        if (proj4.defs(`EPSG:${wkid}`) === undefined) {
+                            let projection = getProjection(`EPSG:${wkid}`);
+                            if (projection) {
+                                proj4.defs(`EPSG:${wkid}`, projection)
+                            }
+                        }
+                        let min = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmin, data.fullExtent.ymin]);
+                        let max = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmax, data.fullExtent.ymax]);
+                        console.log(min)
+                        rectangle = Rectangle.fromDegrees(
+                            min[0],
+                            min[1],
+                            max[0],
+                            max[1]
+                        );
+                    }
+                    rectangle = Rectangle.fromDegrees(
+                        data.extent[0][0],
+                        data.extent[0][1],
+                        data.extent[1][0],
+                        data.extent[1][1]
+                    );
+                }
+            }
+        } catch (error) { }
+    }
+
+    if (options.tilingScheme) {
+        if (typeof options.tilingScheme === 'string') {
+            if (options.tilingScheme === 'geographic') {
+                options.tilingScheme = new GeographicTilingScheme();
+            } else if (options.tilingScheme === 'webMercator') {
+                options.tilingScheme = new WebMercatorTilingScheme();
+            } else if (options.tilingScheme === 'gcj02') {
+                options.tilingScheme = new GCJ02TilingScheme();
+            }
+        }
+    }
+    const esri = await SSMapServerProvider.fromUrl(options.url, {
+        ...options as ArcGisMapServerImageryProvider.ConstructorOptions,
+        rectangle: rectangle,
+    });
+    console.log(options)
+    return esri;
+}
 export async function createArcGisMapServer(options: SSArcGisLayerOptions) {
     let rectangle: any;
     const resource = new Resource({
@@ -188,6 +282,7 @@ export async function createTileset(options: SSLayerOptions) {
 }
 
 const Objects: any = {
+    "ssmapserver": createSSMapServer,
     "arcgismapserver": createArcGisMapServer,
     "tileset": createTileset,
     "wms": createWMS,
@@ -202,6 +297,7 @@ export const createProvider = async (options: any) => {
 }
 
 const initObjects: any = {
+    "ssmapserver": "createSSMapServerLayer",
     "arcgismapserver": "createArcGisMapServerLayer",
     "tileset": "addTilesetLayer",
     "wms": "createWMSLayer",
@@ -228,7 +324,7 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
         for (const child of layer.children) {
             // let childLayer = await buildLayers(sceneTree, child);
             let childLayer = buildLayers(sceneTree, child);
-            group.addLayer(childLayer,child);
+            group.addLayer(childLayer, child);
         }
         node = group;
     } else {

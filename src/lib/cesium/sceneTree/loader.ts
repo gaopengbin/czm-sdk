@@ -7,10 +7,71 @@ import {
     defined,
     defaultValue,
     EllipsoidTerrainProvider,
+    Entity,
+    Color,
 } from "cesium";
-import { createArcGisMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import { createArcGisMapServer, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
+export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
+    const esri = await createSSMapServer(options);
+    let ssMapServerLayer: SSImageryLayer =
+        viewer.imageryLayers.addImageryProvider(esri);
+
+    Object.assign(ssMapServerLayer, {
+        name: options.name,
+        show: options.show,
+        guid: uuid(),
+    });
+    ssMapServerLayer.show = defaultValue(options.show, true);
+    if (options.zoomTo) {
+        viewer.zoomTo(ssMapServerLayer);
+    }
+
+    // 绘制范围
+    // console.log(esri);
+    // if (esri.rectangle instanceof Rectangle) {
+    //     const { rectangle } = esri;
+
+    //     const extentEntity = new Entity({
+    //         rectangle: {
+    //             coordinates: rectangle,
+    //             material: Color.RED.withAlpha(0.5),
+    //             outline: true,
+    //             outlineColor: Color.BLACK,
+    //         },
+    //     });
+    //     viewer.entities.add(extentEntity);
+    // }
+
+    const leaf: Leaf = {
+        name: options.name,
+        index: ssMapServerLayer._layerIndex,
+        guid: ssMapServerLayer.guid,
+        _zIndex: defaultValue(options.zIndex, 0),
+        setVisible: (visible: boolean) => {
+            ssMapServerLayer.show = visible;
+        },
+        zoomTo: () => {
+            viewer.zoomTo(ssMapServerLayer);
+        },
+        get show() {
+            return ssMapServerLayer.show;
+        },
+        set show(value: boolean) {
+            ssMapServerLayer.show = value;
+        },
+        _imageLayer: ssMapServerLayer,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
+    }
+    return leaf;
+}
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const esri = await createArcGisMapServer(options);
 

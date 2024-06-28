@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 import { getSceneTree } from "@/component";
@@ -144,6 +144,13 @@ class SceneTree {
     async createXYZLayer(options: SSXYZLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         let leaf: Leaf = await XYZLoader(this._viewer, param);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    async createSSMapServerLayer(options: SSLayerOptions) {
+        const param = defaultValue(options, this.defaultImageryLayerOptions);
+        let leaf: Leaf = await SSMapServerLoader(this._viewer, param);
         this.updateSceneTree();
         return leaf;
     }

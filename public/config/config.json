@@ -2,128 +2,40 @@
   "earth": {
     "layers": [
       {
-        "name": "标准OGC",
-        "expand": true,
-        "children": [
-          {
-            "type": "wms",
-            "name": "wms",
-            "url": "http://120.46.179.233/geoserver/village/wms",
-            "layers": "village:合并",
-            "rectangle": [
-              113.79589260058276, 35.213881770316036, 113.79991195207892,
-              35.216112772339805
-            ],
-            "tilingScheme": "geographic",
-            "parameters": {
-              "transparent": true,
-              "format": "image/png"
-            }
-          },
-          {
-            "type": "wmts",
-            "name": "wmts",
-            "url": "http://120.46.179.233/geoserver/gwc/service/wmts",
-            "layer": "tiger:poly_landmarks",
-            "style": "",
-            "format": "image/png",
-            "tileMatrixSetID": "EPSG:4326"
-          }
-        ]
+        "type": "ssmapserver",
+        "name": "TW",
+        "url": "http://192.168.0.10:7578/services/TW/MapServer"
       },
       {
-        "name": "影像",
-        "expand": true,
-        "children": [
-          {
-            "type": "xyz",
-            "name": "xyz",
-            "url": "http://120.48.115.17:81/data/beijing14/{z}/{x}/{y}.png",
-            "rectangle": [
-              115.423307418823, 39.4427553831086, 117.514657974243,
-              41.060909292508
-            ],
-            "minimumLevel": 0,
-            "maximumLevel": 13,
-            "zIndex": 0
-          }
-        ]
-      },
-
-      {
-        "name": "ArcgisServer",
-        "children": [
-          {
-            "type": "arcgismapserver",
-            "name": "xyq21",
-            "url": "http://120.48.115.17:6080/arcgis/rest/services/XYQ21/MapServer"
-          },
-          {
-            "type": "arcgismapserver",
-            "name": "5江",
-            "url": "http://120.48.115.17:6080/arcgis/rest/services/JJ/MapServer"
-          },
-          {
-            "type": "arcgismapserver",
-            "name": "9江",
-            "url": "http://120.48.115.17:6080/arcgis/rest/services/4490/MapServer"
-          },
-          {
-            "type": "arcgismapserver",
-            "name": "吴江",
-            "url": "http://120.48.115.17:6080/arcgis/rest/services/wujiang/MapServer"
-          },
-          {
-            "type": "arcgismapserver",
-            "name": "宿豫区",
-            "url": "http://120.48.115.17:6080/arcgis/rest/services/3857/MapServer"
-          }
-        ]
+        "type": "ssmapserver",
+        "name": "Macao",
+        "url": "http://192.168.0.10:7578/services/Macao/MapServer"
       },
       {
-        "name": "自研Server",
-        "children": [
-          {
-            "type": "arcgismapserver",
-            "name": "北京路网",
-            "url": "http://218.24.198.125:41010/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
-            "tilingScheme": "gcj02",
-            "rectangle": [
-              115.423307418823, 39.4427553831086, 117.514657974243,
-              41.060909292508
-            ]
-          }
-        ]
+        "type": "ssmapserver",
+        "name": "hongkong",
+        "url": "http://192.168.0.10:7578/services/hongkong/MapServer"
       },
       {
-        "name": "三维",
-        "expand": true,
-        "children": [
-          {
-            "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-            "name": "分层分户白模",
-            "show": false,
-            "type": "tileset",
-            "preloadWhenHidden": true
-          },
-          {
-            "url": "http://localhost/data/pointcloud2/tileset.json",
-            "name": "点云",
-            "type": "tileset"
-          },
-          {
-            "url": "http://120.48.115.17:81/data/%E6%A1%A5%E6%A2%81BIM/tileset.json",
-            "name": "BIM",
-            "type": "tileset",
-            "preloadWhenHidden": true
-          },
-          {
-            "url": "http://120.48.115.17:81/data/%E5%A4%A7%E9%9B%81%E5%A1%94/tileset.json",
-            "name": "大雁塔倾斜",
-            "show": false,
-            "type": "tileset"
-          }
-        ]
+        "type": "ssmapserver",
+        "name": "jiujiang",
+        "url": "http://192.168.0.10:7578/services/jiujiang/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_ORACLE",
+        "url": "http://192.168.0.10:7578/services/DYT_ORACLE/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_PG",
+        "url": "http://192.168.0.10:7578/services/DYT_PG/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "北京路网",
+        "url": "http://192.168.0.10:7578/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
+        "tilingScheme": "gcj02"
       }
     ],
     "baseLayers": [
