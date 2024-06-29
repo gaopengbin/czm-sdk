@@ -59,7 +59,7 @@ export default class LayerList extends BaseWidget {
                 handleNodeClick: (node: any, e: Event) => {
                     console.log("handleNodeClick", node, e);
                 },
-                handleNodeExpand: (node: any, e: boolean) => {
+                handleNodeExpand: (node: any) => {
                     node.data.expand = !node.data.expand
                     this.sceneTree.layersMap.get(node.data.guid).expand = node.data.expand;
                 },

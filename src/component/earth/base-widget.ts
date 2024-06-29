@@ -47,7 +47,7 @@ export default abstract class BaseWidget extends HTMLElement {
     static #globalConfig: any;
     _config: any;
 
-    #loading?: boolean;
+    // #loading?: boolean;
     #data: any = {};
     #patch = init([
         // 使用所选模块初始化 patch 功能
@@ -514,7 +514,7 @@ export default abstract class BaseWidget extends HTMLElement {
     }
 
     public attributeChangedCallback(name: any, oldValue: any, newValue: any) {
-        console.log(`属性 ${name} 已变更。`);
+        console.log(`属性 ${name} 已变更: ${oldValue} → ${newValue}`);
     }
 
     /**

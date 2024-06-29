@@ -11,9 +11,8 @@ import {
     CesiumTerrainProvider,
     TileMapServiceImageryProvider,
     buildModuleUrl,
-    Cartesian2,
     WebMapTileServiceImageryProvider,
-    Entity,
+    GeoJsonDataSource,
     Color,
 } from "cesium";
 import proj4 from "proj4";
@@ -77,7 +76,6 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
                         }
                         let min = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmin, data.fullExtent.ymin]);
                         let max = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmax, data.fullExtent.ymax]);
-                        console.log(min)
                         rectangle = Rectangle.fromDegrees(
                             min[0],
                             min[1],
@@ -111,7 +109,6 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
         ...options as ArcGisMapServerImageryProvider.ConstructorOptions,
         rectangle: rectangle,
     });
-    console.log(options)
     return esri;
 }
 export async function createArcGisMapServer(options: SSArcGisLayerOptions) {
@@ -233,8 +230,30 @@ export async function createWMTS(options: any) {
     return wmts;
 }
 
-export async function createXYZ(options: SSXYZLayerOptions) {
+export async function createGeoJson(options: any) {
+    if (options.url) {
+        if (typeof options.stroke === 'string') {
+            options.stroke = Color.fromCssColorString(options.stroke)
+        }
+        if (typeof options.fill === 'string') {
+            options.fill = Color.fromCssColorString(options.fill)
+        }
+        let ds = await GeoJsonDataSource.load(options.url, options)
+        ds.entities.values.forEach((entity: any) => {
+            let positions = entity.polygon.hierarchy._value.positions.concat(entity.polygon.hierarchy._value.positions[0], entity.polygon.hierarchy._value.positions[1])
+            entity.polyline = {
+                positions: positions,
+                width: options.strokeWidth || 2,
+                material: options.stroke || Color.RED,
+                // clampToGround: true
+            }
+        })
+        console.log(ds)
+        return ds
+    }
+}
 
+export async function createXYZ(options: SSXYZLayerOptions) {
     if (options.url === 'NaturalEarthII') {
         const xyz = await TileMapServiceImageryProvider.fromUrl(buildModuleUrl('Assets/Textures/NaturalEarthII'));
         return xyz;
@@ -289,6 +308,7 @@ const Objects: any = {
     "xyz": createXYZ,
     "terrain": createTerrain,
     "wmts": createWMTS,
+    "geojson": createGeoJson,
 }
 
 export const createProvider = async (options: any) => {
@@ -305,6 +325,7 @@ const initObjects: any = {
     "xyz": "createXYZLayer",
     "terrain": "createTerrainLayer",
     "group": "createGroup",
+    "geojson": "createGeoJsonLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

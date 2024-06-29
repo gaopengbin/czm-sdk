@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, GeoJsonLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 import { getSceneTree } from "@/component";
@@ -17,7 +17,7 @@ class SceneTree {
     _root: any;
     _viewer: Viewer;
     _imageryLayers: any;
-    _imageryCollection: any;
+    _imageryCollection: any = [];
     _tilesetCollection: any;
     updateEvent: Event = new Event();
     pickEvent: Event = new Event();
@@ -137,6 +137,13 @@ class SceneTree {
     async createWMTSLayer(options: SSLayerOptions) {
         const param = defaultValue(options, this.defaultImageryLayerOptions);
         let leaf: Leaf = await WMTSLoader(this._viewer, param);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    async createGeoJsonLayer(options: SSLayerOptions) {
+        const param = defaultValue(options, this.defaultImageryLayerOptions);
+        let leaf: Leaf = await GeoJsonLoader(this._viewer, param);
         this.updateSceneTree();
         return leaf;
     }
@@ -269,6 +276,7 @@ class Group {
     }
 
     async addLayer(layer: any, item?: any) {
+        console.log("layer", layer);
         if (layer instanceof Promise) {
             let child = {
                 name: item.name,
@@ -276,6 +284,7 @@ class Group {
             }
             let length = this.children.push(child);
             layer.then((res: any) => {
+                console.log("res", res);
                 this.children[length - 1] = res;
                 getSceneTree().updateSceneTree();
             });

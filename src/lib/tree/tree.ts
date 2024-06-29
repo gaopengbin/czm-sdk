@@ -436,10 +436,10 @@ class TreeNode {
                 extraBtn.addEventListener("click", (evt) => {
                     //ruir modify
                     // let nodeData = data[parseInt(evt?.target?.parentElement?.parentElement?.getAttribute("nodeindex") || "0")];
-                    btn.onClick(this.data, extraBtn);
+                    btn.onClick(this.data, extraBtn, evt);
                 });
                 if (btn.show === undefined) {
-                    btn.show = (node: any) => true;
+                    btn.show = () => true;
                 } else if (typeof btn.show !== "function") {
                     extraBtn.style.display = btn.show ? "inline" : "none";
                 } else if (btn.show(this.data)) {

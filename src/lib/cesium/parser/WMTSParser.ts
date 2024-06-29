@@ -51,7 +51,7 @@ class WMTSParser {
         return ret;
     }
 
-    parser(url: string, proxy?: any) {
+    parser(url: string) {
         return new Promise((resolve, reject) => {
             //使用cesium请求
             Resource.fetchText({ url: url })?.then(text => {

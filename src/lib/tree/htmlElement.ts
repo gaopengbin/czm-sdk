@@ -8,6 +8,7 @@ type HTMLElementMouseEvent<T extends HTMLElement> = MouseEvent & {
 
 type ExtraBtn<T extends HTMLElement> = HTMLElement & {
     // button: number;
+    target?: T;
     setIcon?: (icon: string) => void;
 };
 

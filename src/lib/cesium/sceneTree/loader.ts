@@ -7,10 +7,8 @@ import {
     defined,
     defaultValue,
     EllipsoidTerrainProvider,
-    Entity,
-    Color,
 } from "cesium";
-import { createArcGisMapServer, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
@@ -224,6 +222,44 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     }
     return leaf;
 }
+
+export const GeoJsonLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+    const geoJson: any = await createGeoJson(options);
+    let geoJsonLayer: any = await viewer.dataSources.add(geoJson);
+    console.log(geoJsonLayer);
+    geoJsonLayer.name = options.name;
+    geoJsonLayer.show = defaultValue(options.show, true);
+    if (options.zoomTo) {
+        viewer.zoomTo(geoJsonLayer);
+    }
+    const leaf: Leaf = {
+        name: options.name,
+        guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
+        setVisible: (visible: boolean) => {
+            geoJsonLayer.show = visible;
+        },
+        zoomTo: () => {
+            viewer.zoomTo(geoJsonLayer);
+        },
+        get show() {
+            return geoJsonLayer.show;
+        },
+        set show(value: boolean) {
+            geoJsonLayer.show = value;
+        },
+        _dataSource: geoJsonLayer,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
+    }
+    return leaf;
+}
+
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     let xyz = await createXYZ(options);
     let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
@@ -304,6 +340,7 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
 
 // 根据图层的zIndex属性大小顺序设置图层的顺序
 export const setLayersZIndex = (viewer: Viewer) => {
+    // return
     let sceneTree = getSceneTree();
     if (!sceneTree) {
         return;
@@ -324,8 +361,9 @@ export const setLayersZIndex = (viewer: Viewer) => {
         }
         return a.zIndex - b.zIndex;
     });
-
+// return
     imageryLayers.forEach((layer: any) => {
+        console.log(layer);
         viewer.scene.imageryLayers.raiseToTop(layer._imageLayer);
     })
 }

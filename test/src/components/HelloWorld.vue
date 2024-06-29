@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Color } from "cesium";
 import { SceneTree, getSceneTree } from "../../../src/index";
 import "../../../src/lib/tree/tree-view.scss";
 
@@ -6,6 +7,25 @@ let sceneTree: SceneTree;
 
 const addMapserver = async () => {
   sceneTree = getSceneTree();
+  let geojson = await sceneTree.createGeoJsonLayer({
+    type: "geojson",
+    name: "geojson",
+    url: "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E7%BD%91%E6%A0%BC&maxFeatures=50&outputFormat=application%2Fjson",
+    show: true,
+    zoomTo: false,
+    stroke: Color.RED,
+    strokeWidth: 5,
+    fill: Color.BLUE.withAlpha(0.5),
+  });
+  sceneTree.root?.addLayer(geojson);
+  let ssmapserver = await sceneTree.createSSMapServerLayer({
+    type: "ssmapserver",
+    name: "TWWW",
+    url: "http://192.168.0.10:7578/services/TW/MapServer",
+    show: true,
+    zoomTo: false,
+  });
+  sceneTree.root?.addLayer(ssmapserver);
   let arcgis = await sceneTree.createArcGisMapServerLayer({
     type: "ArcGisMapServer",
     name: "wujiang",
@@ -104,6 +124,7 @@ const addMapserver = async () => {
   width: 80vw;
   height: 80vh;
 }
+
 .layerlist {
   margin: 10px;
   position: absolute;
@@ -114,6 +135,7 @@ const addMapserver = async () => {
   height: 300px;
   background-color: rgb(255, 255, 255);
 }
+
 .btn {
   position: absolute;
   z-index: 99;

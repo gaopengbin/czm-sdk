@@ -59,6 +59,7 @@ interface SceneTreeLeaf {
 
 
 export abstract class Leaf implements SceneTreeLeaf {
+    [x: string]: any;
     name: string;
     index?: number;
     guid?: string;

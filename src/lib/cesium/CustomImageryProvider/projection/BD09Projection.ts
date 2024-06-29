@@ -78,7 +78,7 @@ class BD09Projection {
         this.isWgs84 = false
     }
 
-    getDistanceByMC(point1, point2) {
+    getDistanceByMC(point1: any, point2: any) {
         if (!point1 || !point2) {
             return 0
         }
@@ -103,7 +103,7 @@ class BD09Projection {
      * @param point2
      * @returns {number|*} 返回两点间的距离
      */
-    getDistanceByLL(point1, point2) {
+    getDistanceByLL(point1: any, point2: any) {
         if (!point1 || !point2) {
             return 0
         }
@@ -123,11 +123,11 @@ class BD09Projection {
      * @param point
      * @returns {{lng: number, lat: number}}
      */
-    convertMC2LL(point) {
+    convertMC2LL(point: any) {
         if (!point) {
             return { lng: 0, lat: 0 }
         }
-        let lnglat = {}
+        let lnglat: any = {}
         if (this.isWgs84) {
             lnglat.lng = (point.lng / 20037508.34) * 180
             let mmy = (point.lat / 20037508.34) * 180
@@ -164,7 +164,7 @@ class BD09Projection {
      * @param point 经纬度坐标
      * @returns {{lng: number, lat: number}|*}
      */
-    convertLL2MC(point) {
+    convertLL2MC(point: any) {
         if (!point) {
             return { lng: 0, lat: 0 }
         }
@@ -178,7 +178,7 @@ class BD09Projection {
         }
 
         if (this.isWgs84) {
-            let mercator = {}
+            let mercator: any = {}
             let earthRad = 6378137.0
             mercator.lng = ((point.lng * Math.PI) / 180) * earthRad
             let a = (point.lat * Math.PI) / 180
@@ -222,7 +222,7 @@ class BD09Projection {
      * @param factor
      * @returns {{lng: *, lat: *}}
      */
-    convertor(fromPoint, factor) {
+    convertor(fromPoint: any, factor: any) {
         if (!fromPoint || !factor) {
             return { lng: 0, lat: 0 }
         }
@@ -252,7 +252,7 @@ class BD09Projection {
      * @param y2
      * @returns {number}
      */
-    getDistance(x1, x2, y1, y2) {
+    getDistance(x1: number, x2: number, y1: number, y2: number) {
         return (
             EARTH_RADIUS *
             Math.acos(
@@ -267,7 +267,7 @@ class BD09Projection {
      * @param deg
      * @returns {number}
      */
-    toRadians(deg) {
+    toRadians(deg: number) {
         return (Math.PI * deg) / 180
     }
 
@@ -276,7 +276,7 @@ class BD09Projection {
      * @param rad
      * @returns {number}
      */
-    toDegrees(rad) {
+    toDegrees(rad: number) {
         return (180 * rad) / Math.PI
     }
 
@@ -287,7 +287,7 @@ class BD09Projection {
      * @param b
      * @returns {number}
      */
-    getRange(v, a, b) {
+    getRange(v: number, a: any, b: any) {
         if (a != null) {
             v = Math.max(v, a)
         }
@@ -304,7 +304,7 @@ class BD09Projection {
      * @param b
      * @returns {*}
      */
-    getLoop(v, a, b) {
+    getLoop(v: number, a: number, b: number) {
         while (v > b) {
             v -= b - a
         }
@@ -319,7 +319,7 @@ class BD09Projection {
      * @param point
      * @returns {{lng: number, lat: number}|*}
      */
-    lngLatToMercator(point) {
+    lngLatToMercator(point: any) {
         return this.convertLL2MC(point)
     }
 
@@ -328,7 +328,7 @@ class BD09Projection {
      * @param point
      * @returns {{x: (number|*), y: (number|*)}}
      */
-    lngLatToPoint(point) {
+    lngLatToPoint(point: any) {
         let mercator = this.convertLL2MC(point)
         return {
             x: mercator['lng'],
@@ -341,7 +341,7 @@ class BD09Projection {
      * @param point 墨卡托
      * @returns Point 经纬度
      */
-    mercatorToLngLat(point) {
+    mercatorToLngLat(point: any) {
         return this.convertMC2LL(point)
     }
 
@@ -350,7 +350,7 @@ class BD09Projection {
      * @param point 平面坐标
      * @returns Point 球面坐标
      */
-    pointToLngLat(point) {
+    pointToLngLat(point: any) {
         let mercator = { lng: point.x, lat: point.y }
         return this.convertMC2LL(mercator)
     }
@@ -362,7 +362,7 @@ class BD09Projection {
      * @param mapCenter 地图中心点，注意为了保证没有误差，这里需要传递墨卡托坐标
      * @param mapSize 地图容器大小
      */
-    pointToPixel(point, zoom, mapCenter, mapSize) {
+    pointToPixel(point: any, zoom: any, mapCenter: any, mapSize: any) {
         if (!point) {
             return
         }
@@ -384,7 +384,7 @@ class BD09Projection {
      * @param mapCenter 地图中心点，注意为了保证没有误差，这里需要传递墨卡托坐标
      * @param mapSize 地图容器大小
      */
-    pixelToPoint(pixel, zoom, mapCenter, mapSize) {
+    pixelToPoint(pixel: any, zoom: any, mapCenter: any, mapSize: any) {
         if (!pixel) {
             return
         }
@@ -400,7 +400,7 @@ class BD09Projection {
      * @param zoom
      * @returns {number}
      */
-    getZoomUnits(zoom) {
+    getZoomUnits(zoom: number) {
         return Math.pow(2, 18 - zoom)
     }
 }

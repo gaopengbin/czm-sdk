@@ -1,7 +1,6 @@
 {
   "earth": {
-    "layers": [
-    ],
+    "layers": [],
     "baseLayers": [
       {
         "type": "xyz",
@@ -34,6 +33,16 @@
         "top": 20,
         "width": 300,
         "height": 350
+      },
+      "inPanel": true
+    },
+    {
+      "label": "识别",
+      "tagName": "czm-identify",
+      "icon": "bi-exclamation-circle-fill",
+      "position": {
+        "left": 10,
+        "top": 250
       },
       "inPanel": true
     }

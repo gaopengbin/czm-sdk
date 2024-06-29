@@ -2,12 +2,20 @@
   "earth": {
     "layers": [
       {
-        "type": "geojson",
-        "name": "China",
-        "url": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
-        "stroke": "rgba(0, 0, 255, 0.5)",
-        "strokeWidth": 3,
-        "fill": "rgba(0, 0, 255, 0.1)"
+        "name": "SSMapServer",
+        "children": [
+          {
+            "type": "ssmapserver",
+            "name": "TW",
+            "url": "http://192.168.0.10:7578/services/TW/MapServer",
+            "layers": "0,1"
+          },
+          {
+            "type": "ssmapserver",
+            "name": "Macao",
+            "url": "http://192.168.0.10:7578/services/Macao/MapServer"
+          }
+        ]
       },
       {
         "type": "geojson",
@@ -18,6 +26,27 @@
         "type": "ssmapserver",
         "name": "hongkong",
         "url": "http://192.168.0.10:7578/services/hongkong/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "jiujiang",
+        "url": "http://192.168.0.10:7578/services/jiujiang/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_ORACLE",
+        "url": "http://192.168.0.10:7578/services/DYT_ORACLE/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_PG",
+        "url": "http://192.168.0.10:7578/services/DYT_PG/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "北京路网",
+        "url": "http://192.168.0.10:7578/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
+        "tilingScheme": "gcj02"
       }
     ],
     "baseLayers": [

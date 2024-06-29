@@ -220,7 +220,7 @@ export default class Identify extends BaseWidget {
     }
 
     formatHtml(html: string) {
-        html = html.replace('cesium-infoBox-defaultTable', 'table table-sm table-bordered');
+        html = html.replace(/cesium-infoBox-defaultTable/g, 'table table-sm table-bordered');
         let dom = document.createElement('div');
         dom.innerHTML = html;
         dom.querySelectorAll('tr').forEach((tr) => {
