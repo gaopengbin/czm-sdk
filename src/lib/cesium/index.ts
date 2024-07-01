@@ -2,6 +2,8 @@ import { Cartesian3, Viewer, Math, Ion, Rectangle } from 'cesium'
 import CesiumNavigation from 'cesium-navigation-es6'
 const initScene = (container: string | Element, options?: Viewer.ConstructorOptions) => {
     const viewer = new Viewer(container, options)
+    viewer.scene.postProcessStages.fxaa.enabled = true;
+
     const option: any = {};
     // 用于在使用重置导航重置地图视图时设置默认视图控制。接受的值是Cesium.Cartographic 和 Cesium.Rectangle.
     option.defaultResetView = Rectangle.fromDegrees(80, 22, 130, 50);

@@ -7,7 +7,6 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
         super(options)
     }
     static async fromUrl(url: string, options: any): Promise<any> {
-        console.log("fromUrl")
         //>>includeStart('debug', pragmas.debug);
         Check.defined("url", url);
         //>>includeEnd('debug');

@@ -68,7 +68,8 @@ export default class BaseEarth extends BaseWidget {
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: false,
-            msaaSamples: 4,
+            msaaSamples: 8,
+            shouldAnimate: true,
         });
         this.sceneTree = new SceneTree(viewer);
         this.viewer = viewer;

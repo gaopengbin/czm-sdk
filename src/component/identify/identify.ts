@@ -1,5 +1,5 @@
 
-import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, defaultValue, defined } from "cesium";
+import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined } from "cesium";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import esri2geo from "@/lib/cesium/parser/esri2geo";
@@ -33,15 +33,20 @@ export default class Identify extends BaseWidget {
         if (defined(picked)) {
             const id = defaultValue(picked.id, picked.primitive.id);
             if (id instanceof Entity) {
+                this.highLight(id);
                 this.infoBox.innerHTML = this.formatHtml(id.description?.getValue(new JulianDate()));
-                this.$data.isEmpty = false;
+                if (this.infoBox.innerHTML) {
+                    this.$data.isEmpty = false;
+                }
                 return id;
             }
 
             if (picked instanceof Cesium3DTileFeature) {
                 this.highLight(picked);
                 this.infoBox.innerHTML = this.formatHtml(this.getCesium3DTileFeatureDescription(picked));
-                this.$data.isEmpty = false;
+                if (this.infoBox.innerHTML) {
+                    this.$data.isEmpty = false;
+                }
                 return new Entity({
                     name: this.getCesium3DTileFeatureName(picked),
                     description: this.getCesium3DTileFeatureDescription(picked),
@@ -114,8 +119,10 @@ export default class Identify extends BaseWidget {
                     return;
                 }
                 viewer.selectedEntity = this.createNoFeaturesEntity();
-                this.$data.isEmpty = false;
                 this.infoBox.innerHTML = this.formatHtml(viewer.selectedEntity.description?.getValue(new JulianDate()));;
+                if (this.infoBox.innerHTML) {
+                    this.$data.isEmpty = false;
+                }
             }
         );
 
@@ -181,6 +188,22 @@ export default class Identify extends BaseWidget {
         return html;
     }
     async highLight(feature: any) {
+        this.clearHighLight();
+        if (feature && feature instanceof Entity) {
+            if (feature.polygon) {
+                this.lastPolygonMaterial = clone(feature.polygon.material);
+                (feature.polygon.material as any) = Color.HOTPINK.withAlpha(0.5);
+            }
+            if (feature.polyline) {
+                this.lastPolylineMaterial = clone(feature.polyline.material);
+                (feature.polyline.material as any) = Color.HOTPINK.withAlpha(0.5);
+            }
+            if (feature.billboard) {
+                this.lastBillboardColor = clone(feature.billboard.color);
+                (feature.billboard.color as any) = Color.HOTPINK.withAlpha(0.5);
+            }
+            return
+        }
         if (feature && feature instanceof Cesium3DTileFeature) {
             feature.color = Color.HOTPINK.withAlpha(0.5);
             return
@@ -192,7 +215,7 @@ export default class Identify extends BaseWidget {
             } else {
                 geojson = feature.data
             }
-            this.clearHighLight();
+
             this.highLightEntity = await this.viewer.dataSources.add(GeoJsonDataSource.load(geojson, {
                 stroke: Color.HOTPINK,
                 fill: Color.PINK.withAlpha(0.5),
@@ -214,12 +237,24 @@ export default class Identify extends BaseWidget {
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
             this.viewer.selectedEntity.feature.color = Color.WHITE;
         }
+        if (this.viewer.selectedEntity) {
+            if (this.viewer.selectedEntity.polygon) {
+                this.viewer.selectedEntity.polygon.material = this.lastPolygonMaterial;
+            }
+            if (this.viewer.selectedEntity.polyline) {
+                this.viewer.selectedEntity.polyline.material = this.lastPolylineMaterial;
+            }
+            if (this.viewer.selectedEntity.billboard) {
+                this.viewer.selectedEntity.billboard.color = this.lastBillboardColor;
+            }
+        }
         this.$data.title = '';
         this.infoBox.innerHTML = '';
         this.$data.isEmpty = true;
     }
 
     formatHtml(html: string) {
+        if (!html) return '';
         html = html.replace(/cesium-infoBox-defaultTable/g, 'table table-sm table-bordered');
         let dom = document.createElement('div');
         dom.innerHTML = html;

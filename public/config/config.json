@@ -2,12 +2,41 @@
   "earth": {
     "layers": [
       {
+        "type": "model",
+        "name": "model",
+        "url": "https://sandcastle.cesium.com/SampleData/models/CesiumAir/Cesium_Air.glb",
+        "position": [116.3, 40.3, 0]
+      },
+      {
         "type": "geojson",
         "name": "China",
         "url": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
         "stroke": "rgba(0, 0, 255, 0.5)",
-        "strokeWidth": 3,
-        "fill": "rgba(0, 0, 255, 0.1)"
+        "strokeWidth": 2,
+        "fill": "rgba(0, 0, 255, 0.1)",
+        "clampToGround": true
+      },
+      {
+        "type": "geojson",
+        "name": "poi",
+        "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E5%8D%95%E8%BD%A6%E5%85%85%E7%94%B5%E6%A1%A9&maxFeatures=500&outputFormat=application%2Fjson",
+        "markerSymbol": "circle",
+        "markerColor": "rgba(255, 255, 0, 0.6)",
+        "markerSize": 30,
+        "markerImage": "/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "width": 20,
+        "height": 20,
+        "showPopup": false,
+        "cluster": {
+          "enabled": true,
+          "pixelRange": 20,
+          "minimumClusterSize": 2
+        }
+      },
+      {
+        "type": "geojson",
+        "name": "line",
+        "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E4%BA%A4%E9%80%9A%E7%BA%BF&maxFeatures=50&outputFormat=application%2Fjson"
       },
       {
         "type": "geojson",
@@ -74,6 +103,15 @@
     }
   },
   "widgets": [
+    {
+      "label": "状态栏",
+      "tagName": "czm-status-bar",
+      "position": {
+        "left": 0,
+        "bottom": 0
+      },
+      "inPanel": false
+    },
     {
       "label": "底图",
       "tagName": "base-layer",

@@ -1,0 +1,16 @@
+czm-status-bar {
+    width: auto;
+    height: 30px;
+    background-color: #0000002c;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 5px 10px;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 14px;
+    color: white;
+
+    &>v-node>span {
+        margin-right: 10px;
+    }
+}

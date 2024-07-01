@@ -14,6 +14,13 @@ import {
     WebMapTileServiceImageryProvider,
     GeoJsonDataSource,
     Color,
+    Model,
+    PinBuilder,
+    PointGraphics,
+    Cartesian3,
+    VerticalOrigin,
+    HorizontalOrigin,
+    LabelStyle,
 } from "cesium";
 import proj4 from "proj4";
 import { SSArcGisLayerOptions, SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
@@ -238,19 +245,84 @@ export async function createGeoJson(options: any) {
         if (typeof options.fill === 'string') {
             options.fill = Color.fromCssColorString(options.fill)
         }
+        if (typeof options.markerColor === 'string') {
+            options.markerColor = Color.fromCssColorString(options.markerColor)
+        }
         let ds = await GeoJsonDataSource.load(options.url, options)
-        ds.entities.values.forEach((entity: any) => {
-            let positions = entity.polygon.hierarchy._value.positions.concat(entity.polygon.hierarchy._value.positions[0], entity.polygon.hierarchy._value.positions[1])
-            entity.polyline = {
-                positions: positions,
-                width: options.strokeWidth || 2,
-                material: options.stroke || Color.RED,
-                // clampToGround: true
+        ds.entities.values.forEach(async (entity: any) => {
+            if (entity.polygon) {
+                let positions = entity.polygon.hierarchy._value.positions.concat(entity.polygon.hierarchy._value.positions[0], entity.polygon.hierarchy._value.positions[1])
+                entity.polyline = {
+                    positions: positions,
+                    width: options.strokeWidth || 2,
+                    material: options.stroke || Color.RED,
+                }
             }
+            if (entity.polyline) {
+                entity.polyline.width = options.strokeWidth || 2
+                entity.polyline.material = options.stroke || Color.RED
+            }
+            if (entity.billboard) {
+                entity.billboard.color = options.markerColor || Color.RED
+                let image;
+                const pinBuilder = new PinBuilder();
+                if (options.showPopup) {
+                    image = (await pinBuilder.fromUrl(options.markerImage, options.markerColor || Color.RED, options.markerSize)).toDataURL()
+                } else {
+                    image = options.markerImage
+                    entity.billboard.width = options.width || 32
+                    entity.billboard.height = options.height || 32
+                }
+                entity.billboard.image = image
+            }
+
         })
-        console.log(ds)
+        if (options.cluster) {
+            let cluster = options.cluster
+            let pixelRange = cluster.pixelRange || 20
+            let minimumClusterSize = cluster.minimumClusterSize || 3
+            let enabled = cluster.enabled || true
+            if (typeof options.cluster.color === 'string') {
+                options.cluster.color = Color.fromCssColorString(options.cluster.color)
+            }
+            ds.clustering.enabled = enabled
+            ds.clustering.pixelRange = pixelRange
+            ds.clustering.minimumClusterSize = minimumClusterSize
+            ds.clustering.clusterEvent.addEventListener((clusteredEntities: any, cluster: any) => {
+                cluster.label.show = false
+                cluster.billboard.show = true;
+                cluster.billboard.image = createCanvas(clusteredEntities.length.toLocaleString(), cluster.color || Color.BLUE.withAlpha(0.7).toCssColorString())
+            })
+        }
         return ds
     }
+}
+
+function createCanvas(text: string, color: string, width: number = 32, height: number = 32) {
+    const canvas = document.createElement('canvas');
+    const ctx: any = canvas.getContext('2d');
+    width = text.length * 12 + 18;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.fillStyle = color;
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 绘制圆角矩形
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(width - 10, 0);
+    ctx.quadraticCurveTo(width, 0, width, 10);
+    ctx.lineTo(width, height - 10);
+    ctx.quadraticCurveTo(width, height, width - 10, height);
+    ctx.lineTo(10, height);
+    ctx.quadraticCurveTo(0, height, 0, height - 10);
+    ctx.lineTo(0, 10);
+    ctx.quadraticCurveTo(0, 0, 10, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.font = '20px sans-serif';
+    ctx.fillStyle = 'black';
+    ctx.fillText(text, 9, height / 2 + 8);
+    return canvas;
 }
 
 export async function createXYZ(options: SSXYZLayerOptions) {
@@ -300,6 +372,11 @@ export async function createTileset(options: SSLayerOptions) {
     return tileset;
 }
 
+export async function createModel(options: SSLayerOptions) {
+    const model = await Model.fromGltfAsync(options)
+    return model;
+}
+
 const Objects: any = {
     "ssmapserver": createSSMapServer,
     "arcgismapserver": createArcGisMapServer,
@@ -309,6 +386,7 @@ const Objects: any = {
     "terrain": createTerrain,
     "wmts": createWMTS,
     "geojson": createGeoJson,
+    "model": createModel,
 }
 
 export const createProvider = async (options: any) => {
@@ -326,6 +404,7 @@ const initObjects: any = {
     "terrain": "createTerrainLayer",
     "group": "createGroup",
     "geojson": "createGeoJsonLayer",
+    "model": "createModelLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

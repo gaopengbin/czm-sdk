@@ -7,8 +7,9 @@ import {
     defined,
     defaultValue,
     EllipsoidTerrainProvider,
+    Cartesian3,
 } from "cesium";
-import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import { createArcGisMapServer, createGeoJson, createModel, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
@@ -226,7 +227,6 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
 export const GeoJsonLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const geoJson: any = await createGeoJson(options);
     let geoJsonLayer: any = await viewer.dataSources.add(geoJson);
-    console.log(geoJsonLayer);
     geoJsonLayer.name = options.name;
     geoJsonLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -338,6 +338,49 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
     return leaf;
 }
 
+export const ModelLoader = async (viewer: Viewer, options: any) => {
+    const model = await createModel(options);
+    let position = Cartesian3.fromDegrees(options.position[0], options.position[1], options.position[2]);
+    const modelEntity = viewer.entities.add({
+        position: position,
+        model: {
+            uri: options.url,
+        }
+
+    });
+    modelEntity.name = options.name;
+    modelEntity.show = defaultValue(options.show, true);
+    if (options.zoomTo) {
+        viewer.zoomTo(modelEntity);
+    }
+    const leaf: Leaf = {
+        name: options.name,
+        guid: uuid(),
+        _zIndex: defaultValue(options.zIndex, 0),
+        setVisible: (visible: boolean) => {
+            modelEntity.show = visible;
+        },
+        zoomTo: () => {
+            viewer.zoomTo(modelEntity);
+        },
+        get show() {
+            return modelEntity.show;
+        },
+        set show(value: boolean) {
+            modelEntity.show = value;
+        },
+        _model: modelEntity,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+            setLayersZIndex(viewer);
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        }
+    }
+    return leaf;
+}
+
 // 根据图层的zIndex属性大小顺序设置图层的顺序
 export const setLayersZIndex = (viewer: Viewer) => {
     // return
@@ -361,9 +404,8 @@ export const setLayersZIndex = (viewer: Viewer) => {
         }
         return a.zIndex - b.zIndex;
     });
-// return
+    // return
     imageryLayers.forEach((layer: any) => {
-        console.log(layer);
         viewer.scene.imageryLayers.raiseToTop(layer._imageLayer);
     })
 }

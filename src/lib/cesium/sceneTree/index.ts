@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, GeoJsonLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, GeoJsonLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 import { getSceneTree } from "@/component";
@@ -181,6 +181,12 @@ class SceneTree {
         return leaf;
     }
 
+    async createModelLayer(options: SSLayerOptions) {
+        let leaf = await ModelLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
     // 创建分组用于管理图层
     createGroup(groupName: string) {
         return new Group(groupName);
@@ -276,7 +282,6 @@ class Group {
     }
 
     async addLayer(layer: any, item?: any) {
-        console.log("layer", layer);
         if (layer instanceof Promise) {
             let child = {
                 name: item.name,
@@ -284,7 +289,6 @@ class Group {
             }
             let length = this.children.push(child);
             layer.then((res: any) => {
-                console.log("res", res);
                 this.children[length - 1] = res;
                 getSceneTree().updateSceneTree();
             });
