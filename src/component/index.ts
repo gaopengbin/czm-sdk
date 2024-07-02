@@ -8,4 +8,5 @@ export { default as WidgetIcon } from "./widget-icon/widget-icon";
 export { default as Measure } from "./measure/measure";
 export { default as Identify } from "./identify/identify";
 export { default as StatusBar } from "./status-bar/status-bar";
+export { default as LoaderUI } from "./loader-ui/loader-ui";
 export { Component } from "./core/decorators";

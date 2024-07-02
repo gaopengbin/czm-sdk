@@ -1,0 +1,71 @@
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" onclick="this.clickTab(event,1)">GeoJson</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" onclick="this.clickTab(event,2)">ArcGis</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" onclick="this.clickTab(event,3)">SSMapServer</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" onclick="this.clickTab(event,4)">Tileset</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" onclick="this.clickTab(event,5)">WMS</a>
+    </li>
+</ul>
+<div class="content">
+    <If when="$data.active === 1">
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">url</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadGeoJson()">加载</button>
+    </If>
+    <If when="$data.active === 2">
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">url</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadArcGis()">加载</button>
+    </If>
+    <If when="$data.active === 3">
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">url</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadSSMapServer()">加载</button>
+    </If>
+    <If when="$data.active === 4">
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">url</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadTileset()">加载</button>
+    </If>
+    <If when="$data.active === 5">
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">url</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value"
+                    onkeydown="this.handleKeyDown(event)">
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <label for="url" class="col-sm-2 col-form-label">layers</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" s-value="$data.layers" onchange="$data.layers=value">
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadWMS()">加载</button>
+    </If>
+</div>

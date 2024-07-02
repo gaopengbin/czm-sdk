@@ -265,4 +265,13 @@ export default class Identify extends BaseWidget {
         });
         return dom.innerHTML;
     }
+
+    public onOpen(): void {
+        (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'help';
+    }
+    public onClose(): void {
+        (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'default';
+        this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+        this.clearHighLight();
+    }
 }

@@ -151,6 +151,18 @@
         "top": 250
       },
       "inPanel": true
+    },
+    {
+      "label": "加载器",
+      "tagName": "czm-loader-ui",
+      "icon": "bi-exclamation-circle-fill",
+      "position": {
+        "left": 10,
+        "top": 290,
+        "width": 400,
+        "height": 400
+      },
+      "inPanel": true
     }
   ]
 }
