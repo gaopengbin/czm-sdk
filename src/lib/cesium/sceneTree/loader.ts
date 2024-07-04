@@ -9,7 +9,7 @@ import {
     EllipsoidTerrainProvider,
     Cartesian3,
 } from "cesium";
-import { createArcGisMapServer, createGeoJson, createModel, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
@@ -339,7 +339,7 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
 }
 
 export const ModelLoader = async (viewer: Viewer, options: any) => {
-    const model = await createModel(options);
+    // const model = await createModel(options);
     let position = Cartesian3.fromDegrees(options.position[0], options.position[1], options.position[2]);
     const modelEntity = viewer.entities.add({
         position: position,

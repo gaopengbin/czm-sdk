@@ -3,6 +3,7 @@ import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import Template from "./loader-ui.html?raw";
 import "./loader-ui.scss";
+import WMTSParser from "@/lib/cesium/parser/WMTSParser";
 @Component({
     tagName: "czm-loader-ui",
     className: "czm-loader-ui",
@@ -16,7 +17,18 @@ export default class LoaderUI extends BaseWidget {
         this.$data = {
             active: 1,
             url: '',
-            layers: ''
+            layers: '', // wms
+            layer: '', //wmts
+            wmtsParserLayers: [],
+            selectedLayer: {},
+            wmtsParams: {
+                name: '',
+                url: '',
+                layer: '',
+                style: '',
+                format: '',
+                tileMatrixSetID: '',
+            }
         }
     }
 
@@ -81,7 +93,11 @@ export default class LoaderUI extends BaseWidget {
 
     handleKeyDown(e: any) {
         if (e.keyCode === 13) {
-            this.parserWMS(this.$data.url);
+            if (this.$data.active === 5) {
+                this.parserWMS(this.$data.url);
+            } else if (this.$data.active === 6) {
+                this.parserWMTS(this.$data.url);
+            }
         }
     }
 
@@ -100,6 +116,43 @@ export default class LoaderUI extends BaseWidget {
         });
         this.sceneTree.root?.addLayer(wms);
         wms?.zoomTo();
+    }
+
+    parserWMTS(url: string) {
+        this.loading = true;
+        const parser = new WMTSParser();
+        parser.parser(parser.addUrlParam(url)).then((res) => {
+            this.loading = false;
+            console.log(res);
+            this.$data.wmtsParserLayers = res;
+        });
+    }
+
+    async loadWMTS() {
+        console.log(this.$data.wmtsParams);
+        let wmts = await this.sceneTree.createWMTSLayer({
+            type: "wmts",
+            ...this.$data.wmtsParams,
+        } as any);
+        this.sceneTree.root?.addLayer(wmts);
+        wmts?.zoomTo();
+    }
+
+    layerSelect(index: any) {
+        console.log(index, this.$data.wmtsParserLayers[index]);
+        const layer = this.$data.wmtsParserLayers[index];
+        this.$data.wmtsParams.name = layer.title;
+        this.$data.wmtsParams.url = layer.urls[0].template;
+        this.$data.wmtsParams.layer = layer.identifier;
+        this.$data.wmtsParams.style = layer.styles[0].id;
+        this.$data.wmtsParams.format = layer.urls[0].format;
+        this.$data.wmtsParams.tileMatrixSetID = layer.tileMatrixSets[0].title;
+        this.$data.selectedLayer = this.$data.wmtsParserLayers[index];
+    }
+
+    formatSelect(index: any) {
+        this.$data.wmtsParams.format = this.$data.selectedLayer.urls[index].format;
+        this.$data.wmtsParams.url = this.$data.selectedLayer.urls[index].template;
     }
 
 }

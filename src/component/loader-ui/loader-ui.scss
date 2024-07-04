@@ -2,8 +2,29 @@ czm-loader-ui {
     .nav-item {
         cursor: pointer;
         user-select: none;
+        border-bottom: #8f8f8f 1px solid;
+        
     }
-    .content{
-        padding: 10px;
+
+    .nav-link {
+        display: flex;
+        padding: 5px;
+        border-right: #8f8f8f 1px solid !important;
+        &.active {
+            width: 100%;
+            color: #fff !important;
+            background-color: #007bff !important;
+            border-right: none !important;
+        }
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .vr {
+        opacity: 1;
+        width: 100%;
+        background-color: #fff;
     }
 }

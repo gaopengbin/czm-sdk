@@ -31,7 +31,7 @@ class SceneTree {
     constructor(viewer: Viewer) {
         this._viewer = viewer;
         // 原生方式添加的也进行监听
-        viewer.imageryLayers.layerAdded.addEventListener(() => {
+        viewer.imageryLayers.layerAdded.addEventListener((l) => {
             this.updateSceneTree();
         });
 
@@ -59,6 +59,7 @@ class SceneTree {
     treeToArray(node: any) {
         let result: any[] = [];
         if (node.children) {
+            // node.children.reverse();
             node.children.forEach((child: any) => {
                 if (child.children) {
                     result.push({
@@ -88,7 +89,7 @@ class SceneTree {
             }
 
         }
-        return result;
+        return result.reverse();
     }
 
     // 做个防抖处理，避免频繁调用
@@ -97,6 +98,7 @@ class SceneTree {
         this._tilesetCollection = [];
         this._imageryLayers = this.treeToArray(this._root);
         this.updateEvent.raiseEvent(this._imageryLayers);
+        setLayersZIndex(this._viewer);
     }, 30, true);
 
     /**

@@ -4,6 +4,9 @@ import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import esri2geo from "@/lib/cesium/parser/esri2geo";
 import template from "./identify.html?raw"
+import ResizeHandle, { Mode } from "@/base/layout/ResizeHandle";
+import "@/lib/cesium/fixed/ArcGisMapServerImageryProvider"
+import "@/lib/cesium/fixed/imageryLayerCollection"
 import "./identify.scss"
 @Component({
     tagName: "czm-identify",
@@ -19,13 +22,20 @@ export default class Identify extends BaseWidget {
     async onInit() {
         this.$data = {
             isEmpty: true,
+            attrs: [],
+            range: 'top',
         }
         this.highLightEntity = await this.viewer.dataSources.add(new GeoJsonDataSource());
-        this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.pickAndSelectObject(e), ScreenSpaceEventType.LEFT_CLICK);
-        this.infoBox = this.querySelector('.infoBox');
+        const container: any = this.querySelector('#tree-container');
+        // 添加缩放
+        new ResizeHandle(container, {
+            mode: Mode.vertical
+        });
     }
     pickAndSelectObject(e: any) {
         this.clearHighLight();
+        this.results = []
+        this.loading = true;
         this.viewer.selectedEntity = this.pickEntity(this.viewer, e);
     }
     pickEntity(viewer: Viewer, e: any) {
@@ -34,19 +44,19 @@ export default class Identify extends BaseWidget {
             const id = defaultValue(picked.id, picked.primitive.id);
             if (id instanceof Entity) {
                 this.highLight(id);
-                this.infoBox.innerHTML = this.formatHtml(id.description?.getValue(new JulianDate()));
-                if (this.infoBox.innerHTML) {
-                    this.$data.isEmpty = false;
-                }
+                this.loading = false;
+                let results = [];
+                results.push({ layerName: id.name ?? id.id, features: [id] });
+                this.results = results;
                 return id;
             }
 
             if (picked instanceof Cesium3DTileFeature) {
                 this.highLight(picked);
-                this.infoBox.innerHTML = this.formatHtml(this.getCesium3DTileFeatureDescription(picked));
-                if (this.infoBox.innerHTML) {
-                    this.$data.isEmpty = false;
-                }
+                this.loading = false;
+                let results = [];
+                results.push({ layerName: (picked.tileset as any).name, features: [picked] });
+                this.results = results;
                 return new Entity({
                     name: this.getCesium3DTileFeatureName(picked),
                     description: this.getCesium3DTileFeatureDescription(picked),
@@ -54,21 +64,33 @@ export default class Identify extends BaseWidget {
                 } as any);
             }
         }
-
         // No regular entity picked.  Try picking features from imagery layers.
         if (defined(viewer.scene.globe)) {
             return this.pickImageryLayerFeature(viewer, e.position);
         }
     }
     pickImageryLayerFeature(viewer: Viewer, windowPosition: Cartesian2) {
-        const scene = viewer.scene;
+        const scene: any = viewer.scene;
         const pickRay: Ray | undefined = scene.camera.getPickRay(windowPosition);
         if (!pickRay) { return; }
-        const imageryLayerFeaturePromise = scene.imageryLayers.pickImageryLayerFeatures(
-            pickRay,
-            scene
-        );
+        let imageryLayerFeaturePromise;
+        if (this.$data.range === 'visible' || this.$data.range === 'top') {
+            imageryLayerFeaturePromise = scene.imageryLayers.pickImageryLayerFeatures(
+                pickRay,
+                scene
+            );
+        } else if (this.$data.range === 'all') {
+            imageryLayerFeaturePromise = scene.imageryLayers.pickImageryLayerFeatures2(
+                pickRay,
+                scene
+            );
+        }
+        // const pickImageryLayers = scene.imageryLayers.pickImageryLayers(pickRay, scene);
+        // if(defined(pickImageryLayers)) {
+        //     console.log(pickImageryLayers);
+        // }
         if (!defined(imageryLayerFeaturePromise)) {
+            this.loading = false;
             return;
         }
 
@@ -79,17 +101,34 @@ export default class Identify extends BaseWidget {
         });
 
         imageryLayerFeaturePromise.then(
-            (features) => {
+            (features: any) => {
                 // Has this async pick been superseded by a later one?
                 if (viewer.selectedEntity !== loadingMessage) {
+                    this.loading = false;
                     return;
                 }
 
                 if (!defined(features) || features.length === 0) {
+                    this.loading = false;
                     viewer.selectedEntity = this.createNoFeaturesEntity();
                     return;
                 }
-
+                console.log(features);
+                // 按feature.imageryLayer.guid分组
+                let results: any = []
+                features.forEach((feature: any) => {
+                    if (!results[feature.imageryLayer.guid]) {
+                        results[feature.imageryLayer.guid] = { layerName: '', features: [] }
+                    }
+                    results[feature.imageryLayer.guid].layerName = feature.imageryLayer.name;
+                    results[feature.imageryLayer.guid].features.push(feature)
+                })
+                results = Object.values(results);
+                if (this.$data.range === 'top') {
+                    results = results.slice(0, 1);
+                }
+                this.results = results;
+                console.log(this.results);
                 // Select the first feature.
                 const feature = features[0];
                 this.highLight(feature);
@@ -108,21 +147,19 @@ export default class Identify extends BaseWidget {
                     );
                     entity.position = new ConstantPositionProperty(ecfPosition);
                 }
-
+                this.loading = false;
                 viewer.selectedEntity = entity;
                 this.$data.isEmpty = false;
-                this.infoBox.innerHTML = this.formatHtml(viewer.selectedEntity.description?.getValue(new JulianDate()));
+                // this.infoBox.innerHTML = this.formatHtml(viewer.selectedEntity.description?.getValue(new JulianDate()));
             },
             () => {
                 // Has this async pick been superseded by a later one?
                 if (viewer.selectedEntity !== loadingMessage) {
                     return;
                 }
+                this.loading = false;
                 viewer.selectedEntity = this.createNoFeaturesEntity();
-                this.infoBox.innerHTML = this.formatHtml(viewer.selectedEntity.description?.getValue(new JulianDate()));;
-                if (this.infoBox.innerHTML) {
-                    this.$data.isEmpty = false;
-                }
+
             }
         );
 
@@ -187,6 +224,7 @@ export default class Identify extends BaseWidget {
 
         return html;
     }
+
     async highLight(feature: any) {
         this.clearHighLight();
         if (feature && feature instanceof Entity) {
@@ -202,10 +240,24 @@ export default class Identify extends BaseWidget {
                 this.lastBillboardColor = clone(feature.billboard.color);
                 (feature.billboard.color as any) = Color.HOTPINK.withAlpha(0.5);
             }
+
+            // 属性
+            let attrs = [];
+            for (let key in feature.properties?.getValue(new JulianDate())) {
+                attrs.push({ key, value: feature.properties[key] })
+            }
+            this.$data.attrs = attrs;
             return
         }
         if (feature && feature instanceof Cesium3DTileFeature) {
             feature.color = Color.HOTPINK.withAlpha(0.5);
+
+            // 属性
+            let attrs: any = [];
+            feature.getPropertyIds().forEach((key: any) => {
+                attrs.push({ key, value: feature.getProperty(key) })
+            })
+            this.$data.attrs = attrs;
             return
         }
         if (feature && feature.data) {
@@ -221,6 +273,14 @@ export default class Identify extends BaseWidget {
                 fill: Color.PINK.withAlpha(0.5),
                 strokeWidth: 3,
             }));
+
+            // 属性
+            let attrs = [];
+            for (let key in feature.data.attributes) {
+                attrs.push({ key, value: feature.data.attributes[key] })
+            }
+            this.$data.attrs = attrs;
+
         } else {
             if (this.highLightEntity) {
                 this.viewer.dataSources.remove(this.highLightEntity);
@@ -249,8 +309,10 @@ export default class Identify extends BaseWidget {
             }
         }
         this.$data.title = '';
-        this.infoBox.innerHTML = '';
+        // this.infoBox.innerHTML = '';
         this.$data.isEmpty = true;
+        this.$data.attrs = [];
+        // this.results = [];
     }
 
     formatHtml(html: string) {
@@ -268,6 +330,7 @@ export default class Identify extends BaseWidget {
 
     public onOpen(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'help';
+        this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.pickAndSelectObject(e), ScreenSpaceEventType.LEFT_CLICK);
     }
     public onClose(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'default';

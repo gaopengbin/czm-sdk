@@ -28,7 +28,7 @@ export default class BaseEarth extends BaseWidget {
             }
             await initEarth(this.sceneTree, this.config.earth);
 
-            setLayersZIndex(this.viewer);
+            // setLayersZIndex(this.viewer);
         }, 500);
 
         const widgetManager = this.globalConfig?.widgetManager || 'webgis-widget-manager';

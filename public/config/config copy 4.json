@@ -2,43 +2,41 @@
   "earth": {
     "layers": [
       {
-        "type": "arcgismapserver",
-        "name": "xyq21",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/XYQ21/MapServer"
+        "type": "model",
+        "name": "model",
+        "url": "https://sandcastle.cesium.com/SampleData/models/CesiumAir/Cesium_Air.glb",
+        "position": [116.3, 40.3, 0]
       },
       {
-        "type": "arcgismapserver",
-        "name": "9江",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/4490/MapServer"
+        "type": "geojson",
+        "name": "China",
+        "url": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
+        "stroke": "rgba(0, 0, 255, 0.5)",
+        "strokeWidth": 2,
+        "fill": "rgba(0, 0, 255, 0.1)",
+        "clampToGround": true
       },
       {
-        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-        "name": "分层分户白模",
-        "show": false,
-        "type": "tileset",
-        "preloadWhenHidden": true
+        "type": "geojson",
+        "name": "poi",
+        "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E5%8D%95%E8%BD%A6%E5%85%85%E7%94%B5%E6%A1%A9&maxFeatures=500&outputFormat=application%2Fjson",
+        "markerSymbol": "circle",
+        "markerColor": "rgba(255, 255, 0, 0.6)",
+        "markerSize": 30,
+        "markerImage": "/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "width": 20,
+        "height": 20,
+        "showPopup": false,
+        "cluster": {
+          "enabled": true,
+          "pixelRange": 20,
+          "minimumClusterSize": 2
+        }
       },
       {
-        "url": "http://120.48.115.17:81/data/%E6%A1%A5%E6%A2%81BIM/tileset.json",
-        "name": "BIM",
-        "type": "tileset",
-        "preloadWhenHidden": true
-      },
-      {
-        "name": "SSMapServer",
-        "children": [
-          {
-            "type": "ssmapserver",
-            "name": "TW",
-            "url": "http://192.168.0.10:7578/services/TW/MapServer",
-            "layers": "0,1"
-          },
-          {
-            "type": "ssmapserver",
-            "name": "Macao",
-            "url": "http://192.168.0.10:7578/services/Macao/MapServer"
-          }
-        ]
+        "type": "geojson",
+        "name": "line",
+        "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E4%BA%A4%E9%80%9A%E7%BA%BF&maxFeatures=50&outputFormat=application%2Fjson"
       },
       {
         "type": "geojson",
@@ -49,22 +47,6 @@
         "type": "ssmapserver",
         "name": "hongkong",
         "url": "http://192.168.0.10:7578/services/hongkong/MapServer"
-      },
-      {
-        "type": "ssmapserver",
-        "name": "DYT_ORACLE",
-        "url": "http://192.168.0.10:7578/services/DYT_ORACLE/MapServer"
-      },
-      {
-        "type": "ssmapserver",
-        "name": "DYT_PG",
-        "url": "http://192.168.0.10:7578/services/DYT_PG/MapServer"
-      },
-      {
-        "type": "ssmapserver",
-        "name": "北京路网",
-        "url": "http://192.168.0.10:7578/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
-        "tilingScheme": "gcj02"
       }
     ],
     "baseLayers": [
@@ -166,20 +148,18 @@
       "icon": "bi-exclamation-circle-fill",
       "position": {
         "left": 10,
-        "top": 250,
-        "width": 370,
-        "height": 400
+        "top": 250
       },
       "inPanel": true
     },
     {
       "label": "加载器",
       "tagName": "czm-loader-ui",
-      "icon": "bi-tools",
+      "icon": "bi-exclamation-circle-fill",
       "position": {
         "left": 10,
         "top": 290,
-        "width": 600,
+        "width": 400,
         "height": 400
       },
       "inPanel": true

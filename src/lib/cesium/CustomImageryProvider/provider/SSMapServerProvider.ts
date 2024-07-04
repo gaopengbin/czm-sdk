@@ -38,8 +38,7 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
             return undefined;
         }
 
-        const rectangle = this._tilingScheme.tileXYToNativeRectangle(x, y, level);
-
+        let rectangle;
         let horizontal;
         let vertical;
         let sr;
@@ -47,6 +46,12 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
             horizontal = CesiumMath.toDegrees(longitude);
             vertical = CesiumMath.toDegrees(latitude);
             sr = "4326";
+            rectangle = new Rectangle(
+                longitude - 0.00005,
+                latitude - 0.00005,
+                longitude + 0.00005,
+                latitude + 0.00005
+            );
         } else {
             const projected = this._tilingScheme.projection.project(
                 new Cartographic(longitude, latitude, 0.0)
@@ -54,6 +59,12 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
             horizontal = projected.x;
             vertical = projected.y;
             sr = "3857";
+            rectangle = new Rectangle(
+                projected.x - 5,
+                projected.y - 5,
+                projected.x + 5,
+                projected.y + 5
+            )
         }
 
         let layers = "all";

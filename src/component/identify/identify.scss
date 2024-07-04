@@ -1,29 +1,56 @@
-czm-identify {
-    .infoBox {
-        th {}
+.czm-identify {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    user-select: none; /*禁止选择*/
+    box-sizing: border-box;
+    padding: 0.625rem;
+    min-width: 21.875rem;
+    min-height: 16.25rem;
 
-        td {
-            word-break: break-all;
-        }
-
+    .i-container {
+        display: grid;
+        grid-template-rows: auto auto auto 1fr;
+        height: 100%;
     }
 
-    .empty {
-        width: 100%;
-        height: 100%;
-        background-image: url(./icon/无内容.svg);
-        background-size: 100px 100px;
-        background-repeat: no-repeat;
-        background-position: center;
-
-        span {
-            display: block;
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-            top: 30%;
+    .i-table {
+        overflow: auto;
+        border: 0.0625rem solid var(--bs-toast-border-color);
+        th {
+            position: sticky;
+            top: 0;
+            border-bottom: 0.0625rem solid var(--bs-toast-border-color);
+            border-right: 0.0625rem solid var(--bs-toast-border-color);
         }
+        td {
+            border: 0.0625rem solid var(--bs-toast-border-color);
+            padding: 0.125rem;
+        }
+    }
+
+    .i-layer-tree {
+        border: 0.0625rem solid var(--bs-toast-border-color);
+        height: 100px;
+        position: relative;
+
+        .i-tree-div {
+            height: calc(100% - 0.8rem);
+            overflow: auto;
+        }
+
+        ul {
+            border-radius: 0;
+        }
+    }
+    // 鼠标样式
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .selected,
+    .i-hover:hover {
+        background-color: #e9f0f3;
+        color: black;
     }
 }

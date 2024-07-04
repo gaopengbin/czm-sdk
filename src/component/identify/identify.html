@@ -1,4 +1,87 @@
-<div class="infoBox"></div>
-<If when="$data.isEmpty">
-    <div class="empty"> <span>无内容</span></div>
-</If>
+<div class="i-container" s-style="$data.expand?'':'grid-template-rows: auto auto 1fr;'">
+    <!-- 图层范围 -->
+    <div class="input-group input-group-sm">
+        <span class="input-group-text">识别范围：</span>
+        <select class="form-select" s-value="$data.range" onchange="$data.range=value">
+            <option value="top">[最顶部图层]</option>
+            <option value="visible">[可见图层]</option>
+            <option value="all">[所有图层]</option>
+            <!-- 其他图层 -->
+            <For each="$data.layerList" item="layer">
+                <option s-value="layer.ol_uid">{{layer.title}}</option>
+            </For>
+        </select>
+    </div>
+    <!-- 结果树 -->
+    <div id="tree-container" s-style="$data.expand?'display: block;':'display: none;'" class="i-layer-tree mt-2">
+        <!-- 解决拖动条随滚动条移动的问题 -->
+        <div class="i-tree-div">
+            <ul class="list-group">
+                <!-- 图层 -->
+                <For each="this.results" item="group">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="w-100">
+                            <div class="fw-bold cursor-pointer"
+                                onclick="group.hidden=!group.hidden;$data.refresh=!$data.refresh">
+                                <i class="bi cursor-pointer"
+                                    s-class="group.hidden?'bi-plus-square':'bi-dash-square'"></i>
+                                <label class="ms-2 cursor-pointer">{{group.layerName}}</label>
+                            </div>
+                            <ul class="list-group list-group-flush" s-class="group.hidden?'d-none':'d-block'">
+                                <For each="group.features" item="feature">
+                                    <!-- 结果 -->
+                                    <li class="list-group-item cursor-pointer i-hover"
+                                        s-class="feature.ol_uid===$data.selectedId?'selected':''"
+                                        onclick="this.highLight(feature)">
+                                        <label class="ms-4 cursor-pointer">
+                                            {{feature.name??feature.id??feature.getProperty('name')??feature.getProperty('id')??'未命名'}}
+                                        </label>
+                                    </li>
+                                </For>
+                            </ul>
+                        </div>
+                        <!-- 数量 -->
+                        <span class="badge bg-primary rounded-pill">{{group.features.length}}</span>
+                    </li>
+                </For>
+            </ul>
+        </div>
+    </div>
+    <!-- 位置信息 -->
+    <div class="input-group input-group-sm mt-2">
+        <span class="input-group-text">位置：{{$data.coordinate}}</span>
+        <select class="form-select" s-value="$data.unit" onchange="this.onUnitChange(value)">
+            <option value="m">米</option>
+            <option value="d">经纬度</option>
+        </select>
+        <button type="button" class="btn btn-outline-primary btn-sm" onclick="$data.expand=!$data.expand">
+            <i class="bi" s-class="$data.expand?'bi-arrow-up-square':'bi-arrow-down-square'"></i>
+        </button>
+    </div>
+    <!-- 属性信息 -->
+    <div class="i-table mt-2">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">字段</th>
+                    <th scope="col">值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <For each="$data.attrs" item="attr">
+                    <tr>
+                        <td>{{attr.key}}</td>
+                        <td>{{attr.value}}</td>
+                    </tr>
+                </For>
+            </tbody>
+        </table>
+    </div>
+    <!-- 个数 -->
+    <!-- <div class="mt-2">
+        识别了 {{$data.count}} 个要素
+    </div> -->
+    <div class="input-group input-group-sm mt-2">
+        <span class="input-group-text">识别了 {{$data.count}} 个要素</span>
+    </div>
+</div>

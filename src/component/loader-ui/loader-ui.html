@@ -1,71 +1,169 @@
-<ul class="nav nav-tabs">
-    <li class="nav-item">
-        <a class="nav-link active" onclick="this.clickTab(event,1)">GeoJson</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" onclick="this.clickTab(event,2)">ArcGis</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" onclick="this.clickTab(event,3)">SSMapServer</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" onclick="this.clickTab(event,4)">Tileset</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" onclick="this.clickTab(event,5)">WMS</a>
-    </li>
-</ul>
-<div class="content">
-    <If when="$data.active === 1">
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">url</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
-            </div>
+<div class="row gx-0">
+    <div class="col-md-3">
+        <ul class="nav nav-tabs vr">
+            <li class="nav-item">
+                <a class="nav-link active" onclick="this.clickTab(event,1)">GeoJson</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,2)">ArcGis</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,3)">SSMapServer</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,4)">Tileset</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,5)">WMS</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,6)">WMTS</a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-9">
+        <div class="content">
+            <If when="$data.active === 1">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个GeoJson文件的url地址，例如：https://example.com/data.geojson
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadGeoJson()">加载</button>
+            </If>
+            <If when="$data.active === 2">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个ArcGIS服务的MapServer地址，例如：https://example.com/arcgis/rest/services/World/MapServer
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadArcGis()">加载</button>
+            </If>
+            <If when="$data.active === 3">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个SServer服务的MapServer地址，例如：https://example.com/services/World/MapServer
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadSSMapServer()">加载</button>
+            </If>
+            <If when="$data.active === 4">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个3DTiles的tileset.json地址，例如：https://example.com/data/tileset.json
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadTileset()">加载</button>
+            </If>
+            <If when="$data.active === 5">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value"
+                            onkeydown="this.handleKeyDown(event)">
+                    </div>
+                    <div class="form-text">
+                        输入一个WMS服务的url地址，例如：https://example.com/geoserver/wms
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">layers</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.layers" onchange="$data.layers=value">
+                    </div>
+                    <div class="form-text">
+                        要加载的图层，例如：topp:states
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadWMS()">加载</button>
+            </If>
+            <If when="$data.active === 6">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" oninput="$data.url=value"
+                            onkeydown="this.handleKeyDown(event)">
+                    </div>
+                    <div class="form-text">
+                        输入一个WMTS服务的url地址，例如：https://example.com/geoserver/wmts
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">layers</label>
+                    <div class="col-sm-10">
+                        <!-- <input type="text" class="form-control" s-value="$data.wmtsParams.layer" onchange="$data.layer=value"> -->
+                        <select class="form-select form-select-sm" s-value="$data.wmtsParams.layer"
+                            onchange="this.layerSelect(value)">
+                            <For each="$data.wmtsParserLayers" item="layer" index="index">
+                                <option s-value="index">{{layer.title}}</option>
+                            </For>
+                        </select>
+                    </div>
+                    <div class="form-text">
+                        要加载的图层，例如：topp:states
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">style</label>
+                    <div class="col-sm-10">
+                        <select class="form-select form-select-sm" s-value="$data.wmtsParams.style"
+                            onchange="$data.wmtsParams.style = value">
+                            <For each="$data.selectedLayer.styles" item="style" index="index">
+                                <option s-value="style.id">{{style.title}}</option>
+                            </For>
+                        </select>
+                    </div>
+                    <div class="form-text">
+                        图层样式，例如：default
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">format</label>
+                    <div class="col-sm-10">
+                        <select class="form-select form-select-sm" s-value="$data.wmtsParams.format"
+                            onchange="this.formatSelect(value)">
+                            <For each="$data.selectedLayer.urls" item="format" index="index">
+                                <option s-value="index">{{format.format}}</option>
+                            </For>
+                        </select>
+                        <!-- <input type="text" class="form-control" s-value="$data.layer" onchange="$data.layer=value"> -->
+                    </div>
+                    <div class="form-text">
+                        瓦片格式，例如：image/png
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">tileMatrixSetID</label>
+                    <div class="col-sm-10">
+                        <select class="form-select form-select-sm" s-value="$data.wmtsParams.tileMatrixSetID"
+                            onchange="$data.wmtsParams.tileMatrixSetID=value">
+                            <For each="$data.selectedLayer.tileMatrixSets" item="tms" index="index">
+                                <option s-value="tms.title">{{tms.title}}</option>
+                            </For>
+                        </select>
+                    </div>
+                    <div class="form-text">
+                        tileMatrixSetID
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadWMTS()">加载</button>
+            </If>
         </div>
-        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadGeoJson()">加载</button>
-    </If>
-    <If when="$data.active === 2">
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">url</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadArcGis()">加载</button>
-    </If>
-    <If when="$data.active === 3">
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">url</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadSSMapServer()">加载</button>
-    </If>
-    <If when="$data.active === 4">
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">url</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadTileset()">加载</button>
-    </If>
-    <If when="$data.active === 5">
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">url</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value"
-                    onkeydown="this.handleKeyDown(event)">
-            </div>
-        </div>
-        <div class="mb-3 row">
-            <label for="url" class="col-sm-2 col-form-label">layers</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" s-value="$data.layers" onchange="$data.layers=value">
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mb-3" onclick="this.loadWMS()">加载</button>
-    </If>
+    </div>
 </div>

@@ -17,3 +17,11 @@
 - [版本 0.0.18] 2024.07.02
   1.识别组件鼠标样式 cursor = 'help'
   2.新增界面化服务加载组件loader-ui
+
+- [版本 0.0.19] 2024.07.04
+  1.识别组件更新，包括界面、识别逻辑
+  2.为配合识别功能修改了以下类中的方法
+    ArcGisMapServerImageryProvider.prototype.pickFeatures
+    SSMapServerProvider.prototype.pickFeatures
+    ImageryLayerCollection.prototype.pickImageryLayerFeatures2
+  3.修复了配置中的图层顺序与图上叠加顺序不符的问题

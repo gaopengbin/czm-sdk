@@ -53,18 +53,18 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
                 },
             });
             const data = await jsonResource.fetchJson();
-            if (data && data.fullExtent) {
+            if (data && data.initialExtent) {
                 const wkid =
-                    data.fullExtent.spatialReference &&
-                        data.fullExtent.spatialReference.wkid
-                        ? data.fullExtent.spatialReference.wkid
+                    data.initialExtent.spatialReference &&
+                        data.initialExtent.spatialReference.wkid
+                        ? data.initialExtent.spatialReference.wkid
                         : 4326;
                 if (wkid === 4326 || wkid === 4490) {
                     rectangle = Rectangle.fromDegrees(
-                        data.fullExtent.xmin,
-                        data.fullExtent.ymin,
-                        data.fullExtent.xmax,
-                        data.fullExtent.ymax
+                        data.initialExtent.xmin,
+                        data.initialExtent.ymin,
+                        data.initialExtent.xmax,
+                        data.initialExtent.ymax
                     );
                 } else {
                     if (proj4.defs(`EPSG:${wkid}`) === undefined && !getProjection(`EPSG:${wkid}`)) {
@@ -76,8 +76,8 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
                                 proj4.defs(`EPSG:${wkid}`, projection)
                             }
                         }
-                        let min = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmin, data.fullExtent.ymin]);
-                        let max = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.fullExtent.xmax, data.fullExtent.ymax]);
+                        let min = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.initialExtent.xmin, data.initialExtent.ymin]);
+                        let max = proj4(`EPSG:${wkid}`, 'EPSG:4326', [data.initialExtent.xmax, data.initialExtent.ymax]);
                         rectangle = Rectangle.fromDegrees(
                             min[0],
                             min[1],
@@ -404,7 +404,6 @@ const initObjects: any = {
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {
     const { layers = [] } = config;
-    layers.reverse();
     for (const layer of layers) {
         let node = await buildLayers(sceneTree, layer);
         sceneTree.root.addLayer(node);
@@ -414,7 +413,6 @@ export const initEarth = async (sceneTree: SceneTree, config: any) => {
 export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
     let node = null;
     if (layer.children) {
-        layer.children.reverse();
         layer.type = "group";
         let group = sceneTree.createGroup(layer.name);
         group.expand = layer.expand;

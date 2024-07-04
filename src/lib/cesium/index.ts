@@ -1,5 +1,6 @@
 import { Cartesian3, Viewer, Math, Ion, Rectangle } from 'cesium'
 import CesiumNavigation from 'cesium-navigation-es6'
+import './fixed/imageryLayer'
 const initScene = (container: string | Element, options?: Viewer.ConstructorOptions) => {
     const viewer = new Viewer(container, options)
     viewer.scene.postProcessStages.fxaa.enabled = true;
