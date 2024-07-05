@@ -112,6 +112,27 @@ class SceneTree {
         return node;
     }
 
+    removeLayerByGuid(guid: any) {
+        let node = this.layersMap.get(guid);
+        if (node) {
+            if (node._imageLayer) {
+                this._viewer.imageryLayers.remove(node._imageLayer);
+            } else if (node._tileset) {
+                this._viewer.scene.primitives.remove(node._tileset);
+            } else if (node._model) {
+                this._viewer.scene.primitives.remove(node._model);
+            } else if (node._terrain) {
+                if (this._viewer.terrainProvider === node._terrain) {
+                    (this._viewer.terrainProvider as any) = undefined;
+                }
+            } else if (node._dataSource) {
+                this._viewer.dataSources.remove(node._dataSource);
+            }
+            this.root.removeLayer(node);
+            this.updateSceneTree();
+        }
+    }
+
     async addImageryLayer(options: SSLayerOptions) {
         switch (options.type) {
             case "WMS":

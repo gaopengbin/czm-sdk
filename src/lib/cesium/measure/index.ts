@@ -609,3 +609,13 @@ const getCenter = (positions: any) => {
     }
     return null
 }
+
+export {
+    getCartesian3FromCartesian2,
+    transformWGS84ToCartesian,
+    transformCartesianToWGS84,
+    transformWGS84ToCartographic,
+    transformCartesianArrayToWGS84Array,
+    getPositionsArea,
+    getCenter
+}

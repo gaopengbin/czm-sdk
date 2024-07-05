@@ -51,8 +51,8 @@
     <div class="input-group input-group-sm mt-2">
         <span class="input-group-text">位置：{{$data.coordinate}}</span>
         <select class="form-select" s-value="$data.unit" onchange="this.onUnitChange(value)">
-            <option value="m">米</option>
             <option value="d">经纬度</option>
+            <option value="m">米</option>
         </select>
         <button type="button" class="btn btn-outline-primary btn-sm" onclick="$data.expand=!$data.expand">
             <i class="bi" s-class="$data.expand?'bi-arrow-up-square':'bi-arrow-down-square'"></i>
@@ -77,10 +77,6 @@
             </tbody>
         </table>
     </div>
-    <!-- 个数 -->
-    <!-- <div class="mt-2">
-        识别了 {{$data.count}} 个要素
-    </div> -->
     <div class="input-group input-group-sm mt-2">
         <span class="input-group-text">识别了 {{$data.count}} 个要素</span>
     </div>

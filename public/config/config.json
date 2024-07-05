@@ -42,6 +42,15 @@
       },
       {
         "type": "geojson",
+        "name": "China",
+        "url": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
+        "stroke": "rgba(0, 0, 255, 0.5)",
+        "strokeWidth": 2,
+        "fill": "rgba(0, 0, 255, 0.1)",
+        "clampToGround": true
+      },
+      {
+        "type": "geojson",
         "name": "geojson",
         "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E7%BD%91%E6%A0%BC&maxFeatures=500&outputFormat=application%2Fjson"
       },

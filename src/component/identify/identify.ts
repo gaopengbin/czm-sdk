@@ -1,5 +1,5 @@
 
-import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined } from "cesium";
+import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined, Math as CesiumMath } from "cesium";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import esri2geo from "@/lib/cesium/parser/esri2geo";
@@ -8,6 +8,8 @@ import ResizeHandle, { Mode } from "@/base/layout/ResizeHandle";
 import "@/lib/cesium/fixed/ArcGisMapServerImageryProvider"
 import "@/lib/cesium/fixed/imageryLayerCollection"
 import "./identify.scss"
+import { getCartesian3FromCartesian2 } from "@/lib/cesium/measure";
+import proj4 from "proj4";
 @Component({
     tagName: "czm-identify",
     className: "czm-identify",
@@ -24,6 +26,10 @@ export default class Identify extends BaseWidget {
             isEmpty: true,
             attrs: [],
             range: 'top',
+            coordinate: '',
+            position: null,
+            unit: 'd',
+            count: 0
         }
         this.highLightEntity = await this.viewer.dataSources.add(new GeoJsonDataSource());
         const container: any = this.querySelector('#tree-container');
@@ -33,34 +39,72 @@ export default class Identify extends BaseWidget {
         });
     }
     pickAndSelectObject(e: any) {
+        let position = getCartesian3FromCartesian2(this.viewer, e.position);
+        if (position) {
+            this.$data.position = position;
+            this.onUnitChange(this.$data.unit);
+        }
         this.clearHighLight();
         this.results = []
         this.loading = true;
         this.viewer.selectedEntity = this.pickEntity(this.viewer, e);
     }
-    pickEntity(viewer: Viewer, e: any) {
-        const picked = viewer.scene.pick(e.position);
-        if (defined(picked)) {
-            const id = defaultValue(picked.id, picked.primitive.id);
-            if (id instanceof Entity) {
-                this.highLight(id);
-                this.loading = false;
-                let results = [];
-                results.push({ layerName: id.name ?? id.id, features: [id] });
-                this.results = results;
-                return id;
-            }
 
-            if (picked instanceof Cesium3DTileFeature) {
-                this.highLight(picked);
-                this.loading = false;
-                let results = [];
-                results.push({ layerName: (picked.tileset as any).name, features: [picked] });
-                this.results = results;
+    onUnitChange(value: 'm' | 'd') {
+        this.$data.unit = value;
+        if (this.$data.position) {
+            let position = this.viewer.scene.globe.ellipsoid.cartesianToCartographic(this.$data.position);
+            position = [CesiumMath.toDegrees(position.longitude).toFixed(6), CesiumMath.toDegrees(position.latitude).toFixed(6), position.height.toFixed(2)];
+
+            if (value === 'd') {
+                this.$data.coordinate = position;
+            } else {
+                position = position.map((item: any) => parseFloat(item));
+                position = proj4('EPSG:4326', 'EPSG:3857', position);
+                position = [position[0].toFixed(2), position[1].toFixed(2), position[2].toFixed(2)];
+                this.$data.coordinate = position;
+            }
+        }
+    }
+
+    pickEntity(viewer: Viewer, e: any) {
+        let drillPick = viewer.scene.drillPick(e.position);
+        if (defined(drillPick) && drillPick.length > 0) {
+            let entities: any = [];
+            let features: any = [];
+            if (this.$data.range === 'top') {
+                drillPick = drillPick.slice(0, 1);
+            }
+            drillPick.forEach((item: any) => {
+                const id = defaultValue(item.id, item.primitive.id);
+                if (id instanceof Entity) {
+                    if (!entities[id.id]) {
+                        entities[id.id] = { layerName: '', features: [] }
+                    }
+                    entities[id.id].layerName = id.name ?? id.id;
+                    entities[id.id].features.push(id);
+                }
+                if (item instanceof Cesium3DTileFeature) {
+                    if (!features[(item.tileset as any).url]) {
+                        features[(item.tileset as any).url] = { layerName: '', features: [] }
+                    }
+                    features[(item.tileset as any).url].layerName = (item.tileset as any).name;
+                    features[(item.tileset as any).url].features.push(item);
+                }
+            })
+            entities = Object.values(entities);
+            features = Object.values(features);
+            this.$data.count = drillPick.length;
+            this.results = entities.concat(features);
+            this.loading = false;
+            this.highLight(this.results[0].features[0]);
+            if(this.results[0].features[0] instanceof Entity) {
+                return this.results[0].features[0];
+            }else if(this.results[0].features[0] instanceof Cesium3DTileFeature) {
                 return new Entity({
-                    name: this.getCesium3DTileFeatureName(picked),
-                    description: this.getCesium3DTileFeatureDescription(picked),
-                    feature: picked,
+                    name: this.getCesium3DTileFeatureName(this.results[0].features[0]),
+                    description: this.getCesium3DTileFeatureDescription(this.results[0].features[0]),
+                    feature: this.results[0].features[0],
                 } as any);
             }
         }
@@ -113,8 +157,8 @@ export default class Identify extends BaseWidget {
                     viewer.selectedEntity = this.createNoFeaturesEntity();
                     return;
                 }
-                console.log(features);
                 // 按feature.imageryLayer.guid分组
+                this.$data.count = features.length;
                 let results: any = []
                 features.forEach((feature: any) => {
                     if (!results[feature.imageryLayer.guid]) {
@@ -126,15 +170,15 @@ export default class Identify extends BaseWidget {
                 results = Object.values(results);
                 if (this.$data.range === 'top') {
                     results = results.slice(0, 1);
+                    this.$data.count = results[0].features.length;
                 }
                 this.results = results;
-                console.log(this.results);
                 // Select the first feature.
                 const feature = features[0];
                 this.highLight(feature);
-                if (feature.description) {
-                    feature.description = this.formatHtml(feature.description)
-                }
+                // if (feature.description) {
+                //     feature.description = this.formatHtml(feature.description)
+                // }
                 const entity = new Entity({
                     id: feature.name,
                     description: feature.description,
@@ -230,15 +274,15 @@ export default class Identify extends BaseWidget {
         if (feature && feature instanceof Entity) {
             if (feature.polygon) {
                 this.lastPolygonMaterial = clone(feature.polygon.material);
-                (feature.polygon.material as any) = Color.HOTPINK.withAlpha(0.5);
+                (feature.polygon.material as any) = Color.BLUE.withAlpha(0.5);
             }
             if (feature.polyline) {
                 this.lastPolylineMaterial = clone(feature.polyline.material);
-                (feature.polyline.material as any) = Color.HOTPINK.withAlpha(0.5);
+                (feature.polyline.material as any) = Color.BLUE.withAlpha(0.5);
             }
             if (feature.billboard) {
                 this.lastBillboardColor = clone(feature.billboard.color);
-                (feature.billboard.color as any) = Color.HOTPINK.withAlpha(0.5);
+                (feature.billboard.color as any) = Color.BLUE.withAlpha(0.5);
             }
 
             // 属性
@@ -247,10 +291,11 @@ export default class Identify extends BaseWidget {
                 attrs.push({ key, value: feature.properties[key] })
             }
             this.$data.attrs = attrs;
+            this.viewer.selectedEntity = feature;
             return
         }
         if (feature && feature instanceof Cesium3DTileFeature) {
-            feature.color = Color.HOTPINK.withAlpha(0.5);
+            feature.color = Color.BLUE.withAlpha(0.5);
 
             // 属性
             let attrs: any = [];
@@ -258,6 +303,11 @@ export default class Identify extends BaseWidget {
                 attrs.push({ key, value: feature.getProperty(key) })
             })
             this.$data.attrs = attrs;
+            this.viewer.selectedEntity = new Entity({
+                name: this.getCesium3DTileFeatureName(feature),
+                description: this.getCesium3DTileFeatureDescription(feature),
+                feature: feature,
+            } as any);
             return
         }
         if (feature && feature.data) {
@@ -269,8 +319,8 @@ export default class Identify extends BaseWidget {
             }
 
             this.highLightEntity = await this.viewer.dataSources.add(GeoJsonDataSource.load(geojson, {
-                stroke: Color.HOTPINK,
-                fill: Color.PINK.withAlpha(0.5),
+                stroke: Color.BLUE,
+                fill: Color.BLUE.withAlpha(0.5),
                 strokeWidth: 3,
             }));
 
