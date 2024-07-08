@@ -13,6 +13,8 @@ interface SSLayerOptions {
     layers?: string;
     rectangle?: Rectangle | Array<number>;
     zIndex?: number;
+    guid?: string;
+    customProps?: object;
 }
 export type SSArcGisLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
     rectangle?: Rectangle | Array<number>;

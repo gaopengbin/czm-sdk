@@ -20,7 +20,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
     Object.assign(ssMapServerLayer, {
         name: options.name,
         show: options.show,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
     });
     ssMapServerLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -47,6 +47,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
         name: options.name,
         index: ssMapServerLayer._layerIndex,
         guid: ssMapServerLayer.guid,
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             ssMapServerLayer.show = visible;
@@ -67,7 +68,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
         },
         get zIndex() {
             return leaf._zIndex;
-        }
+        },
     }
     return leaf;
 }
@@ -80,7 +81,7 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
     Object.assign(arcGisMapServerLayer, {
         name: options.name,
         show: options.show,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
     });
     arcGisMapServerLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -90,6 +91,7 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
         name: options.name,
         index: arcGisMapServerLayer._layerIndex,
         guid: arcGisMapServerLayer.guid,
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             arcGisMapServerLayer.show = visible;
@@ -126,7 +128,8 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             tileset.show = visible;
@@ -162,7 +165,8 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             wmsLayer.show = visible;
@@ -198,7 +202,8 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             wmtsLayer.show = visible;
@@ -234,7 +239,8 @@ export const GeoJsonLoader = async (viewer: Viewer, options: SSLayerOptions) => 
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             geoJsonLayer.show = visible;
@@ -271,7 +277,8 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             xyzLayer.show = visible;
@@ -303,7 +310,8 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
     const nullTerrain = new EllipsoidTerrainProvider({})
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
         _show: true,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
@@ -356,6 +364,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     const leaf: Leaf = {
         name: options.name,
         guid: uuid(),
+        customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
             modelEntity.show = visible;

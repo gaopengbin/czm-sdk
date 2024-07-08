@@ -70,13 +70,15 @@ export default class BaseEarth extends BaseWidget {
         });
         this.sceneTree = new SceneTree(viewer);
         this.viewer = viewer;
+        // window.viewer = viewer;
+        // window.earth = this;
     }
 
     renderFromJson(config: any) {
         if (config) {
             const wm = this.querySelector('webgis-widget-manager');
             wm?.remove();
-            if(this.viewer){
+            if (this.viewer) {
                 this.viewer.destroy();
                 this.viewer = null;
             }

@@ -36,6 +36,7 @@ class SceneTree {
         });
 
         this.root = new Group("root");
+        this.root._sceneTree = this;
     }
 
     get root(): Group {
@@ -111,24 +112,46 @@ class SceneTree {
         setLayersZIndex(this._viewer);
         return node;
     }
+    /**
+     * 获取图层
+     * @param guid 
+     * @returns 
+     */
+    getLayerByGuid(guid: string) {
+        return this.layersMap.get(guid);
+    }
 
+    /**
+     * 移除图层
+     * @param guid 图层guid
+     */
     removeLayerByGuid(guid: any) {
         let node = this.layersMap.get(guid);
         if (node) {
-            if (node._imageLayer) {
-                this._viewer.imageryLayers.remove(node._imageLayer);
-            } else if (node._tileset) {
-                this._viewer.scene.primitives.remove(node._tileset);
-            } else if (node._model) {
-                this._viewer.scene.primitives.remove(node._model);
-            } else if (node._terrain) {
-                if (this._viewer.terrainProvider === node._terrain) {
-                    (this._viewer.terrainProvider as any) = undefined;
+            if (node.children) {
+                const children = node.children;
+                //逆向删除
+                for (let i = children.length - 1; i >= 0; i--) {
+                    this.removeLayerByGuid(children[i].guid);
                 }
-            } else if (node._dataSource) {
-                this._viewer.dataSources.remove(node._dataSource);
+            } else {
+                if (node._imageLayer) {
+                    this._viewer.imageryLayers.remove(node._imageLayer);
+                } else if (node._tileset) {
+                    this._viewer.scene.primitives.remove(node._tileset);
+                } else if (node._model) {
+                    this._viewer.scene.primitives.remove(node._model);
+                } else if (node._terrain) {
+                    if (this._viewer.terrainProvider === node._terrain) {
+                        (this._viewer.terrainProvider as any) = undefined;
+                    }
+                } else if (node._dataSource) {
+                    this._viewer.dataSources.remove(node._dataSource);
+                }
             }
-            this.root.removeLayer(node);
+            if (node.parent) {
+                node.parent.removeLayer(node);
+            }
             this.updateSceneTree();
         }
     }
@@ -212,7 +235,9 @@ class SceneTree {
 
     // 创建分组用于管理图层
     createGroup(groupName: string) {
-        return new Group(groupName);
+        const group = new Group(groupName);
+        group._sceneTree = this;
+        return group;
     }
 
     // addGroup(group: any) {
@@ -241,6 +266,7 @@ abstract class Leaf implements SceneTreeLeaf {
     abstract setVisible: (visible: boolean) => void;
     abstract zoomTo: () => void;
     show!: boolean;
+    abstract remove?: () => void;
     constructor(name: string) {
         this.name = name;
     }
@@ -292,6 +318,7 @@ class Group {
     children: children = new children();
     guid: string = uuid();
     _expand: boolean = false;
+    _sceneTree: SceneTree | null = null;
     constructor(name: string) {
         this.name = name;
     }
@@ -312,10 +339,22 @@ class Group {
             }
             let length = this.children.push(child);
             layer.then((res: any) => {
+                res.parent = this;
+                res.remove = () => {
+                    if (this._sceneTree) {
+                        this._sceneTree.removeLayerByGuid(res.guid);
+                    }
+                }
                 this.children[length - 1] = res;
                 getSceneTree().updateSceneTree();
             });
         } else {
+            layer.parent = this;
+            layer.remove = () => {
+                if (this._sceneTree) {
+                    this._sceneTree.removeLayerByGuid(layer.guid);
+                }
+            }
             this.children.push(layer);
         }
     }

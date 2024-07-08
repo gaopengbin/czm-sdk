@@ -2,16 +2,6 @@
   "earth": {
     "layers": [
       {
-        "type": "arcgismapserver",
-        "name": "xyq21",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/XYQ21/MapServer"
-      },
-      {
-        "type": "arcgismapserver",
-        "name": "9江",
-        "url": "http://120.48.115.17:6080/arcgis/rest/services/4490/MapServer"
-      },
-      {
         "url": "http://120.48.115.17:81/data/F0001/tileset.json",
         "name": "分层分户白模",
         "show": false,
@@ -57,7 +47,11 @@
       {
         "type": "ssmapserver",
         "name": "hongkong",
-        "url": "http://192.168.0.10:7578/services/hongkong/MapServer"
+        "url": "http://192.168.0.10:7578/services/hongkong/MapServer",
+        "customProps":{
+          "test": "test"
+        },
+        "guid": "123456"
       },
       {
         "type": "ssmapserver",

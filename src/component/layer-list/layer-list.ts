@@ -82,6 +82,18 @@ export default class LayerList extends BaseWidget {
                         },
                         show: (node: any) => !node.children,
                     },
+                    {
+                        name: "删除",
+                        icon: "bi bi-trash",
+                        onClick: (node: any, n: any) => {
+                            // console.log("删除", node, n);
+                            let layer = this.sceneTree.getLayerByGuid(node.guid);
+                            layer && layer.remove();
+                            // node.remove();
+                            // sceneTree.removeLayer(node.guid);
+                        },
+                        // show: (node: any) => !node.children,
+                    },
                 ],
             },
         });

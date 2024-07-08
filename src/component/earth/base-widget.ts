@@ -138,10 +138,10 @@ export default abstract class BaseWidget extends HTMLElement {
     }
 
     set viewer(value) {
-        if (!BaseWidget.#viewer && value) {
-            BaseWidget.#viewer = value;
-            this.earthReady();
-        }
+        // if (!BaseWidget.#viewer && value) {
+        BaseWidget.#viewer = value;
+        this.earthReady();
+        // }
     }
 
     get sceneTree() {
