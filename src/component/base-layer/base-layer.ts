@@ -14,12 +14,17 @@ import { BaseLayerPicker, ProviderViewModel } from "cesium";
 export default class BaseLayer extends BaseWidget {
     _layerList: any = [];
     _baseLayerPicker: any;
+    _selectedImageryIndex: number = 0;
+    _selectedTerrainIndex: number = 0;
+    _selectedImageryProviderViewModel: any;
+    _selectedTerrainProviderViewModel: any;
     constructor() {
         super();
     }
 
     public async afterInit() {
-        this.layerList = this.globalConfig?.earth?.baseLayers || [];
+        const layerlist = this.globalConfig?.earth?.baseLayers || [];
+        this.layerList = JSON.parse(JSON.stringify(layerlist));
     }
     set layerList(value: any) {
         this._layerList = value;
@@ -28,6 +33,16 @@ export default class BaseLayer extends BaseWidget {
 
     get layerList() {
         return this._layerList;
+    }
+
+    get selectedImageryIndex() {
+        const index = this._baseLayerPicker.viewModel.imageryProviderViewModels.indexOf(this._baseLayerPicker.viewModel.selectedImagery);
+        return index;
+    }
+
+    get selectedTerrainIndex() {
+        const index = this._baseLayerPicker.viewModel.terrainProviderViewModels.indexOf(this._baseLayerPicker.viewModel.selectedTerrain);
+        return index;
     }
 
     async initLayerList() {
@@ -51,8 +66,13 @@ export default class BaseLayer extends BaseWidget {
                         }
                     })
                 );
+                if (layer.isDefault) {
+                    this._selectedTerrainIndex = terrainViewModels.length - 1;
+                    this._selectedTerrainProviderViewModel = terrainViewModels[terrainViewModels.length - 1];
+                }
             } else {
                 let provider = await createProvider(layer);
+
                 imageryViewModels.push(
                     new ProviderViewModel({
                         name: layer.name,
@@ -63,6 +83,10 @@ export default class BaseLayer extends BaseWidget {
                         }
                     })
                 );
+                if (layer.isDefault) {
+                    this._selectedImageryIndex = terrainViewModels.length - 1;
+                    this._selectedImageryProviderViewModel = imageryViewModels[imageryViewModels.length - 1];
+                }
             }
 
         }
@@ -71,11 +95,12 @@ export default class BaseLayer extends BaseWidget {
             globe: this.viewer.scene.globe,
             imageryProviderViewModels: imageryViewModels,
             terrainProviderViewModels: terrainViewModels,
+            selectedImageryProviderViewModel: this._selectedImageryProviderViewModel ?? imageryViewModels[0],
+            selectedTerrainProviderViewModel: this._selectedTerrainProviderViewModel ?? terrainViewModels[0]
         })
         if (this._baseLayerPicker) {
             let title: any = this.querySelector('.cesium-baseLayerPicker-sectionTitle');
             title.innerHTML = '底图切换';
-
         }
     }
 }

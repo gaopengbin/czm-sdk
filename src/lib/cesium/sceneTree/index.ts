@@ -267,6 +267,7 @@ abstract class Leaf implements SceneTreeLeaf {
     abstract zoomTo: () => void;
     show!: boolean;
     abstract remove?: () => void;
+    abstract toJSON?: () => void;
     constructor(name: string) {
         this.name = name;
     }
@@ -376,6 +377,17 @@ class Group {
         });
     }
 
+    toJSON(){
+        this.children.reverse();
+        return {
+            name: this.name,
+            guid: this.guid,
+            expand: this.expand,
+            children: this.children.map((child: any) => {
+                return child.toJSON ? child.toJSON() : child;
+            })
+        }
+    }
 
 }
 export { SceneTree };

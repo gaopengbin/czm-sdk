@@ -3,7 +3,7 @@ import { initScene, SceneTree, initViewer } from '../../lib';
 import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
-import { Ion } from 'cesium';
+import { Cartographic, Ion, Math } from 'cesium';
 @Component({
     tagName: 'base-earth',
     className: 'base-earth',
@@ -84,6 +84,64 @@ export default class BaseEarth extends BaseWidget {
             }
             this.config = config;
             this.configLoaded();
+        }
+    }
+
+    toJSON() {
+        const layers = this.sceneTree.root.toJSON().children;
+        let baseLayers = this.config.earth.baseLayers;
+        const ionDefaultToken = this.config.earth.viewer.ionDefaultToken;
+        const currentPositon = this.viewer.camera.position;
+        // 转为经纬度
+        const cartographic = Cartographic.fromCartesian(currentPositon);
+        const position = [
+            Math.toDegrees(cartographic.longitude),
+            Math.toDegrees(cartographic.latitude),
+            cartographic.height
+        ];
+
+        const heading = this.viewer.camera.heading;
+        const pitch = this.viewer.camera.pitch;
+        const roll = this.viewer.camera.roll;
+        const hpr = [
+            Math.toDegrees(heading),
+            Math.toDegrees(pitch),
+            Math.toDegrees(roll)
+        ];
+
+        const baseLayerWidget: any = this.querySelector('base-layer');
+        if (baseLayerWidget) {
+            const selectedImageryIndex = baseLayerWidget.selectedImageryIndex;
+            const selectedTerrainIndex = baseLayerWidget.selectedTerrainIndex;
+            let imageries = [], terrains = [];
+            if (selectedImageryIndex > -1) {
+                imageries = baseLayers.filter((layer: any) => layer.type !== 'terrain');
+                imageries = imageries.map((layer: any, index: number) => {
+                    layer.isDefault = index === selectedImageryIndex;
+                    return layer;
+                });
+            }
+            if (selectedTerrainIndex > -1) {
+                terrains = baseLayers.filter((layer: any) => layer.type === 'terrain');
+                terrains = terrains.map((layer: any, index: number) => {
+                    layer.isDefault = index === selectedTerrainIndex;
+                    return layer;
+                });
+            }
+            baseLayers = [...imageries, ...terrains];
+        }
+
+        return {
+            earth: {
+                layers,
+                baseLayers,
+                viewer: {
+                    ionDefaultToken,
+                    position,
+                    hpr
+                }
+            },
+            widgets: this.globalConfig.widgets
         }
     }
 }

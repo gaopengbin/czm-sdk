@@ -2,6 +2,23 @@
   "earth": {
     "layers": [
       {
+        "type": "geojson",
+        "name": "poi",
+        "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E5%8D%95%E8%BD%A6%E5%85%85%E7%94%B5%E6%A1%A9&maxFeatures=500&outputFormat=application%2Fjson",
+        "markerSymbol": "circle",
+        "markerColor": "rgba(255, 255, 0, 0.6)",
+        "markerSize": 30,
+        "markerImage": "/node_modules/cesium/Build/Cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "width": 20,
+        "height": 20,
+        "showPopup": false,
+        "cluster": {
+          "enabled": true,
+          "pixelRange": 20,
+          "minimumClusterSize": 2
+        }
+      },
+      {
         "url": "http://120.48.115.17:81/data/F0001/tileset.json",
         "name": "分层分户白模",
         "show": false,
@@ -48,7 +65,7 @@
         "type": "ssmapserver",
         "name": "hongkong",
         "url": "http://192.168.0.10:7578/services/hongkong/MapServer",
-        "customProps":{
+        "customProps": {
           "test": "test"
         },
         "guid": "123456"
@@ -89,7 +106,8 @@
         "layer": "img",
         "style": "default",
         "format": "tiles",
-        "tileMatrixSetID": "c"
+        "tileMatrixSetID": "c",
+        "isDefault": true
       },
       {
         "type": "xyz",

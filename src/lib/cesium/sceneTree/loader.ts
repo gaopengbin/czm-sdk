@@ -8,11 +8,13 @@ import {
     defaultValue,
     EllipsoidTerrainProvider,
     Cartesian3,
+    Math as CesiumMath,
 } from "cesium";
 import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const esri = await createSSMapServer(options);
     let ssMapServerLayer: SSImageryLayer =
         viewer.imageryLayers.addImageryProvider(esri);
@@ -26,22 +28,6 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
     if (options.zoomTo) {
         viewer.zoomTo(ssMapServerLayer);
     }
-
-    // 绘制范围
-    // console.log(esri);
-    // if (esri.rectangle instanceof Rectangle) {
-    //     const { rectangle } = esri;
-
-    //     const extentEntity = new Entity({
-    //         rectangle: {
-    //             coordinates: rectangle,
-    //             material: Color.RED.withAlpha(0.5),
-    //             outline: true,
-    //             outlineColor: Color.BLACK,
-    //         },
-    //     });
-    //     viewer.entities.add(extentEntity);
-    // }
 
     const leaf: Leaf = {
         name: options.name,
@@ -69,10 +55,41 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
         get zIndex() {
             return leaf._zIndex;
         },
+        get rectangle() {
+            const rectangle = ssMapServerLayer.imageryProvider.rectangle;
+            return rectangle ? [
+                CesiumMath.toDegrees(rectangle.west),
+                CesiumMath.toDegrees(rectangle.south),
+                CesiumMath.toDegrees(rectangle.east),
+                CesiumMath.toDegrees(rectangle.north),
+            ] : undefined;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "ssmapserver",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: (leaf._imageLayer?.imageryProvider as any).url,
+            layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            rectangle: (() => {
+                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                return rectangle ? [
+                    CesiumMath.toDegrees(rectangle.west),
+                    CesiumMath.toDegrees(rectangle.south),
+                    CesiumMath.toDegrees(rectangle.east),
+                    CesiumMath.toDegrees(rectangle.north),
+                ] : undefined;
+            })(),
+        }
     }
     return leaf;
 }
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const esri = await createArcGisMapServer(options);
 
     let arcGisMapServerLayer: SSImageryLayer =
@@ -112,12 +129,43 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        get rectangle() {
+            const rectangle = arcGisMapServerLayer.imageryProvider.rectangle;
+            return rectangle ? [
+                CesiumMath.toDegrees(rectangle.west),
+                CesiumMath.toDegrees(rectangle.south),
+                CesiumMath.toDegrees(rectangle.east),
+                CesiumMath.toDegrees(rectangle.north),
+            ] : undefined;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "arcgismapserver",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: (leaf._imageLayer?.imageryProvider as any).url,
+            layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            rectangle: (() => {
+                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                return rectangle ? [
+                    CesiumMath.toDegrees(rectangle.west),
+                    CesiumMath.toDegrees(rectangle.south),
+                    CesiumMath.toDegrees(rectangle.east),
+                    CesiumMath.toDegrees(rectangle.north),
+                ] : undefined;
+            })()
         }
     }
     return leaf;
 }
 
 export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const tileset: SSTilesetLayer = await createTileset(options);
     viewer.scene.primitives.add(tileset);
 
@@ -146,16 +194,27 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
         _tileset: tileset,
         set zIndex(value: number) {
             leaf._zIndex = value;
-            // setLayersZIndex(viewer);
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "tileset",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: leaf?._tileset?.resource?.url,
         }
     }
     return leaf;
 }
 
 export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const wms = await createWMS(options);
     let wmsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wms);
     wmsLayer.name = options.name;
@@ -187,12 +246,43 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        get rectangle() {
+            const rectangle = wmsLayer.imageryProvider.rectangle;
+            return rectangle ? [
+                CesiumMath.toDegrees(rectangle.west),
+                CesiumMath.toDegrees(rectangle.south),
+                CesiumMath.toDegrees(rectangle.east),
+                CesiumMath.toDegrees(rectangle.north),
+            ] : undefined;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "wms",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: (leaf._imageLayer?.imageryProvider as any).url,
+            layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            rectangle: (() => {
+                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                return rectangle ? [
+                    CesiumMath.toDegrees(rectangle.west),
+                    CesiumMath.toDegrees(rectangle.south),
+                    CesiumMath.toDegrees(rectangle.east),
+                    CesiumMath.toDegrees(rectangle.north),
+                ] : undefined;
+            })()
         }
     }
     return leaf;
 }
 
 export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const wmts = await createWMTS(options);
     let wmtsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wmts);
     wmtsLayer.name = options.name;
@@ -224,12 +314,43 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        get rectangle() {
+            const rectangle = wmtsLayer.imageryProvider.rectangle;
+            return rectangle ? [
+                CesiumMath.toDegrees(rectangle.west),
+                CesiumMath.toDegrees(rectangle.south),
+                CesiumMath.toDegrees(rectangle.east),
+                CesiumMath.toDegrees(rectangle.north),
+            ] : undefined;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "wmts",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: (leaf._imageLayer?.imageryProvider as any).url,
+            layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            rectangle: (() => {
+                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                return rectangle ? [
+                    CesiumMath.toDegrees(rectangle.west),
+                    CesiumMath.toDegrees(rectangle.south),
+                    CesiumMath.toDegrees(rectangle.east),
+                    CesiumMath.toDegrees(rectangle.north),
+                ] : undefined;
+            })()
         }
     }
     return leaf;
 }
 
-export const GeoJsonLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+export const GeoJsonLoader = async (viewer: Viewer, options: any) => {
+    const opt = JSON.parse(JSON.stringify(options));
     const geoJson: any = await createGeoJson(options);
     let geoJsonLayer: any = await viewer.dataSources.add(geoJson);
     geoJsonLayer.name = options.name;
@@ -261,12 +382,32 @@ export const GeoJsonLoader = async (viewer: Viewer, options: SSLayerOptions) => 
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "geojson",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: options.url,
+            stroke: options.stroke?.toCssColorString(),
+            fill: options.fill?.toCssColorString(),
+            strokeWidth: options.strokeWidth,
+            markerSymbol: options.markerSymbol,
+            markerSize: options.markerSize,
+            markerColor: options.markerColor?.toCssColorString(),
+            clampToGround: options.clampToGround,
+            cluster: options.cluster,
         }
     }
     return leaf;
 }
 
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     let xyz = await createXYZ(options);
     let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
     xyzLayer.name = options.name;
@@ -299,12 +440,42 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        rectangle: () => {
+            const rectangle = xyzLayer.rectangle;
+            return rectangle ? [
+                CesiumMath.toDegrees(rectangle.west),
+                CesiumMath.toDegrees(rectangle.south),
+                CesiumMath.toDegrees(rectangle.east),
+                CesiumMath.toDegrees(rectangle.north),
+            ] : undefined;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "xyz",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: (leaf._imageLayer?.imageryProvider as any).url,
+            rectangle: (() => {
+                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                return rectangle ? [
+                    CesiumMath.toDegrees(rectangle.west),
+                    CesiumMath.toDegrees(rectangle.south),
+                    CesiumMath.toDegrees(rectangle.east),
+                    CesiumMath.toDegrees(rectangle.north),
+                ] : undefined;
+            })()
         }
     }
     return leaf;
 }
 
 export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
     let terrainProvider = await createTerrain(options);
     viewer.scene.terrainProvider = terrainProvider;
     const nullTerrain = new EllipsoidTerrainProvider({})
@@ -341,13 +512,25 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "terrain",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: options.url,
+            rectangle: options.rectangle,
         }
     }
     return leaf;
 }
 
 export const ModelLoader = async (viewer: Viewer, options: any) => {
-    // const model = await createModel(options);
+    const opt = JSON.parse(JSON.stringify(options));
     let position = Cartesian3.fromDegrees(options.position[0], options.position[1], options.position[2]);
     const modelEntity = viewer.entities.add({
         position: position,
@@ -385,6 +568,18 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         },
         get zIndex() {
             return leaf._zIndex;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "model",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: options.url,
+            position: options.position,
         }
     }
     return leaf;
