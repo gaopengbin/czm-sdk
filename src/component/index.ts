@@ -9,4 +9,6 @@ export { default as Measure } from "./measure/measure";
 export { default as Identify } from "./identify/identify";
 export { default as StatusBar } from "./status-bar/status-bar";
 export { default as LoaderUI } from "./loader-ui/loader-ui";
+export { default as WhiteModel } from "./white-model/white-model";
+export { default as SceneSaver } from "./scene-saver/scene-saver";
 export { Component } from "./core/decorators";

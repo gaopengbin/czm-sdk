@@ -9,8 +9,6 @@ import { debounce } from "../../common/debounce";
 import { ArcGisMapServerLoader, GeoJsonLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
-import { getSceneTree } from "@/component";
-
 
 class SceneTree {
     [x: string]: any;
@@ -148,6 +146,7 @@ class SceneTree {
                 } else if (node._dataSource) {
                     this._viewer.dataSources.remove(node._dataSource);
                 }
+                this.layersMap.delete(node.guid);
             }
             if (node.parent) {
                 node.parent.removeLayer(node);
@@ -347,7 +346,8 @@ class Group {
                     }
                 }
                 this.children[length - 1] = res;
-                getSceneTree().updateSceneTree();
+                // getSceneTree().updateSceneTree();
+                this._sceneTree?.updateSceneTree();
             });
         } else {
             layer.parent = this;

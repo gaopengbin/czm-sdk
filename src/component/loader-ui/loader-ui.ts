@@ -73,10 +73,10 @@ export default class LoaderUI extends BaseWidget {
             name: "TWWW",
             url: this.$data.url,
             show: true,
-            zoomTo: false,
+            zoomTo: true,
         });
         this.sceneTree.root?.addLayer(ssmapserver);
-        ssmapserver?.zoomTo();
+        // ssmapserver?.zoomTo();
     }
 
     async loadTileset() {

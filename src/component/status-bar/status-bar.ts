@@ -36,7 +36,7 @@ export default class StatusBar extends BaseWidget {
             if (fps) {
                 this.$data.fps = fps.toFixed(0);
             }
-            this.$data.cameraHeight = (camera.positionCartographic.height / 1000).toFixed(2);
+            this.$data.cameraHeight = (camera.positionCartographic.height).toFixed(2);
             this.$data.heading = CesiumMath.toDegrees(camera.heading).toFixed(2);
             this.$data.pitch = CesiumMath.toDegrees(camera.pitch).toFixed(2);
         }, 100);

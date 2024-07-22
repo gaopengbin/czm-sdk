@@ -215,6 +215,7 @@ export default class WidgetIcon extends BaseWidget {
                 viewer: this.viewer,
                 globalConfig: this.globalConfig,
                 config: _config,
+                mapView: this.mapView
             });
         }
         else {

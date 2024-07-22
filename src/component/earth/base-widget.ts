@@ -80,7 +80,6 @@ export default abstract class BaseWidget extends HTMLElement {
 
     public startup(args: {
         mapView?: any;
-        map?: any;
         config: any;
         mapConfig?: any;
         viewer?: any;
@@ -89,6 +88,7 @@ export default abstract class BaseWidget extends HTMLElement {
         this.viewer = args.viewer;
         this.config = args.config;
         this.globalConfig = args.globalConfig;
+        this.mapView = args.mapView;
     }
 
     public get manifest() {
@@ -109,6 +109,16 @@ export default abstract class BaseWidget extends HTMLElement {
 
     set config(value) {
         this._config = value;
+    }
+
+    get mapView() {
+        return this._mapView;
+    }
+
+    set mapView(value) {
+        if (value) {
+            this._mapView = value;
+        }
     }
 
     /**

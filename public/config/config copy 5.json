@@ -2,11 +2,6 @@
   "earth": {
     "layers": [
       {
-        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-        "name": "分层分户白模",
-        "type": "tileset"
-      },
-      {
         "type": "geojson",
         "name": "poi",
         "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E5%8D%95%E8%BD%A6%E5%85%85%E7%94%B5%E6%A1%A9&maxFeatures=500&outputFormat=application%2Fjson",
@@ -24,6 +19,35 @@
         }
       },
       {
+        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
+        "name": "分层分户白模",
+        "show": false,
+        "type": "tileset",
+        "preloadWhenHidden": true
+      },
+      {
+        "url": "http://120.48.115.17:81/data/%E6%A1%A5%E6%A2%81BIM/tileset.json",
+        "name": "BIM",
+        "type": "tileset",
+        "preloadWhenHidden": true
+      },
+      {
+        "name": "SSMapServer",
+        "children": [
+          {
+            "type": "ssmapserver",
+            "name": "TW",
+            "url": "http://192.168.0.10:7578/services/TW/MapServer",
+            "layers": "0,1"
+          },
+          {
+            "type": "ssmapserver",
+            "name": "Macao",
+            "url": "http://192.168.0.10:7578/services/Macao/MapServer"
+          }
+        ]
+      },
+      {
         "type": "geojson",
         "name": "China",
         "url": "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
@@ -36,6 +60,31 @@
         "type": "geojson",
         "name": "geojson",
         "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E7%BD%91%E6%A0%BC&maxFeatures=500&outputFormat=application%2Fjson"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "hongkong",
+        "url": "http://192.168.0.10:7578/services/hongkong/MapServer",
+        "customProps": {
+          "test": "test"
+        },
+        "guid": "123456"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_ORACLE",
+        "url": "http://192.168.0.10:7578/services/DYT_ORACLE/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "DYT_PG",
+        "url": "http://192.168.0.10:7578/services/DYT_PG/MapServer"
+      },
+      {
+        "type": "ssmapserver",
+        "name": "北京路网",
+        "url": "http://192.168.0.10:7578/services/%E5%8C%97%E4%BA%AC%E5%B8%82/MapServer",
+        "tilingScheme": "gcj02"
       },
       {
         "type": "arcgismapserver",
@@ -156,18 +205,6 @@
       "position": {
         "left": 10,
         "top": 290,
-        "width": 600,
-        "height": 400
-      },
-      "inPanel": true
-    },
-    {
-      "label": "场景管理",
-      "tagName": "czm-scene-saver",
-      "icon": "bi-tools",
-      "position": {
-        "left": 10,
-        "top": 350,
         "width": 600,
         "height": 400
       },

@@ -39,8 +39,7 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
             token: options.token,
         });
     }
-
-    // 获取地图范围
+     // 获取地图范围
     if (options.rectangle && Array.isArray(options.rectangle)) {
         rectangle = Rectangle.fromDegrees(...options.rectangle);
     } else {
@@ -435,6 +434,13 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
                 name: layer.name,
                 ...layer,
                 status: "error",
+                toJSON: () => {
+                    return {
+                        name: layer.name,
+                        ...layer,
+                        status: "error",
+                    }
+                }
             }
         }
 

@@ -1,0 +1,21 @@
+<div class="grid">
+    <div class="scene-item">
+        <div class="scene-saver__name">
+            <span>新建场景</span>
+        </div>
+        <div class="scene-saver__btns">
+            <button class="scene-saver__btn" onclick="this.saveScene()">NEW</button>
+        </div>
+    </div>
+    <For each="$data.sceneList" item="item">
+        <div class="scene-item">
+            <div class="scene-saver__name">
+                <span>{{item.name}}</span>
+            </div>
+            <div class="scene-saver__btns">
+                <button class="scene-saver__btn" onclick="this.loadScene(item.content)">Load</button>
+                <button class="scene-saver__btn" onclick="this.removeScene(item.guid)">Delete</button>
+            </div>
+        </div>
+    </For>
+</div>

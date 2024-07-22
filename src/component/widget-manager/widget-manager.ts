@@ -102,7 +102,7 @@ export default class WidgetManager extends BaseWidget {
     createIcon(_config: WidgetConfig): BaseWidget {
         const icon = document.createElement('webgis-widget-icon') as BaseWidget;
         icon.startup({
-            // mapView: this.mapView,
+            mapView: this.mapView,
             // map: this.map,
             config: _config,
             globalConfig: this.globalConfig,
@@ -133,7 +133,7 @@ export default class WidgetManager extends BaseWidget {
             throw new Error(`没有找到tagName为${_config.tagName}的组件`);
         }
         widget.startup({
-            // mapView: this.mapView,
+            mapView: this.mapView,
             // map: this.map,
             viewer: this.viewer,
             config: _config.config,

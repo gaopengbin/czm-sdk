@@ -33,7 +33,8 @@ export default class BaseEarth extends BaseWidget {
         widgetManagerEl.startup({
             config: this.globalConfig.widgets,
             viewer: this.viewer,
-            globalConfig: this.globalConfig
+            globalConfig: this.globalConfig,
+            mapView: this
         });
         this.childNodes[0] ? this.insertBefore(widgetManagerEl, this.childNodes[0]) : this.appendChild(widgetManagerEl);
 
