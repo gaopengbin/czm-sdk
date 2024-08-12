@@ -97,10 +97,13 @@ export default class Identify extends BaseWidget {
             this.$data.count = drillPick.length;
             this.results = entities.concat(features);
             this.loading = false;
+            if (this.results.length === 0) {
+                return;
+            }
             this.highLight(this.results[0].features[0]);
-            if(this.results[0].features[0] instanceof Entity) {
+            if (this.results[0].features[0] instanceof Entity) {
                 return this.results[0].features[0];
-            }else if(this.results[0].features[0] instanceof Cesium3DTileFeature) {
+            } else if (this.results[0].features[0] instanceof Cesium3DTileFeature) {
                 return new Entity({
                     name: this.getCesium3DTileFeatureName(this.results[0].features[0]),
                     description: this.getCesium3DTileFeatureDescription(this.results[0].features[0]),
@@ -311,13 +314,14 @@ export default class Identify extends BaseWidget {
             return
         }
         if (feature && feature.data) {
+            console.log(feature)
             let geojson = {};
             if (feature.data.geometryType) {
                 geojson = esri2geo.toGeoJSON({ features: [feature.data] })
             } else {
                 geojson = feature.data
             }
-
+            // debugger
             this.highLightEntity = await this.viewer.dataSources.add(GeoJsonDataSource.load(geojson, {
                 stroke: Color.BLUE,
                 fill: Color.BLUE.withAlpha(0.5),
@@ -326,11 +330,18 @@ export default class Identify extends BaseWidget {
 
             // 属性
             let attrs = [];
-            for (let key in feature.data.attributes) {
-                attrs.push({ key, value: feature.data.attributes[key] })
+            if (feature.data.properties) {
+                for (let key in feature.data.properties) {
+                    attrs.push({ key, value: feature.data.properties[key] })
+                }
+            } else if (feature.data.attributes) {
+                for (let key in feature.data.attributes) {
+                    attrs.push({ key, value: feature.data.attributes[key] })
+                }
             }
-            this.$data.attrs = attrs;
 
+            this.$data.attrs = attrs;
+            console.log(attrs)
         } else {
             if (this.highLightEntity) {
                 this.viewer.dataSources.remove(this.highLightEntity);

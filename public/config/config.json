@@ -2,11 +2,6 @@
   "earth": {
     "layers": [
       {
-        "url": "http://120.48.115.17:81/data/F0001/tileset.json",
-        "name": "分层分户白模",
-        "type": "tileset"
-      },
-      {
         "type": "geojson",
         "name": "poi",
         "url": "http://120.46.179.233/geoserver/village/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=village%3A%E5%8D%95%E8%BD%A6%E5%85%85%E7%94%B5%E6%A1%A9&maxFeatures=500&outputFormat=application%2Fjson",
@@ -164,7 +159,7 @@
     {
       "label": "场景管理",
       "tagName": "czm-scene-saver",
-      "icon": "bi-tools",
+      "icon": "bi-image",
       "position": {
         "left": 10,
         "top": 350,

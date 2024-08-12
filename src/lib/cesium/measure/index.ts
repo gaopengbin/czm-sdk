@@ -1,4 +1,4 @@
-import { CallbackProperty, Cartesian2, Cartesian3, Cartographic, Cesium3DTileFeature, Cesium3DTileset, Color, HorizontalOrigin, Model, ScreenSpaceEventHandler, ScreenSpaceEventType, VerticalOrigin, Viewer, Math as CMath, EllipsoidTerrainProvider, Ellipsoid, PolygonHierarchy, PolylineDashMaterialProperty } from "cesium";
+import { CallbackProperty, Cartesian2, Cartesian3, Cartographic, Cesium3DTileFeature, Cesium3DTileset, Color, HorizontalOrigin, Model, ScreenSpaceEventHandler, ScreenSpaceEventType, VerticalOrigin, Viewer, Math as CMath, EllipsoidTerrainProvider, Ellipsoid, PolygonHierarchy, PolylineDashMaterialProperty, Ray, Scene, SceneMode } from "cesium";
 import { Helper } from "../helper";
 export class MeasureTool {
     viewer: Viewer;
@@ -61,13 +61,13 @@ class Measure {
             font: "14px sans-serif bold",
             horizontalOrigin: HorizontalOrigin.CENTER,
             verticalOrigin: VerticalOrigin.BOTTOM,
-            fillColor: Color.WHITE,
+            fillColor: Color.WHITE.withAlpha(0.9),
             outlineColor: Color.WHITE,
             outlineWidth: 2,
             backgroundColor: Color.BLACK.withAlpha(0.5),
             showBackground: true,
-            pixelOffset: new Cartesian3(0, 0, -20),
-            eyeOffset: new Cartesian3(0, 0, 0),
+            pixelOffset: new Cartesian2(0, -10),
+            disableDepthTestDistance: 1000000,
         }
         this.helper = new Helper(viewer);
     }
@@ -93,6 +93,7 @@ class Measure {
     //测量点位
     measurePoint() {
         this.handler = new ScreenSpaceEventHandler(this.viewer.scene.canvas);
+        this.viewer.canvas.style.cursor = "crosshair";
         let labels: any[] = [];
         let labelPosition = new Cartesian3(0, 0, 0);
         let labelText = "点";
@@ -102,7 +103,8 @@ class Measure {
             }, false) as any,
             point: {
                 pixelSize: 5,
-                color: Color.RED,
+                color: Color.RED.withAlpha(0.9),
+                disableDepthTestDistance: 1000000,
             },
             label: {
                 text: new CallbackProperty(() => {
@@ -113,6 +115,7 @@ class Measure {
         });
         this.handler.setInputAction((click: any) => {
             let position = getCartesian3FromCartesian2(this.viewer, click.position);
+
             if (!position) {
                 return;
             }
@@ -124,7 +127,7 @@ class Measure {
                 position: position,
                 point: {
                     pixelSize: 5,
-                    color: Color.RED,
+                    color: Color.RED.withAlpha(0.9),
                 },
                 label: {
                     text: labelText,
@@ -134,17 +137,20 @@ class Measure {
             labels.push(point);
         }, ScreenSpaceEventType.LEFT_CLICK);
         this.handler.setInputAction((move: any) => {
-            let position = getCartesian3FromCartesian2(this.viewer, move.endPosition);
+            // let position = getCartesian3FromCartesian2(this.viewer, move.endPosition);
+            let position = PickPosition(this.viewer.scene, move.endPosition, new Cartesian3());
             if (!position) {
                 return;
             }
             let jwd = transformCartesianToWGS84(this.viewer, position);
             if (!jwd) return;
+            (label as any).point.show = false;
             labelPosition = position;
             labelText = `经度:${jwd.lon.toFixed(6)} \n纬度:${jwd.lat.toFixed(6)}\n 高度:${jwd.alt.toFixed(2)}`;
         }, ScreenSpaceEventType.MOUSE_MOVE);
 
         const endDrawing = () => {
+            this.viewer.canvas.style.cursor = "default";
             this.handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
             this.handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
             if (label) {
@@ -618,4 +624,27 @@ export {
     transformCartesianArrayToWGS84Array,
     getPositionsArea,
     getCenter
+}
+
+let tempRay = new Ray();
+function PickPosition(scene: Scene, windowPosition: Cartesian2, result: any) {
+    let cartesian = undefined;
+
+    if (scene.mode !== SceneMode.MORPHING) {
+        if (scene.pickPositionSupported) {
+            cartesian = scene.pickPosition(windowPosition, result);
+        }
+
+        let carto: any;
+        cartesian && (carto = Cartographic.fromCartesian(cartesian));
+        if (!carto || carto.height < -3000) {
+            if (scene.terrainProvider instanceof EllipsoidTerrainProvider) {
+                cartesian = scene.camera.pickEllipsoid(windowPosition, scene.globe.ellipsoid, result);
+            } else {
+                let ray: any = scene.camera.getPickRay(windowPosition, tempRay);
+                cartesian = scene.globe.pick(ray, scene, result);
+            }
+        }
+    }
+    return cartesian;
 }

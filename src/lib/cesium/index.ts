@@ -48,3 +48,8 @@ const initViewer = (viewer: Viewer, options: { position: number[], hpr: number[]
 
 export { initScene, initViewer }
 export { SceneTree } from './sceneTree'
+export {
+    WMSParser,
+    WMTSParser,
+    esri2geo
+} from './parser'

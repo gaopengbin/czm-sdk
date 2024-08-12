@@ -19,11 +19,20 @@
             <li class="nav-item">
                 <a class="nav-link" onclick="this.clickTab(event,6)">WMTS</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,7)">Terrain</a>
+            </li>
         </ul>
     </div>
     <div class="col-md-9">
         <div class="content">
             <If when="$data.active === 1">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
                 <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
@@ -37,6 +46,12 @@
             </If>
             <If when="$data.active === 2">
                 <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
@@ -48,6 +63,12 @@
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadArcGis()">加载</button>
             </If>
             <If when="$data.active === 3">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
                 <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
@@ -61,6 +82,12 @@
             </If>
             <If when="$data.active === 4">
                 <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
@@ -72,6 +99,12 @@
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadTileset()">加载</button>
             </If>
             <If when="$data.active === 5">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
                 <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
@@ -85,7 +118,13 @@
                 <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">layers</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" s-value="$data.layers" onchange="$data.layers=value">
+                        <!-- <input type="text" class="form-control" s-value="$data.layers" onchange="$data.layers=value"> -->
+                        <select class="form-select form-select-sm" s-value="$data.wmtsParams.layer"
+                            onchange="this.layerSelectWMS(value)">
+                            <For each="$data.wmtsParserLayers" item="layer" index="index">
+                                <option s-value="index">{{layer.title}}</option>
+                            </For>
+                        </select>
                     </div>
                     <div class="form-text">
                         要加载的图层，例如：topp:states
@@ -94,6 +133,12 @@
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadWMS()">加载</button>
             </If>
             <If when="$data.active === 6">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
                 <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
@@ -163,6 +208,24 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadWMTS()">加载</button>
+            </If>
+            <If when="$data.active === 7">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个Terrain地址，例如：https://example.com/data/
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadTerrain()">加载</button>
             </If>
         </div>
     </div>

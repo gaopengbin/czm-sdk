@@ -583,15 +583,15 @@ export default abstract class BaseWidget extends HTMLElement {
         return h("v-node", this.#toVNode(this.#AST));
     }
     public disconnectedCallback() {
-        console.log("自定义元素从页面中移除。");
+        // console.log("自定义元素从页面中移除。");
     }
 
     public adoptedCallback() {
-        console.log("自定义元素移动至新页面。");
+        // console.log("自定义元素移动至新页面。");
     }
 
     public attributeChangedCallback(name: any, oldValue: any, newValue: any) {
-        console.log(`属性 ${name} 已变更: ${oldValue} → ${newValue}`);
+        // console.log(`属性 ${name} 已变更: ${oldValue} → ${newValue}`);
     }
 
     /**

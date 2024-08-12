@@ -333,7 +333,7 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
             name: leaf.name,
             show: leaf.show,
             guid: leaf.guid,
-            url: (leaf._imageLayer?.imageryProvider as any).url,
+            url: opt.url,
             layers: (leaf._imageLayer?.imageryProvider as any).layers,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
