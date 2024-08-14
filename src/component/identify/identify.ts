@@ -1,5 +1,5 @@
 
-import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined, Math as CesiumMath } from "cesium";
+import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined, Math as CesiumMath, ScreenSpaceEventHandler, Cartographic, KeyboardEventModifier, CameraEventType } from "cesium";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import esri2geo from "@/lib/cesium/parser/esri2geo";
@@ -32,12 +32,105 @@ export default class Identify extends BaseWidget {
             count: 0
         }
         this.highLightEntity = await this.viewer.dataSources.add(new GeoJsonDataSource());
+        this.highLightAll = [];
         const container: any = this.querySelector('#tree-container');
         // 添加缩放
         new ResizeHandle(container, {
             mode: Mode.vertical
         });
     }
+
+    // ctrl+右键框选
+    setExtentSelect(enabled: boolean = true) {
+        if (enabled) {
+            // 禁止ctrl+左键改变视角
+            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [];
+            const viewer = this.viewer;
+            //右键按下标识
+            var flag = false;
+            //起点终点x,y
+            var startX: any = null;
+            var startY: any = null;
+            var endX = null;
+            var endY = null;
+            //创建框选元素
+            var selDiv = document.createElement("div");
+            var handler = new ScreenSpaceEventHandler(this.viewer.canvas);
+            //右键按下事件，设置起点，div设置样式和位置，添加到页面
+            handler.setInputAction(function (event: any) {
+                flag = true;
+                startX = event.position.x;
+                startY = event.position.y;
+                selDiv.style.cssText =
+                    "position:absolute;width:0;height:0;font-size:0;margin:0;padding:0;border:1px dashed #0099FF;background-color:#C3D5ED;z-index:1000;filter:alpha(opacity:60);opacity:0.6;";
+                selDiv.id = "selectDiv";
+                selDiv.style.left = startX + "px";
+                selDiv.style.top = startY + "px";
+                document.body.appendChild(selDiv);
+            }, ScreenSpaceEventType.LEFT_DOWN, KeyboardEventModifier.CTRL);
+            //鼠标抬起事件，获取div坐上和右下的x,y 转为经纬度坐标
+            let _this = this;
+            handler.setInputAction(function (event: any) {
+                flag = false;
+                var l = parseInt(selDiv.style.left);
+                var t = parseInt(selDiv.style.top);
+                var w = parseInt(selDiv.style.width);
+                var h = parseInt(selDiv.style.height);
+                var earthPosition = viewer.camera.pickEllipsoid(
+                    { x: l, y: t },
+                    viewer.scene.globe.ellipsoid
+                );
+                var cartographic = Cartographic.fromCartesian(
+                    earthPosition,
+                    viewer.scene.globe.ellipsoid,
+                    new Cartographic()
+                );
+                const topLeft = [
+                    CesiumMath.toDegrees(cartographic.longitude),
+                    CesiumMath.toDegrees(cartographic.latitude),
+                ]
+
+                earthPosition = viewer.camera.pickEllipsoid(
+                    { x: l + w, y: t + h },
+                    viewer.scene.globe.ellipsoid
+                );
+                cartographic = Cartographic.fromCartesian(
+                    earthPosition,
+                    viewer.scene.globe.ellipsoid,
+                    new Cartographic()
+                );
+                const bottomRight = [
+                    CesiumMath.toDegrees(cartographic.longitude),
+                    CesiumMath.toDegrees(cartographic.latitude),
+                ]
+
+                const extent = [
+                    ...topLeft,
+                    ...bottomRight
+                ]
+                _this.pickImageryLayerFeature(viewer, event.position, extent);
+                //根据业务确定是否删除框选div
+                document?.getElementById("selectDiv")?.parentNode?.removeChild(document.getElementById("selectDiv") as any);
+            }, ScreenSpaceEventType.LEFT_UP, KeyboardEventModifier.CTRL);
+            //鼠标移动事件，处理位置css
+            handler.setInputAction(function (event: any) {
+                if (flag) {
+                    endX = event.endPosition.x;
+                    endY = event.endPosition.y;
+                    selDiv.style.left = Math.min(endX, startX) + "px";
+                    selDiv.style.top = Math.min(endY, startY) + "px";
+                    selDiv.style.width = Math.abs(endX - startX) + "px";
+                    selDiv.style.height = Math.abs(endY - startY) + "px";
+                }
+            }, ScreenSpaceEventType.MOUSE_MOVE, KeyboardEventModifier.CTRL);
+            this.extentSelectHandler = handler;
+        } else {
+            this.extentSelectHandler?.destroy();
+            this.extentSelectHandler = null;
+            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [CameraEventType.MIDDLE_DRAG, CameraEventType.PINCH, { eventType : CameraEventType.LEFT_DRAG, modifier : KeyboardEventModifier.CTRL }, { eventType : CameraEventType.RIGHT_DRAG, modifier : KeyboardEventModifier.CTRL }];
+        }
+    }
+
     pickAndSelectObject(e: any) {
         let position = getCartesian3FromCartesian2(this.viewer, e.position);
         if (position) {
@@ -116,7 +209,7 @@ export default class Identify extends BaseWidget {
             return this.pickImageryLayerFeature(viewer, e.position);
         }
     }
-    pickImageryLayerFeature(viewer: Viewer, windowPosition: Cartesian2) {
+    pickImageryLayerFeature(viewer: Viewer, windowPosition: Cartesian2, polygon?: any) {
         const scene: any = viewer.scene;
         const pickRay: Ray | undefined = scene.camera.getPickRay(windowPosition);
         if (!pickRay) { return; }
@@ -124,12 +217,16 @@ export default class Identify extends BaseWidget {
         if (this.$data.range === 'visible' || this.$data.range === 'top') {
             imageryLayerFeaturePromise = scene.imageryLayers.pickImageryLayerFeatures(
                 pickRay,
-                scene
+                scene,
+                polygon,
+                this.$data.range
             );
         } else if (this.$data.range === 'all') {
             imageryLayerFeaturePromise = scene.imageryLayers.pickImageryLayerFeatures2(
                 pickRay,
-                scene
+                scene,
+                polygon,
+                'all'
             );
         }
         // const pickImageryLayers = scene.imageryLayers.pickImageryLayers(pickRay, scene);
@@ -146,14 +243,14 @@ export default class Identify extends BaseWidget {
             id: "Loading...",
             description: "Loading feature information...",
         });
-
         imageryLayerFeaturePromise.then(
             (features: any) => {
+                this.markAll(features);
                 // Has this async pick been superseded by a later one?
-                if (viewer.selectedEntity !== loadingMessage) {
-                    this.loading = false;
-                    return;
-                }
+                // if (viewer.selectedEntity !== loadingMessage) {
+                //     this.loading = false;
+                //     return;
+                // }
 
                 if (!defined(features) || features.length === 0) {
                     this.loading = false;
@@ -272,8 +369,26 @@ export default class Identify extends BaseWidget {
         return html;
     }
 
+    getLabel(feature: any) {
+        if (feature instanceof Entity) {
+            return feature.name ?? feature.id ?? '未命名'
+        } else if (feature instanceof Cesium3DTileFeature) {
+            return feature.getProperty('name') ?? feature.getProperty('id') ?? '未命名'
+        } else if (feature.data) {
+            if (feature.data.properties) {
+                return feature.data.properties.name ?? feature.name ?? feature.data.properties.id ?? '未命名'
+            } else if (feature.data.attributes) {
+                return feature.data.attributes[feature.data.displayFieldName] ?? feature.data.attributes.name ?? feature.data.attributes.id ?? feature.name ?? '未命名'
+            } else {
+                return feature.name ?? feature.id ?? '未命名'
+            }
+        } else {
+            return feature.name ?? feature.id ?? '未命名'
+        }
+    }
+
     async highLight(feature: any) {
-        this.clearHighLight();
+        this.clearHighLight(true);
         if (feature && feature instanceof Entity) {
             if (feature.polygon) {
                 this.lastPolygonMaterial = clone(feature.polygon.material);
@@ -314,18 +429,17 @@ export default class Identify extends BaseWidget {
             return
         }
         if (feature && feature.data) {
-            console.log(feature)
             let geojson = {};
             if (feature.data.geometryType) {
                 geojson = esri2geo.toGeoJSON({ features: [feature.data] })
             } else {
                 geojson = feature.data
             }
-            // debugger
             this.highLightEntity = await this.viewer.dataSources.add(GeoJsonDataSource.load(geojson, {
                 stroke: Color.BLUE,
                 fill: Color.BLUE.withAlpha(0.5),
                 strokeWidth: 3,
+                markerColor: Color.BLUE,
             }));
 
             // 属性
@@ -341,7 +455,6 @@ export default class Identify extends BaseWidget {
             }
 
             this.$data.attrs = attrs;
-            console.log(attrs)
         } else {
             if (this.highLightEntity) {
                 this.viewer.dataSources.remove(this.highLightEntity);
@@ -350,10 +463,39 @@ export default class Identify extends BaseWidget {
 
     }
 
-    clearHighLight() {
+    async markAll(features: any) {
+        let json: any = {
+            type: 'FeatureCollection',
+            features: []
+        };
+        features.forEach((feature: any) => {
+            let geojson: any = {};
+            if (feature.data.geometryType) {
+                geojson = esri2geo.toGeoJSON({ features: [feature.data] })
+            } else {
+                geojson = feature.data
+            }
+            json.features.push(...geojson.features)
+        })
+        const highLight = await this.viewer.dataSources.add(GeoJsonDataSource.load(json, {
+            stroke: Color.AQUA.withAlpha(0.5),
+            fill: Color.WHITE.withAlpha(0.3),
+            strokeWidth: 3,
+            markerColor: Color.AQUA.withAlpha(0.5),
+        }));
+        this.highLightAll.push(highLight);
+    }
+
+    clearHighLight(onlySelected: boolean = false) {
         if (this.highLightEntity) {
             this.viewer.dataSources.remove(this.highLightEntity);
             this.highLightEntity = null;
+        }
+        if (this.highLightAll && this.highLightAll.length > 0 && !onlySelected) {
+            this.highLightAll.forEach((item: any) => {
+                this.viewer.dataSources.remove(item);
+            })
+            this.highLightAll = [];
         }
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
             this.viewer.selectedEntity.feature.color = Color.WHITE;
@@ -392,10 +534,12 @@ export default class Identify extends BaseWidget {
     public onOpen(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'help';
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.pickAndSelectObject(e), ScreenSpaceEventType.LEFT_CLICK);
+        this.setExtentSelect();
     }
     public onClose(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'default';
         this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
         this.clearHighLight();
+        this.setExtentSelect(false);
     }
 }

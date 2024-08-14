@@ -2,7 +2,8 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    user-select: none; /*禁止选择*/
+    user-select: none;
+    /*禁止选择*/
     box-sizing: border-box;
     padding: 0.625rem;
     min-width: 21.875rem;
@@ -17,12 +18,14 @@
     .i-table {
         overflow: auto;
         border: 0.0625rem solid var(--bs-toast-border-color);
+
         th {
             position: sticky;
             top: 0;
             border-bottom: 0.0625rem solid var(--bs-toast-border-color);
             border-right: 0.0625rem solid var(--bs-toast-border-color);
         }
+
         td {
             border: 0.0625rem solid var(--bs-toast-border-color);
             padding: 0.125rem;
@@ -43,6 +46,7 @@
             border-radius: 0;
         }
     }
+
     // 鼠标样式
     .cursor-pointer {
         cursor: pointer;
@@ -52,5 +56,14 @@
     .i-hover:hover {
         background-color: #e9f0f3;
         color: black;
+    }
+
+    .info-text {
+        font-size: 0.875rem;
+        color: var(--bs-toast-color);
+        line-height: 2.25rem;
+        padding-left: 0.45rem;
+        // color: grey;
+        font-style: italic;
     }
 }

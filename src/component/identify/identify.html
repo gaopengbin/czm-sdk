@@ -34,7 +34,7 @@
                                         s-class="feature.ol_uid===$data.selectedId?'selected':''"
                                         onclick="this.highLight(feature)">
                                         <label class="ms-4 cursor-pointer">
-                                            {{feature.name??feature.id??feature.getProperty('name')??feature.getProperty('id')??'未命名'}}
+                                            {{this.getLabel(feature)}}
                                         </label>
                                     </li>
                                 </For>
@@ -79,5 +79,6 @@
     </div>
     <div class="input-group input-group-sm mt-2">
         <span class="input-group-text">识别了 {{$data.count}} 个要素</span>
+        <span class="info-text">左键单击拾取，按住Ctrl+左键框选</span>
     </div>
 </div>

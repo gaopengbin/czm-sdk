@@ -1,6 +1,7 @@
-import { ImageryLayerCollection, Rectangle, Scene, defined, Math as CesiumMath, Ray } from "cesium";
+import { ImageryLayerCollection, Rectangle, Scene, defined, Math as CesiumMath, Ray, ArcGisMapServerImageryProvider } from "cesium";
+import SSMapServerProvider from "../CustomImageryProvider/provider/SSMapServerProvider";
 
-const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
+const pickImageryLayerFeatures = (ray: Ray, scene: Scene, extent?: any, type: string = 'all') => {
     // Find the picked location on the globe.
     const pickedPosition = scene.globe.pick(ray, scene);
     if (!defined(pickedPosition)) {
@@ -11,7 +12,122 @@ const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
         pickedPosition
     );
 
-    const promises: any = [];
+    let promises: any = [];
+    const imageryLayers: any = [];
+    // const imageryLayerCollection = scene.imageryLayers;
+    // for (let i = 0; i < imageryLayerCollection.length; ++i) {
+    //     const imageryLayer = imageryLayerCollection.get(i);
+    //     // if (!imageryLayer.show) {
+    //     //     continue;
+    //     // }
+    //     if (!imageryLayer.ready) {
+    //         continue;
+    //     }
+
+    //     const provider = imageryLayer.imageryProvider;
+    //     if (!defined(provider.pickFeatures)) {
+    //         continue;
+    //     }
+    //     console.log(provider)
+    //     if (provider instanceof ArcGisMapServerImageryProvider || provider instanceof SSMapServerProvider) {
+    //         const promise = (provider as any).pickFeatures(
+    //             0, 0, 1,
+    //             pickedLocation.longitude,
+    //             pickedLocation.latitude,
+    //             polygon
+    //         );
+    //         if (defined(promise)) {
+    //             promises.push(promise);
+    //             imageryLayers.push(imageryLayer);
+    //         }
+    //     } else {
+    //         const promise = provider.pickFeatures(
+    //             0, 0, 1,
+    //             pickedLocation.longitude,
+    //             pickedLocation.latitude,
+    //         );
+    //         if (defined(promise)) {
+    //             promises.push(promise);
+    //             imageryLayers.push(imageryLayer);
+    //         }
+    //     }
+
+    // }
+    pickImageryHelper(scene, pickedLocation, true, function (imagery: any) {
+        if (!imagery.imageryLayer.ready) {
+            return undefined;
+        }
+        const provider = imagery.imageryLayer.imageryProvider;
+
+        if (provider instanceof ArcGisMapServerImageryProvider || provider instanceof SSMapServerProvider) {
+            const promise = (provider as any).pickFeatures(
+                0, 0, 1,
+                pickedLocation.longitude,
+                pickedLocation.latitude,
+                extent
+            );
+            if (defined(promise)) {
+                promises.push(promise);
+                imageryLayers.push(imagery.imageryLayer);
+            }
+        } else {
+            const promise = provider.pickFeatures(
+                imagery.x,
+                imagery.y,
+                imagery.level,
+                pickedLocation.longitude,
+                pickedLocation.latitude
+            );
+            if (defined(promise)) {
+                promises.push(promise);
+                imageryLayers.push(imagery.imageryLayer);
+            }
+        }
+    });
+
+    if (promises.length === 0) {
+        return undefined;
+    }
+    if (type === 'top') {
+        promises = [promises[0]]
+    }
+    return Promise.all(promises).then(function (results) {
+        const features = [];
+        for (let resultIndex = 0; resultIndex < results.length; ++resultIndex) {
+            const result = results[resultIndex];
+            const image = imageryLayers[resultIndex];
+            if (defined(result) && result.length > 0) {
+                for (
+                    let featureIndex = 0;
+                    featureIndex < result.length;
+                    ++featureIndex
+                ) {
+                    const feature = result[featureIndex];
+                    feature.imageryLayer = image;
+                    // For features without a position, use the picked location.
+                    if (!defined(feature.position)) {
+                        feature.position = pickedLocation;
+                    }
+                    features.push(feature);
+                }
+            }
+        }
+        return features;
+    });
+}
+
+const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene, extent?: any, type: string = 'all') => {
+    // Find the picked location on the globe.
+    const pickedPosition = scene.globe.pick(ray, scene);
+    if (!defined(pickedPosition)) {
+        return;
+    }
+
+    const pickedLocation = scene.globe.ellipsoid.cartesianToCartographic(
+        pickedPosition
+    );
+
+    let promises: any = [];
     const imageryLayers: any = [];
     const imageryLayerCollection = scene.imageryLayers;
     for (let i = 0; i < imageryLayerCollection.length; ++i) {
@@ -19,7 +135,7 @@ const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
         // if (!imageryLayer.show) {
         //     continue;
         // }
-        if(!imageryLayer.ready){
+        if (!imageryLayer.ready) {
             continue;
         }
 
@@ -27,16 +143,29 @@ const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
         if (!defined(provider.pickFeatures)) {
             continue;
         }
-
-        const promise = provider.pickFeatures(
-            0, 0, 1,
-            pickedLocation.longitude,
-            pickedLocation.latitude
-        );
-        if (defined(promise)) {
-            promises.push(promise);
-            imageryLayers.push(imageryLayer);
+        if (provider instanceof ArcGisMapServerImageryProvider || provider instanceof SSMapServerProvider) {
+            const promise = (provider as any).pickFeatures(
+                0, 0, 1,
+                pickedLocation.longitude,
+                pickedLocation.latitude,
+                extent
+            );
+            if (defined(promise)) {
+                promises.push(promise);
+                imageryLayers.push(imageryLayer);
+            }
+        } else {
+            const promise = provider.pickFeatures(
+                0, 0, 1,
+                pickedLocation.longitude,
+                pickedLocation.latitude,
+            );
+            if (defined(promise)) {
+                promises.push(promise);
+                imageryLayers.push(imageryLayer);
+            }
         }
+
     }
     // pickImageryHelper(scene, pickedLocation, true, function (imagery: any) {
     //     if (!imagery.imageryLayer.ready) {
@@ -58,6 +187,9 @@ const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
 
     if (promises.length === 0) {
         return undefined;
+    }
+    if (type === 'top') {
+        promises = [promises[0]]
     }
     return Promise.all(promises).then(function (results) {
         const features = [];
@@ -84,6 +216,7 @@ const pickImageryLayerFeatures2 = (ray: Ray, scene: Scene) => {
     });
 }
 Object.assign(ImageryLayerCollection.prototype, {
+    pickImageryLayerFeatures: pickImageryLayerFeatures,
     pickImageryLayerFeatures2: pickImageryLayerFeatures2
 })
 
@@ -112,7 +245,6 @@ function pickImageryHelper(scene: any, pickedLocation: any, pickFeatures: any, c
 
     // Pick against all attached imagery tiles containing the pickedLocation.
     const imageryTiles = pickedTile.data.imagery;
-    console.log(imageryTiles)
 
     for (let i = imageryTiles.length - 1; i >= 0; --i) {
         const terrainImagery = imageryTiles[i];
@@ -160,7 +292,6 @@ function pickImageryHelper(scene: any, pickedLocation: any, pickFeatures: any, c
         if (!Rectangle.contains(applicableRectangle, pickedLocation)) {
             continue;
         }
-        console.log(imagery)
         callback(imagery);
     }
 }

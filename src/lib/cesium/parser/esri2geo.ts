@@ -17,7 +17,6 @@ class Esri2Geo {
         var i = 0;
         while (fl > i) {
             var ft = data.features[i];
-            console.log(ft);
             /* as only ESRI based products care if all the features are the same type of geometry, check for geometry type at a feature level*/
             var outFT: any = {
                 "type": "Feature",
@@ -79,11 +78,17 @@ class Esri2Geo {
         var len = a.length;
         var i = 0;
         var len2 = coords.length - 1;
+        console.log(len2,a);
         while (len > i) {
             if (this.ringIsClockwise(a[i])) {
                 coords.push([a[i]]);
                 len2++;
             } else {
+                console.log(coords,len2);
+                if(coords.length === 0){
+                    coords.push([]);
+                    len2++;
+                }
                 coords[len2].push(a[i]);
             }
             i++;

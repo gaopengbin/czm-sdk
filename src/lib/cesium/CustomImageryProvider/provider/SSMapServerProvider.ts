@@ -32,8 +32,7 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
         return provider;
     }
 
-    pickFeatures(x: number, y: number, level: number, longitude: number, latitude: number): any {
-        console.log("pickFeatures")
+    pickFeatures(x: number, y: number, level: number, longitude: number, latitude: number, extent?: any): any {
         if (!this.enablePickFeatures) {
             return undefined;
         }
@@ -73,11 +72,24 @@ export default class SSMapServerProvider extends ArcGisMapServerImageryProvider 
             // layers += `:${this._layers}`;
         }
 
+        let geometryType = "esriGeometryPoint";
+        let geometry = `${horizontal},${vertical}`;
+        // polygon like [
+        //     113.92145956364111,
+        //     22.48660796097505,
+        //     113.92145956364111,
+        //     22.48660796097505,
+        // ]
+        if (defined(extent)) {
+            geometryType = "esriGeometryEnvelope";
+            geometry = `${extent[0]},${extent[1]},${extent[2]},${extent[3]}`;
+        }
+
         const query = {
             f: "json",
             tolerance: 2,
-            geometryType: "esriGeometryPoint",
-            geometry: `${horizontal},${vertical}`,
+            geometryType: geometryType,
+            geometry: geometry,
             mapExtent: `${rectangle.west},${rectangle.south},${rectangle.east},${rectangle.north}`,
             imageDisplay: `${this._tileWidth},${this._tileHeight},96`,
             sr: sr,
