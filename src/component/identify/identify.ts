@@ -44,7 +44,7 @@ export default class Identify extends BaseWidget {
     setExtentSelect(enabled: boolean = true) {
         if (enabled) {
             // 禁止ctrl+左键改变视角
-            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [];
+            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [CameraEventType.MIDDLE_DRAG];
             const viewer = this.viewer;
             //右键按下标识
             var flag = false;
@@ -66,7 +66,8 @@ export default class Identify extends BaseWidget {
                 selDiv.id = "selectDiv";
                 selDiv.style.left = startX + "px";
                 selDiv.style.top = startY + "px";
-                document.body.appendChild(selDiv);
+                // document.body.appendChild(selDiv);
+                document.querySelector("base-earth")?.appendChild(selDiv);
             }, ScreenSpaceEventType.LEFT_DOWN, KeyboardEventModifier.CTRL);
             //鼠标抬起事件，获取div坐上和右下的x,y 转为经纬度坐标
             let _this = this;
@@ -127,7 +128,7 @@ export default class Identify extends BaseWidget {
         } else {
             this.extentSelectHandler?.destroy();
             this.extentSelectHandler = null;
-            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [CameraEventType.MIDDLE_DRAG, CameraEventType.PINCH, { eventType : CameraEventType.LEFT_DRAG, modifier : KeyboardEventModifier.CTRL }, { eventType : CameraEventType.RIGHT_DRAG, modifier : KeyboardEventModifier.CTRL }];
+            this.viewer.scene.screenSpaceCameraController.tiltEventTypes = [CameraEventType.MIDDLE_DRAG, CameraEventType.PINCH, { eventType: CameraEventType.LEFT_DRAG, modifier: KeyboardEventModifier.CTRL }, { eventType: CameraEventType.RIGHT_DRAG, modifier: KeyboardEventModifier.CTRL }];
         }
     }
 
@@ -496,6 +497,10 @@ export default class Identify extends BaseWidget {
                 this.viewer.dataSources.remove(item);
             })
             this.highLightAll = [];
+
+        }
+        if (!onlySelected) {
+            this.$data.count = 0
         }
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
             this.viewer.selectedEntity.feature.color = Color.WHITE;

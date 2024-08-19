@@ -360,8 +360,12 @@ export async function createTerrain(options: SSTerrainLayerOptions) {
 }
 
 export async function createTileset(options: SSLayerOptions) {
+    if(!(options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes){
+        (options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes = 5368709120;
+    }
     const tileset = await Cesium3DTileset.fromUrl(
-        options.url
+        options.url,
+        options as Cesium3DTileset.ConstructorOptions
     );
     return tileset;
 }

@@ -26,7 +26,7 @@ const initScene = (container: string | Element, options?: Viewer.ConstructorOpti
 
     //如需自定义罗盘控件，请看下面的自定义罗盘控件
     let navigation = new CesiumNavigation(viewer, option);
-    console.log(navigation)
+    // console.log(navigation)
     return viewer
 }
 const initViewer = (viewer: Viewer, options: { position: number[], hpr: number[], ionDefaultToken: string }): void => {

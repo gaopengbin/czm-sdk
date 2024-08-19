@@ -40,30 +40,35 @@
 
 # [版本 0.0.22] 2024.07.09
 
-- 1.base-earth 新增toJSON方法，与renderFromJSON方法配合使用
+- 1.base-earth 新增 toJSON 方法，与 renderFromJSON 方法配合使用
 - 2.保存场景状态，包括：场景树、图层、底图组件选中状态、当前配置下的组件
-- 3.layer对象新增rectangle可读属性
+- 3.layer 对象新增 rectangle 可读属性
 
 # [版本 0.0.23] 2024.07.22
 
 - 1.修复状态栏中视角高异常的问题
 - 2.新增场景管理组件
-- 3.BaseWidget补充mapView变量(地图容器)
+- 3.BaseWidget 补充 mapView 变量(地图容器)
 
 # [版本 0.0.24] 2024.07.29
 
-- 1.图层加载器新增Terrain类型服务加载
+- 1.图层加载器新增 Terrain 类型服务加载
 
 # [版本 0.0.25] 2024.08.09
 
-- 1.新增WMSParser类用于解析WMS服务
+- 1.新增 WMSParser 类用于解析 WMS 服务
 - 2.识别组件修复了点和线识别不到的问题
 - 3.修复点位量测时看不到信息框的问题
 
 # [版本 0.0.26] 2024.08.12
 
-- 1.修复wmts服务toJSON后加载失败的问题
+- 1.修复 wmts 服务 toJSON 后加载失败的问题
 
 # [版本 0.0.27] 2024.08.14
 
-- 1.识别组件支持框选（仅支持ArcgisMapserver和SSMapserver）
+- 1.识别组件支持框选（仅支持 ArcgisMapserver 和 SSMapserver）
+
+# [版本 0.0.30] 2024.08.19
+
+- 1.属性拾取组件开启时 ctrl+鼠标左键 改为框选，关闭后还原为角度旋转
+- 2.tileset 加载支持 Cesium3DTileset.ConstructorOptions 属性,maximumCacheOverflowBytes 最大缓存字节数默认为 5368709120,防止精模加载时闪烁的问题
