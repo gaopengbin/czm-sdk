@@ -17,6 +17,8 @@ import {
 import { ASTNode, parseHtml, listeners } from "../vnode";
 import { timerFunc } from "@/base/utils/tools";
 import "./base-widget.scss"
+import GraphicManager from "@/lib/cesium/draw/core/GraphicManager";
+import MarkerManager from "@/lib/cesium/draw/core/MarkerManager";
 
 /**
  * 初始化必要的参数
@@ -46,6 +48,8 @@ export default abstract class BaseWidget extends HTMLElement {
     static #viewer: any;
     static #sceneTree: SceneTree;
     static #globalConfig: any;
+    static #graphicManager: GraphicManager;
+    static #markerManager: MarkerManager;
     _config: any;
 
     #loading?: boolean;
@@ -162,13 +166,29 @@ export default abstract class BaseWidget extends HTMLElement {
         BaseWidget.#sceneTree = value;
     }
 
+    get graphicManager() {
+        return BaseWidget.#graphicManager;
+    }
+
+    set graphicManager(value) {
+        BaseWidget.#graphicManager = value;
+    }
+
+    get markerManager() {
+        return BaseWidget.#markerManager;
+    }
+
+    set markerManager(value) {
+        BaseWidget.#markerManager = value;
+    }
+
     public earthReady() { }
 
     async connectedCallback() {
         // 获取配置
         if (this._manifest.hasConfig) {
             this.loadConfig(
-                this.getAttribute("configUrl") || this.getAttribute("config")
+                this.getAttribute("configUrl") || this.getAttribute("configurl") || this.getAttribute("config")
             );
         }
         // 渲染模板

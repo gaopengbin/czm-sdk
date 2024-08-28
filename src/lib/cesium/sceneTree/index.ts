@@ -9,11 +9,16 @@ import { debounce } from "../../common/debounce";
 import { ArcGisMapServerLoader, GeoJsonLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
+import { CesiumPolygon, CesiumPolyline } from "../draw/core/Graphic";
+import GraphicManager from "../draw/core/GraphicManager";
+import MarkerManager from "../draw/core/MarkerManager";
 
 class SceneTree {
     [x: string]: any;
     _root: any;
     _viewer: Viewer;
+    _graphicManager: GraphicManager;
+    _markerManager: MarkerManager;
     _imageryLayers: any;
     _imageryCollection: any = [];
     _tilesetCollection: any;
@@ -26,8 +31,10 @@ class SceneTree {
         show: true,
     };
     layersMap: Map<string, any> = new Map();
-    constructor(viewer: Viewer) {
+    constructor(viewer: Viewer, graphicManager: GraphicManager, markerManager: MarkerManager) {
         this._viewer = viewer;
+        this._graphicManager = graphicManager;
+        this._markerManager = markerManager;
         // 原生方式添加的也进行监听
         viewer.imageryLayers.layerAdded.addEventListener((l) => {
             this.updateSceneTree();
@@ -145,6 +152,8 @@ class SceneTree {
                     }
                 } else if (node._dataSource) {
                     this._viewer.dataSources.remove(node._dataSource);
+                } else if (node._graphic) {
+                    node.remove();
                 }
                 this.layersMap.delete(node.guid);
             }
@@ -232,6 +241,15 @@ class SceneTree {
         return leaf;
     }
 
+    createGraphicLayer(options: SSLayerOptions) {
+        let leaf = this._graphicManager.jsonToGraphic(options)
+        this.updateSceneTree();
+        console.log(leaf)
+        return leaf;
+    }
+
+
+
     // 创建分组用于管理图层
     createGroup(groupName: string) {
         const group = new Group(groupName);
@@ -290,6 +308,9 @@ class children extends Array {
     push(...items: any[]): number {
         // 判断items是否符合SceneTreeLeaf接口
         [...items].forEach(async (item) => {
+            if (!item.guid) {
+                item.guid = uuid()
+            }
             if (isSceneTreeLeaf(item)) {
                 // console.log("this is SceneTreeLeaf");
                 super.push(item);
@@ -356,12 +377,14 @@ class Group {
                     this._sceneTree.removeLayerByGuid(layer.guid);
                 }
             }
-            this.children.push(layer);
+            this.children.push(layer)
         }
+        this._sceneTree?.updateSceneTree();
     }
 
     removeLayer(layer: any) {
         const index = this.children.indexOf(layer);
+        console.log("index", index);
         if (index > -1) {
             this.children.splice(index, 1);
         }
@@ -377,7 +400,7 @@ class Group {
         });
     }
 
-    toJSON(){
+    toJSON() {
         this.children.reverse();
         return {
             name: this.name,

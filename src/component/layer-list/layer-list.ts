@@ -3,22 +3,55 @@ import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import { Tree } from "../../lib/tree/tree";
 import "../../lib/tree/tree-view.scss";
+import Template from "./layer-list.html?raw";
 import "./layer-list.scss"
+import { Popover } from "bootstrap";
 @Component({
     tagName: "layer-list",
     className: "layer-list",
-    template: "<div id='layerlist'></div>",
+    template: Template,
 })
 export default class LayerList extends BaseWidget {
     treeview: Tree | null = null;
     constructor() {
         super();
     }
-
+    public async onInit() {
+        this.$data = {
+            layer: {
+                guid: "",
+                name: "",
+                zIndex: 0,
+            },
+            zIndex: 0,
+        }
+    }
     public async afterInit() {
         this.layers = [];
         this.sceneTree.updateEvent.addEventListener((val) => {
             this.treeview?.updateTree(val);
+            const menuHTML =
+                `<div class="contextmenu">
+                    <ul>
+                        <li data-bs-toggle="modal" data-bs-target="#confirmModal">删除</li>
+                        <li data-bs-toggle="modal" data-bs-target="#exampleModal">设置层级</li>
+                    </ul>
+                </div>`;
+            this.insertAdjacentHTML('beforeend', menuHTML);
+
+            const more = this.treeview?.element?.querySelectorAll('.bi-three-dots')
+            const contextmenu: any = document.querySelector('.contextmenu')
+            more?.forEach((el) => {
+                el.setAttribute('tabindex', '0')
+                new Popover(el, {
+                    placement: "bottom",
+                    trigger: 'focus',
+                    content: contextmenu,
+                    html: true,
+                });
+            })
+
+
         });
         this.layers = this.sceneTree.imageryLayers;
         this.initLayerList();
@@ -49,7 +82,6 @@ export default class LayerList extends BaseWidget {
                     else {
                         return data.name;
                     }
-
                     // if (data.children) {
                     //   return `<font style="color:var(--bs-emphasis-color)">${data.label}</font>`;
                     // } else {
@@ -57,7 +89,10 @@ export default class LayerList extends BaseWidget {
                     // }
                 },
                 handleNodeClick: (node: any, e: Event) => {
-                    console.log("handleNodeClick", node, e);
+                    // console.log("handleNodeClick", node, e);
+                },
+                handleRightClick: (node: any, e: Element) => {
+                    console.log("handleRightClick", node, e, this.pop);
                 },
                 handleNodeExpand: (node: any) => {
                     node.data.expand = !node.data.expand
@@ -66,38 +101,66 @@ export default class LayerList extends BaseWidget {
                 extraBtns: [
                     {
                         name: "显示",
-                        icon: (node: any) => node.show ? "bi bi-eye" : "bi bi-eye-slash",
+                        icon: (node: any) => node.show ? "bi bi-check-square" : "bi bi-square",
                         onClick: (node: any, btn: any) => {
                             node.show = !node.show;
-                            btn.setIcon(node.show ? "bi bi-eye" : "bi bi-eye-slash");
-                            // sceneTree.showLayer(node.guid, node.show);
+                            btn.setIcon(node.show ? "bi bi-check-square" : "bi bi-square");
                         },
                         show: (node: any) => !node.children,
                     },
                     {
                         name: "定位",
-                        icon: "bi bi-geo-alt",
+                        icon: "bi bi-cursor",
                         onClick: (node: any) => {
                             node.zoomTo();
                         },
                         show: (node: any) => !node.children,
                     },
                     {
-                        name: "删除",
-                        icon: "bi bi-trash",
-                        onClick: (node: any, n: any) => {
-                            // console.log("删除", node, n);
-                            let layer = this.sceneTree.getLayerByGuid(node.guid);
-                            layer && layer.remove();
-                            // node.remove();
-                            // sceneTree.removeLayer(node.guid);
+                        name: "更多选项",
+                        icon: "bi bi-three-dots",
+                        onClick: (node: any, el: Element) => {
+                            this.$data.layer = node;
+                            this.showZIndex()
                         },
-                        // show: (node: any) => !node.children,
-                    },
+                        show: (node: any) => !node.children,
+                    }
                 ],
             },
         });
         this.treeview.initialize();
+        const more = this.treeview.element?.querySelectorAll('.bi-three-dots')
+
+        const contextmenu: any = document.querySelector('.contextmenu')
+        more?.forEach((el) => {
+            el.setAttribute('tabindex', '0')
+            new Popover(el, {
+                placement: "bottom",
+                trigger: 'focus',
+                content: contextmenu,
+                html: true,
+            });
+        })
     };
 
+    delete = () => {
+        let layer = this.sceneTree.getLayerByGuid(this.$data.layer.guid);
+        layer && layer.remove();
+        layer && layer.destroy && layer.destroy();
+    }
+    showZIndex = () => {
+        const zIndexInput = this.querySelector('#layerIndex') as HTMLInputElement;
+        if (zIndexInput) {
+            zIndexInput.value = this.$data.layer.zIndex;
+        }
+    }
+    setZIndex = () => {
+        this.$data.layer.zIndex = this.$data.zIndex;
+    }
+
+    showMenuCondition = (type: string) => {
+        if (type === 'ZIndex') {
+            return this.$data.layer && this.$data.layer.toJSON && this.$data.layer.toJSON() && ['ssmapserver', 'arcgisserver', 'wms', 'wmts', 'xyz'].indexOf(this.$data.layer.toJSON().type) > -1;
+        }
+    }
 }

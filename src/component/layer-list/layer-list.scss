@@ -7,4 +7,51 @@ layer-list {
     height: 100%;
     padding: 10px 10px 10px 0;
     border-radius: 5px;
+
+    .contextmenu {
+        position: absolute;
+        background-color: var(--bs-body-bg);
+        border-radius: 5px;
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 5px;
+        display: none;
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                padding: 5px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--bs-light);
+                }
+            }
+        }
+    }
+}
+
+.contextmenu {
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+            padding: 5px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: var(--bs-primary);
+                color: white;
+            }
+        }
+    }
+}
+
+.modal-backdrop{
+    display: none;
 }

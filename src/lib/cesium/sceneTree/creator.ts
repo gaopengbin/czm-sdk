@@ -25,6 +25,8 @@ import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImagery
 import WMTSParser from "../parser/WMTSParser";
 import SSMapServerProvider from "../CustomImageryProvider/provider/SSMapServerProvider";
 import { getProjection } from "../CustomImageryProvider/projection/projection";
+import GraphicManager from "../draw/core/GraphicManager";
+import MarkerManager from "../draw/core/MarkerManager";
 
 export async function createSSMapServer(options: SSArcGisLayerOptions) {
     let rectangle: any;
@@ -39,7 +41,7 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
             token: options.token,
         });
     }
-     // 获取地图范围
+    // 获取地图范围
     if (options.rectangle && Array.isArray(options.rectangle)) {
         rectangle = Rectangle.fromDegrees(...options.rectangle);
     } else {
@@ -360,7 +362,7 @@ export async function createTerrain(options: SSTerrainLayerOptions) {
 }
 
 export async function createTileset(options: SSLayerOptions) {
-    if(!(options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes){
+    if (!(options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes) {
         (options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes = 5368709120;
     }
     const tileset = await Cesium3DTileset.fromUrl(
@@ -403,6 +405,9 @@ const initObjects: any = {
     "group": "createGroup",
     "geojson": "createGeoJsonLayer",
     "model": "createModelLayer",
+    "polyline": "createGraphicLayer",
+    "polygon": "createGraphicLayer",
+    "marker":""
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

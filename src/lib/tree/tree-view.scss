@@ -30,6 +30,10 @@
             .icon {
                 color: var(--bs-light);
             }
+
+            .extra-btn a {
+                color: var(--bs-light);
+            }
         }
 
         &.selected {
@@ -41,6 +45,10 @@
             }
 
             .icon {
+                color: var(--bs-light);
+            }
+
+            .extra-btn a {
                 color: var(--bs-light);
             }
         }
@@ -56,6 +64,10 @@
         .extra-btn {
             position: relative;
             float: right;
+
+            a {
+                color: #000;
+            }
 
             //从第二个开始，margin-left: 10px;
             &:not(:first-child) {

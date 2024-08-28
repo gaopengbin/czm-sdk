@@ -14,6 +14,7 @@ type TreeOptions = {
         children: string;
         labelRender: Function;
         handleNodeClick: Function;
+        handleRightClick: Function;
         handleNodeExpand: Function;
         extraBtns: any[];
     }
@@ -38,6 +39,7 @@ class Tree {
                 children: "children",
                 labelRender: () => { },
                 handleNodeClick: () => { },
+                handleRightClick: () => { },
                 handleNodeExpand: () => { },
                 extraBtns: [],
             }
@@ -68,6 +70,7 @@ class Tree {
             style: this.options.style,
             props: this.options.props,
             handleNodeClick: this.options.props.handleNodeClick,
+            handleRightClick: this.options.props.handleRightClick,
             handleNodeSelect: this.nodeSelect,
         });
         root.initialize();
@@ -87,6 +90,7 @@ class Tree {
             style: this.options.style,
             props: this.options.props,
             handleNodeClick: this.options.props.handleNodeClick,
+            handleRightClick: this.options.props.handleRightClick,
             handleNodeSelect: this.nodeSelect,
         });
         root.initialize();
@@ -221,6 +225,7 @@ class TreeNode {
     el: HTMLElement | null;
     data: TreeNodeData | null;
     handleNodeClick: Function;
+    handleRightClick: Function;
     handleNodeSelect: Function;
     _expand: boolean;
     constructor(options: TreeNodeOptions) {
@@ -233,6 +238,7 @@ class TreeNode {
         this.data = null;
         this._expand = false;
         this.handleNodeClick = () => { };
+        this.handleRightClick = () => { };
         this.handleNodeSelect = () => { };
         for (let key in options) {
             if (options.hasOwnProperty(key)) {
@@ -333,6 +339,7 @@ class TreeNode {
                     data: child,
                     style: this.style,
                     handleNodeClick: this.handleNodeClick,
+                    handleRightClick: this.handleRightClick,
                     store: _this.store,
                     expand: isUndefined(child.expand) ? this.store.options.defaultExpandAll : child.expand,
                 });
@@ -349,6 +356,7 @@ class TreeNode {
                     data: child,
                     style: this.style,
                     handleNodeClick: this.handleNodeClick,
+                    handleRightClick: this.handleRightClick,
                     store: _this.store,
                     expand: isUndefined(child.expand) ? this.store.options.defaultExpandAll : child.expand,
                 });
@@ -388,6 +396,13 @@ class TreeNode {
                 this.handleNodeClick(this, element);
             }
         });
+        if (element) {
+            element.oncontextmenu = (evt) => {
+                this.handleRightClick(this, element);
+                return false;
+            }
+        }
+
     }
     /**
      *  节点选中事件
@@ -429,9 +444,9 @@ class TreeNode {
                     icon = btn.icon;
                 }
 
-                extraBtn.innerHTML = `<i class="${icon}"></i>`;
+                extraBtn.innerHTML = `<a class="${icon}"></a>`;
                 extraBtn.setIcon = (icon: string) => {
-                    extraBtn.innerHTML = `<i class="${icon}"></i>`;
+                    extraBtn.innerHTML = `<a class="${icon}"></a>`;
                 }
                 extraBtn.addEventListener("click", (evt) => {
                     //ruir modify

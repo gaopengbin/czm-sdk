@@ -1,0 +1,55 @@
+<div id='layerlist'></div>
+<!-- 右键菜单 -->
+<div class="contextmenu">
+    <ul>
+        <li data-bs-toggle="modal" data-bs-target="#confirmModal">删除</li>
+        <If when="this.showMenuCondition('ZIndex')">
+            <li data-bs-toggle="modal" data-bs-target="#exampleModal">设置层级</li>
+        </If>
+        <!-- <li>重命名</li> -->
+        <!-- <li>移动到</li> -->
+        <!-- <li>复制到</li> -->
+        <!-- <li>导出</li> -->
+        <!-- <li>属性</li> -->
+    </ul>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">设置层级</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                [{{$data.layer?$data.layer.name:''}}]的层级：
+                <input type="number" class="form-control" placeholder="请输入层级" id="layerIndex" s-value="$data.zIndex"
+                    onchange="$data.zIndex=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setZIndex()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 确认框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">删除图层</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确认删除[{{ $data.layer?$data.layer.name:''}}]吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.delete()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -4,6 +4,8 @@ import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
 import { Cartographic, Ion, Math } from 'cesium';
+import GraphicManager from '@/lib/cesium/draw/core/GraphicManager';
+import MarkerManager from '@/lib/cesium/draw/core/MarkerManager';
 @Component({
     tagName: 'base-earth',
     className: 'base-earth',
@@ -26,6 +28,14 @@ export default class BaseEarth extends BaseWidget {
                 initViewer(this.viewer, viewer);
             }
             await initEarth(this.sceneTree, this.config.earth);
+            // if (this.config.earth.graphicManager) {
+            //     const graphics = this.graphicManager.fromJSON(this.config.earth.graphicManager);
+            //     console.log(graphics)
+            //     // this.sceneTree.root.children.push(...graphics)
+            //     graphics.forEach((graphics: any) => {
+            //         this.sceneTree.root.addLayer(graphics);
+            //     })
+            // }
         }, 500);
 
         const widgetManager = this.globalConfig?.widgetManager || 'webgis-widget-manager';
@@ -69,8 +79,11 @@ export default class BaseEarth extends BaseWidget {
             msaaSamples: 8,
             shouldAnimate: true,
         });
-        this.sceneTree = new SceneTree(viewer);
+
         this.viewer = viewer;
+        this.graphicManager = new GraphicManager(viewer);
+        this.markerManager = new MarkerManager(viewer);
+        this.sceneTree = new SceneTree(viewer, this.graphicManager, this.markerManager);
         // window.viewer = viewer;
         // window.earth = this;
     }
@@ -132,10 +145,14 @@ export default class BaseEarth extends BaseWidget {
             baseLayers = [...imageries, ...terrains];
         }
 
+        // const graphicManager = this.graphicManager.toJSON();
+
+
         return {
             earth: {
                 layers,
                 baseLayers,
+                // graphicManager,
                 viewer: {
                     ionDefaultToken,
                     position,

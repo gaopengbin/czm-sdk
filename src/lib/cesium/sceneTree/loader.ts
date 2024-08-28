@@ -479,6 +479,11 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
     let terrainProvider = await createTerrain(options);
     viewer.scene.terrainProvider = terrainProvider;
     const nullTerrain = new EllipsoidTerrainProvider({})
+    if (options.zoomTo) {
+        viewer.camera.flyTo({
+            destination: options.rectangle as Rectangle,
+        })
+    }
     const leaf: Leaf = {
         name: options.name,
         guid: options.guid ?? uuid(),
