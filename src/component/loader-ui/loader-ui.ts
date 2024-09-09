@@ -5,6 +5,8 @@ import Template from "./loader-ui.html?raw";
 import "./loader-ui.scss";
 import WMTSParser from "@/lib/cesium/parser/WMTSParser";
 import WMSParser from "@/lib/cesium/parser/WMSParser";
+import * as Cesium from "cesium";
+import { getCartesian3FromCartesian2, PickPosition, transformCartesianToWGS84 } from "@/lib/cesium/measure";
 @Component({
     tagName: "czm-loader-ui",
     className: "czm-loader-ui",
@@ -35,13 +37,16 @@ export default class LoaderUI extends BaseWidget {
                 name: '',
                 url: '',
                 layers: '',
-                rectangle:[],
+                rectangle: [],
                 tilingScheme: '',
-                parameters:{
+                parameters: {
                     transparent: true,
                     format: 'image/png',
                 }
-            }
+            },
+            lon: 0,
+            lat: 0,
+            height: 0,
         }
     }
 
@@ -186,7 +191,7 @@ export default class LoaderUI extends BaseWidget {
         this.$data.wmsParams.url = layer.urls;
         this.$data.wmsParams.layers = layer.name;
         this.$data.wmsParams.rectangle = layer.rectangle;
-        this.$data.wmsParams.tilingScheme ="geographic" ;
+        this.$data.wmsParams.tilingScheme = "geographic";
         this.$data.wmsParams.parameters.format = layer.format[0];
 
     }
@@ -196,4 +201,44 @@ export default class LoaderUI extends BaseWidget {
         this.$data.wmtsParams.url = this.$data.selectedLayer.urls[index].template;
     }
 
+    async loadModel() {
+        this.loading = true;
+        try {
+            const model = await this.sceneTree.createModelLayer({
+                type: "model",
+                name: this.$data.name,
+                url: this.$data.url,
+                position: [this.$data.lon, this.$data.lat, this.$data.height],
+                show: true,
+                zoomTo: false,
+            } as any);
+            this.loading = false;
+            this.sceneTree.root?.addLayer(model);
+            model?.zoomTo();
+        } catch (error) {
+            this.loading = false;
+            console.error(error);
+        }
+
+    }
+
+    pickPosition() {
+        // 鼠标样式设置为十字
+        this.viewer.container.style.cursor = "crosshair";
+
+        this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((click: any) => {
+            let position = getCartesian3FromCartesian2(this.viewer, click.position);
+            if (!position) {
+                return;
+            }
+            let jwd = transformCartesianToWGS84(this.viewer, position);
+            console.log(jwd);
+            if (!jwd) return;
+            this.$data.lon = jwd?.lon;
+            this.$data.lat = jwd?.lat;
+            this.$data.height = jwd?.alt > 0 ? jwd?.alt : 0;
+            this.viewer.container.style.cursor = "default";
+            this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    }
 }

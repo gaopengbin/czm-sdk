@@ -8,3 +8,40 @@
         </label>
     </For>
 </div>
+
+<div class="modal fade" id="measureSettingModal" tabindex="-1" aria-labelledby="measureSettingModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="measureSettingModalLabel">量测设置</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="exampleInput" class="form-label">距离单位</label>
+                <select class="form-select" s-value="$data.distanceUnit" onchange="$data.distanceUnit=value">
+                    <!-- <option selected>选择距离单位</option> -->
+                    <option value="meter">米</option>
+                    <option value="kilometer">千米</option>
+                    <!-- <option value="yard">码</option> -->
+                    <!-- <option value="mile">英里</option> -->
+                    <!-- <option value="foot">英尺</option> -->
+
+                </select>
+                <label for="exampleInput" class="form-label">面积单位</label>
+                <select class="form-select" s-value="$data.areaUnit" onchange="$data.areaUnit=value">
+                    <!-- <option selected>选择面积单位</option> -->
+                    <option value="squareMeter">平方米</option>
+                    <option value="acre">亩</option>
+                    <option value="hectare">公顷</option>
+                    <option value="squareKilometer">平方千米</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setMeasureUnit()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>

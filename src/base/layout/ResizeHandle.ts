@@ -16,7 +16,9 @@ export interface ResizeHandleOptions {
     /** 是否固定宽高比 */
     fixedAspect?: boolean;
     /** ResizeHandle的模式 */
-    mode?: Mode
+    mode?: Mode;
+    /** 缩放结束回调函数 */
+    callback?: Function;
 }
 
 /**
@@ -100,6 +102,7 @@ export default class ResizeHandle {
     // #domNode的起始位置
     #startPosition: { l: any; t: any; } | undefined;
     #isSizing: boolean = false;
+    #callback: any;
 
     /**
      * 可调整大小的控件，可以拖拽改变宿主dom的大小
@@ -114,6 +117,7 @@ export default class ResizeHandle {
             this.#constrainMax = options.constrainMax || this.#constrainMax;
             this.#fixedAspect = options.fixedAspect || this.#fixedAspect;
             this.#mode = options.mode || Mode.always;
+            this.#callback = options.callback || this.#callback;
         }
         this.#init();
     }
@@ -137,7 +141,7 @@ export default class ResizeHandle {
     }
 
     #beginSizing(e: MouseEvent) {
-        e.preventDefault();
+        // e.preventDefault();
         if (this.#isSizing) { return; }
         this.#startPoint = { x: e.clientX, y: e.clientY };
 
@@ -166,7 +170,7 @@ export default class ResizeHandle {
     }
 
     #updateSizing(e: MouseEvent) {
-        e.preventDefault();
+        // e.preventDefault();
         if (this.#isSizing) {
             let box = this.#getNewCoords(e, this.#startPosition);
             let w = box.w, h = box.h;
@@ -190,10 +194,13 @@ export default class ResizeHandle {
     }
 
     #endSizing(e: MouseEvent) {
-        e.preventDefault();
+        // e.preventDefault();
         this.#isSizing = false;
         document.removeEventListener('mouseup', this.#endSizing);
         document.removeEventListener('mousemove', this.#updateSizing);
+        if (this.#callback) {
+            this.#callback();
+        }
     }
 
     #getNewCoords(e: MouseEvent, _startPosition: any) {

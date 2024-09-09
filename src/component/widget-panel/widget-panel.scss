@@ -1,0 +1,47 @@
+.widget-panel {
+    user-select: none;
+    z-index: 9999;
+    position: absolute;
+    min-width: 105px;
+    min-height: 100px;
+    max-width: unset;
+    max-height: unset;
+    margin-right: 10px;
+    /*防止紧贴图标*/
+
+    .widget-header {
+        cursor: move;
+        height: 2.25rem;
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            background-color: var(--bs-primary);
+            border-radius: 0.125rem;
+            font-size: 1rem;
+            color: var(--bs-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    .widget-content {
+        overflow: auto;
+        position: absolute;
+        padding: 0;
+        left: 0;
+        top: 2.25rem;
+        right: 0;
+        bottom: 0;
+    }
+
+}
+
+webgis-widget-panel {
+    &.isopen {
+        .widget-panel {
+            display: block;
+        }
+    }
+}

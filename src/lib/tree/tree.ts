@@ -263,6 +263,7 @@ class TreeNode {
 
             let contendNode = document.createElement("span");
             contendNode.classList.add("tree-node-content");
+            contendNode.setAttribute("guid", this.data?.guid);
 
             // 创建展开/折叠图标
             let icon = document.createElement("span");

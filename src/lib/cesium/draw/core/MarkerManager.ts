@@ -225,7 +225,21 @@ export default class MarkerManager {
     return marker;
   }
   jsonToMarker(option: any) {
-    
+    const marker = new CesiumBillboard(
+      this._viewer,
+      {
+        image: option.image,
+        position: option.position,
+        verticalOrigin: option.verticalOrigin,
+        text: option.text,
+        name: option.name,
+      },
+      option.labelOptions
+    );
+    marker.mid = option.mid;
+    marker.mname = option.mname;
+    marker.description = option.description;
+    return marker;
   }
   changeHandler(img: any) {
     this.selectedImage = img;
@@ -266,6 +280,20 @@ export default class MarkerManager {
     const marker = new CesiumLabel(this._viewer, options);
     return marker;
   }
+  jsonToLabel(option: any) {
+    const mp = this.labelOptions;
+    const marker = new CesiumLabel(
+      this._viewer, {
+      ...mp,
+      position: option.position,
+      text: option.text
+    },
+    );
+    marker.mid = option.mid;
+    marker.mname = option.mname;
+    marker.description = option.description;
+    return marker;
+  }
   createModel(cartesian: Cesium.Cartesian3) {
     const options = this.modelOptions;
     options.position = cartesian;
@@ -273,6 +301,7 @@ export default class MarkerManager {
 
     return marker;
   }
+
   removeEventListener() {
     const pickHandler = this.pickHandler
     if (pickHandler) {

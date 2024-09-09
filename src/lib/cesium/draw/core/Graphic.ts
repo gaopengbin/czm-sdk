@@ -1,6 +1,5 @@
 import GraphicType from "./GraphicType";
 import * as Cesium from 'cesium'
-const console = window.console;
 import {
   CVT
 } from '../js/utils';
@@ -129,10 +128,17 @@ class CesiumBillboard extends BaseGraphic {
     this.position = options.position;
     options.image = options.image || CesiumBillboard.defaultStyle.image;
 
-    labelOption.text = options.label;
+    // labelOption.text = options.text;
+    if (typeof labelOption.fillColor === 'string') {
+      labelOption.fillColor = Cesium.Color.fromCssColorString(labelOption.fillColor)
+    }
+    this._text = labelOption.text;
+    this._name = options.name || '未命名标绘';
+    this.name = this._name;
     this.labelOptions = labelOption;
     const self = this;
     this.options = {
+      name: this._name,
       mname: this._name,
       mtype: this.mtype,
       mid: this.mid,
@@ -140,18 +146,30 @@ class CesiumBillboard extends BaseGraphic {
       billboard: options,
       label: labelOption
     }
+
     this.graphic = undefined;
-    this.name = '';
+
     this.description = '';
     this.create();
   }
 
+  get name() {
+    return this._name ?? this.options.name
+  }
+
+  set name(v) {
+    this._name = v
+  }
+
   get text() {
-    return this.graphic.label.text
+    return this._text
   }
   set text(v) {
-    this.graphic.label.text = v
-    this.mname = v
+    if (this.graphic.label) {
+      this.graphic.label.text = v
+    }
+    this._text = v
+    // this.mname = v
   }
 
   get font() {
@@ -180,9 +198,13 @@ class CesiumBillboard extends BaseGraphic {
     }
   }
   create() {
-    this.graphic = this.viewer.entities.add(this.options);
+    // debugger
+    setTimeout(() => {
+      this.graphic = this.viewer.entities.add(this.options);
+    }, 10);
+
   }
-  remove() {
+  removeSelf() {
     if (this.viewer) {
       this.viewer.entities.remove(this.graphic);
     }
@@ -191,9 +213,9 @@ class CesiumBillboard extends BaseGraphic {
   updateText(text: string, description: string) {
     if (this.graphic) {
       this.graphic.label.text = text;
-      this.name = text;
+      // this.name = text;
       this.description = description;
-      this.mname = text
+      // this.mname = text
     }
   }
   updateImage(img: any) {
@@ -224,7 +246,7 @@ class CesiumBillboard extends BaseGraphic {
     }
   }
   destroy() {
-    this.remove();
+    this.removeSelf();
     this.viewer = undefined;
     this.options = undefined;
     this.position = undefined;
@@ -256,6 +278,11 @@ class CesiumBillboard extends BaseGraphic {
     heightReference: Cesium.HeightReference.NONE,
     horizontalOrigin: Cesium.HorizontalOrigin.CENTER
   }
+  zoomTo() {
+    if (this.graphic) {
+      this.viewer.zoomTo(this.graphic)
+    }
+  }
 
   toJSON() {
     let json: any = {}
@@ -266,11 +293,15 @@ class CesiumBillboard extends BaseGraphic {
     json.show = this.show
     json.font = this.font
     json.text = this.text
+    json.position = this.position
+    json.verticalOrigin = this.graphic.billboard.verticalOrigin.getValue()
 
     const fillColor = this.labelOptions.fillColor.toCssColorString()
     json.labelOptions = {
       ...this.labelOptions,
       fillColor: fillColor,
+      text: this.text,
+      verticalOrigin: this.labelOptions.verticalOrigin,
     }
     return json
   }
@@ -336,7 +367,7 @@ class CesiumPoint extends BaseGraphic {
       this.graphic = this.viewer.entities.add(this.options);
     }
   }
-  remove() {
+  removeSelf() {
     if (this.graphic instanceof Array) {
       this.graphic.map(_ => {
         this.viewer.entities.remove(_);
@@ -475,7 +506,7 @@ class CesiumPoint extends BaseGraphic {
     return false
   }
   destroy() {
-    this.remove()
+    this.removeSelf()
     this.viewer = undefined;
     this.options = undefined;
     this.graphic = undefined;
@@ -526,6 +557,11 @@ class CesiumPolyline extends BaseGraphic {
     return undefined
 
   }
+  set width(v) {
+    if (this.graphic) {
+      this.graphic.polyline.width = v
+    }
+  }
   get properties() {
     if (this.graphic) {
       return this.graphic.properties
@@ -559,7 +595,6 @@ class CesiumPolyline extends BaseGraphic {
   }
   create() {
     if (this.viewer) {
-      console.log('opts', this.options)
       this.graphic = this.viewer.entities.add(this.options);
       // this.graphic.mtype = 'CesiumPolyline'
     }
@@ -617,7 +652,7 @@ class CesiumPolyline extends BaseGraphic {
     // document.dispatchEvent(endEvent)
     // window.aa = this.graphic
   }
-  remove() {
+  removeSelf() {
     if (this.viewer) {
       this.viewer.entities.remove(this.graphic);
       this.graphic = undefined;
@@ -627,7 +662,7 @@ class CesiumPolyline extends BaseGraphic {
   }
   removeNode() {
     if (this.node) {
-      this.nodeGraphic.remove();
+      this.nodeGraphic.removeSelf();
       // this.nodeGraphic = undefined
       this.node = false;
     }
@@ -672,7 +707,7 @@ class CesiumPolyline extends BaseGraphic {
     width: 3
   }
   destroy() {
-    this.remove();
+    this.removeSelf();
     this.viewer = undefined;
     this.options = undefined;
     this.positions = undefined;
@@ -757,7 +792,6 @@ class CesiumPolygon extends BaseGraphic {
     return undefined
   }
   set outlineStyle(style) {
-    console.log(style)
     const options: any = {}
     if (Cesium.defined(this.outlineGraphic)) {
       const pl = this.outlineGraphic.graphic.polyline
@@ -777,6 +811,14 @@ class CesiumPolygon extends BaseGraphic {
       return this.graphic.polygon.material.getValue(this.viewer.clock.currentTime).color
     }
     return undefined
+  }
+  set material(v) {
+    if (this.graphic) {
+      this.graphic.polygon.material = v
+    }
+  }
+  setMaterial(material: any) {
+    this.material = material
   }
   get outlineColor() {
     if (this.outlineGraphic) {
@@ -926,7 +968,7 @@ class CesiumPolygon extends BaseGraphic {
     }
 
   }
-  remove() {
+  removeSelf() {
     if (this.viewer) {
       this.viewer.entities.remove(this.graphic);
       this.graphic = undefined;
@@ -936,20 +978,20 @@ class CesiumPolygon extends BaseGraphic {
   }
   removeOutline() {
     if (this.outline) {
-      this.outlineGraphic.remove();
+      this.outlineGraphic.removeSelf();
       this.outline = false
       this.outlineGraphic = undefined
     }
   }
   removeNode() {
     if (this.node) {
-      this.nodeGraphic.remove();
+      this.nodeGraphic.removeSelf();
       this.node = false;
       // this.nodePositions=[]
     }
   }
   destroy() {
-    this.remove()
+    this.removeSelf()
     this.viewer = undefined;
     this.positions = undefined;
     this.options = undefined;
@@ -1053,12 +1095,30 @@ class CesiumLabel extends BaseGraphic {
       label: options
     };
     this.graphic = undefined;
+    this.name = options.name || '未命名';
+    this._text = options.text || '未命名';
     this.create();
+  }
 
+  get name() {
+    return this._name
+  }
 
+  set name(n) {
+    this._name = n
+  }
+
+  get text() {
+    return this._text
+  }
+  set text(t) {
+    if (this.graphic) {
+      this._text = t
+      this.graphic.label.text = t
+    }
   }
   get color() {
-    if (this.graphic) {
+    if (this.graphic && this.viewer) {
       return this.graphic.label.fillColor.getValue(this.viewer.clock.currentTime)
     }
     return undefined
@@ -1090,7 +1150,7 @@ class CesiumLabel extends BaseGraphic {
       this.graphic.label.position = this.position
     }
   }
-  remove() {
+  removeSelf() {
     this.viewer && this.viewer.entities.remove(this.graphic);
     this.graphic = undefined;
   }
@@ -1106,10 +1166,31 @@ class CesiumLabel extends BaseGraphic {
     showBackground: true
   }
   destroy() {
-    this.remove();
+    this.removeSelf();
     this.viewer = undefined;
     this.options = undefined;
     this.positions = undefined;
+  }
+  zoomTo(): void {
+    if (this.viewer) {
+      this.viewer.zoomTo(this.graphic);
+    }
+  }
+  toJSON() {
+    const graphic = this
+    let json: any = {}
+    json.id = graphic.mid
+    json.mid = graphic.mid
+    json.mname = graphic.mname
+    json.mtype = graphic.mtype
+    json.type = graphic.type
+    json.text = graphic.text
+    json.position = graphic.position
+    json.style = {
+      color: graphic.color,
+      font: graphic.font
+    }
+    return json
   }
 }
 class CesiumModel extends BaseGraphic {
@@ -1143,14 +1224,14 @@ class CesiumModel extends BaseGraphic {
       this.graphic.label.position = this.position
     }
   }
-  remove() {
+  removeSelf() {
     if (this.viewer) {
       this.viewer.entities.remove(this.graphic)
       this.graphic = undefined
     }
   }
   destroy() {
-    this.remove()
+    this.removeSelf()
     this.options = undefined
     this.position = undefined
   }

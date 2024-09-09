@@ -22,6 +22,9 @@
             <li class="nav-item">
                 <a class="nav-link" onclick="this.clickTab(event,7)">Terrain</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,8)">Model</a>
+            </li>
         </ul>
     </div>
     <div class="col-md-9">
@@ -226,6 +229,43 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadTerrain()">加载</button>
+            </If>
+            <If when="$data.active === 8">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个GLB/GLTF地址，例如：https://example.com/data/model.glb
+                    </div>
+                </div>
+                <div class="mb-3 row gx-0">
+                    <label for="url" class="col-sm-2 col-form-label">位置</label>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" s-value="$data.lon" onchange="$data.lon=value">
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" s-value="$data.lat" onchange="$data.lat=value">
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" s-value="$data.height" onchange="$data.height=value">
+                    </div>
+                    <div class="col-sm-1">
+                        <button type="button" class="btn btn-outline-primary" onclick="this.pickPosition()"><i
+                                class="bi bi-hand-index"></i></button>
+                    </div>
+                    <div class="form-text">
+                        输入经纬度位置，例如：[120,30,0]
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadModel()">加载</button>
             </If>
         </div>
     </div>

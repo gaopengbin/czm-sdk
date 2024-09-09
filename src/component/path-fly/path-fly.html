@@ -1,0 +1,14 @@
+<div class="d-grid gap-2 col-10 mx-auto mt-1">
+    <!-- <button class="btn btn-primary" type="button" onclick="this.record()">记录</button> -->
+    <!-- <button class="btn btn-primary" type="button" onclick="this.clear()">清除</button> -->
+    <select class="form-select" s-value="$data.currentPath" onchange="this.pathChange(value)">
+        <For each="$data.paths" item="item" index="index">
+            <option s-value="index">{{item.name}}</option>
+        </For>
+    </select>
+    <button class="btn btn-primary" type="button" onclick="this.focusModel()">模型飞入</button>
+    <button class="btn btn-primary" type="button" onclick="this.outModel()">模型飞出</button>
+    <button class="btn btn-primary" type="button" onclick="this.go()">开始漫游</button>
+    <button class="btn btn-primary" type="button" onclick="this.pauseOrcontinue()">暂停/继续</button>
+    <!-- <button class="btn btn-primary" type="button" onclick="this.stopFly()">停止漫游</button> -->
+</div>

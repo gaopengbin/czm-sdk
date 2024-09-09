@@ -77,10 +77,12 @@ export default class Identify extends BaseWidget {
                 var t = parseInt(selDiv.style.top);
                 var w = parseInt(selDiv.style.width);
                 var h = parseInt(selDiv.style.height);
-                var earthPosition = viewer.camera.pickEllipsoid(
-                    { x: l, y: t },
-                    viewer.scene.globe.ellipsoid
-                );
+
+                // var earthPosition = viewer.camera.pickEllipsoid(
+                //     { x: l, y: t },
+                //     viewer.scene.globe.ellipsoid
+                // );
+                let earthPosition = getCartesian3FromCartesian2(viewer, { x: l, y: t } as Cartesian2) as Cartesian3;
                 var cartographic = Cartographic.fromCartesian(
                     earthPosition,
                     viewer.scene.globe.ellipsoid,
@@ -91,10 +93,11 @@ export default class Identify extends BaseWidget {
                     CesiumMath.toDegrees(cartographic.latitude),
                 ]
 
-                earthPosition = viewer.camera.pickEllipsoid(
-                    { x: l + w, y: t + h },
-                    viewer.scene.globe.ellipsoid
-                );
+                // earthPosition = viewer.camera.pickEllipsoid(
+                //     { x: l + w, y: t + h },
+                //     viewer.scene.globe.ellipsoid
+                // );
+                earthPosition = getCartesian3FromCartesian2(viewer, { x: l + w, y: t + h } as Cartesian2) as Cartesian3;
                 cartographic = Cartographic.fromCartesian(
                     earthPosition,
                     viewer.scene.globe.ellipsoid,
@@ -403,6 +406,9 @@ export default class Identify extends BaseWidget {
                 this.lastBillboardColor = clone(feature.billboard.color);
                 (feature.billboard.color as any) = Color.BLUE.withAlpha(0.5);
             }
+            if (feature.model) {
+                (feature.model.silhouetteSize as any) = 3;
+            }
 
             // 属性
             let attrs = [];
@@ -414,6 +420,7 @@ export default class Identify extends BaseWidget {
             return
         }
         if (feature && feature instanceof Cesium3DTileFeature) {
+            this.lastFeatureColor = clone(feature.color);
             feature.color = Color.BLUE.withAlpha(0.5);
 
             // 属性
@@ -441,6 +448,7 @@ export default class Identify extends BaseWidget {
                 fill: Color.BLUE.withAlpha(0.5),
                 strokeWidth: 3,
                 markerColor: Color.BLUE,
+                clampToGround: true
             }));
 
             // 属性
@@ -465,6 +473,7 @@ export default class Identify extends BaseWidget {
     }
 
     async markAll(features: any) {
+        this.clearHighLight();
         let json: any = {
             type: 'FeatureCollection',
             features: []
@@ -480,9 +489,10 @@ export default class Identify extends BaseWidget {
         })
         const highLight = await this.viewer.dataSources.add(GeoJsonDataSource.load(json, {
             stroke: Color.AQUA.withAlpha(0.5),
-            fill: Color.WHITE.withAlpha(0.3),
+            fill: Color.AQUA.withAlpha(0.2),
             strokeWidth: 3,
             markerColor: Color.AQUA.withAlpha(0.5),
+            clampToGround: true
         }));
         this.highLightAll.push(highLight);
     }
@@ -503,7 +513,7 @@ export default class Identify extends BaseWidget {
             this.$data.count = 0
         }
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
-            this.viewer.selectedEntity.feature.color = Color.WHITE;
+            this.viewer.selectedEntity.feature.color = this.lastFeatureColor;
         }
         if (this.viewer.selectedEntity) {
             if (this.viewer.selectedEntity.polygon) {
@@ -515,6 +525,10 @@ export default class Identify extends BaseWidget {
             if (this.viewer.selectedEntity.billboard) {
                 this.viewer.selectedEntity.billboard.color = this.lastBillboardColor;
             }
+            if (this.viewer.selectedEntity.model) {
+                this.viewer.selectedEntity.model.silhouetteSize = 0;
+            }
+
         }
         this.$data.title = '';
         // this.infoBox.innerHTML = '';

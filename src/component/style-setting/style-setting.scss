@@ -1,0 +1,24 @@
+style-setting {
+    .form-range {
+        // margin-top: 6px;
+    }
+
+    label {
+        font-family: "Noto Sans SC";
+    }
+
+    .legend-custom {
+        border: 2px groove var(--bs-dark-border-subtle);
+        border-radius: 5px;
+        padding: 4px 10px;
+
+        legend {
+            float: unset;
+            width: unset;
+            font-weight: 400;
+            font-size: 16px;
+            font-family: "Noto Sans SC";
+            margin-bottom: 0;
+        }
+    }
+}

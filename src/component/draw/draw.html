@@ -1,7 +1,129 @@
-<button onclick="this.draw('point')">点</button>
+<!-- <button onclick="this.draw('point')">点</button>
 <button onclick="this.draw('label')">文字</button>
 <button onclick="this.draw('polyline')">线</button>
 <button onclick="this.draw('polygon')">多边形</button>
 <button onclick="this.toJSON()">tojson</button>
 <button onclick="this.clear()">clear</button>
-<button onclick="this.test()">test</button>
+<button onclick="this.test()">test</button> -->
+
+<div class="btn-group-vertical" role="group">
+    <For each="$data.drawTools" item="item">
+        <input type="radio" name="draw-radio" class="btn-check" id="draw-radio" s-id="item.type" autocomplete="off">
+        <label class="btn btn-success widget-icon" s-for="item.type" data-bs-toggle="popover" data-bs-trigger="hover"
+            s-data-bs-content="item.name" onclick="this.startDraw(item.type)">
+            <i s-class="item.icon"></i>
+        </label>
+    </For>
+</div>
+
+<div class="modal fade" id="markerModal" tabindex="-1" aria-labelledby="markerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="markerModalLabel">点位标注</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="exampleInput" class="form-label">标注名称</label>
+                <input type="text" class="form-control" s-value="$data.markerOptions.name"
+                    onchange="$data.markerOptions.name=value">
+                <label for="exampleInput" class="form-label">标注文本</label>
+                <input type="text" class="form-control" s-value="$data.markerOptions.text"
+                    onchange="$data.markerOptions.text=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="this.cancel()">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setMarkerStyle()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="labelModal" tabindex="-1" aria-labelledby="labelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="labelModalLabel">文本标注</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="exampleInput" class="form-label">标注名称</label>
+                <input type="text" class="form-control" s-value="$data.labelOptions.name"
+                    onchange="$data.labelOptions.name=value">
+                <label for="exampleInput" class="form-label">标注文本</label>
+                <input type="text" class="form-control" s-value="$data.labelOptions.text"
+                    onchange="$data.labelOptions.text=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="this.cancel()">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setMarkerStyle()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="polylineModal" tabindex="-1" aria-labelledby="polylineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="polylineModalLabel">图形标注</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="nameInput" class="form-label">标注名称</label>
+                <input type="text" class="form-control" id="nameInput" s-value="$data.polylineOptions.name"
+                    onchange="$data.polylineOptions.name=value">
+                <!-- 颜色 -->
+                <label for="exampleInput" class="form-label">颜色</label>
+                <input type="color" class="form-control form-control-color" s-value="$data.polylineOptions.color"
+                    onchange="$data.polylineOptions.color=value">
+                <!-- 线宽 -->
+                <label for="exampleInput" class="form-label">线宽</label>
+                <input type="number" class="form-control" s-value="$data.polylineOptions.width"
+                    onchange="$data.polylineOptions.width=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="this.cancel()">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setGraphicStyle()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="polygonModal" tabindex="-1" aria-labelledby="polygonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="polygonModalLabel">面状标绘</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="nameInput" class="form-label">标注名称</label>
+                <input type="text" class="form-control" id="nameInput" s-value="$data.polygonOptions.name"
+                    onchange="$data.polygonOptions.name=value">
+                <!-- 颜色 -->
+                <label for="exampleInput" class="form-label">填充颜色</label>
+                <!-- <div id="fillColor"></div> -->
+                <input type="color" class="form-control form-control-color" s-value="$data.polygonOptions.fillColor"
+                    onchange="$data.polygonOptions.fillColor=value">
+                <!-- 颜色 -->
+                <label for="exampleInput" class="form-label">边框颜色</label>
+                <input type="color" class="form-control form-control-color" s-value="$data.polygonOptions.outlineColor"
+                    onchange="$data.polygonOptions.outlineColor=value">
+                <!-- 线宽 -->
+                <label for="exampleInput" class="form-label">边框线宽</label>
+                <input type="number" class="form-control" s-value="$data.polygonOptions.outlineWidth"
+                    onchange="$data.polygonOptions.outlineWidth=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="this.cancel()">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setGraphicStyle()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>

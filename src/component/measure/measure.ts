@@ -4,7 +4,7 @@ import BaseWidget from "../earth/base-widget";
 import "./measure.scss";
 import template from "./measure.html?raw";
 import { MeasureHandler } from "@/lib/cesium/measure";
-import { Popover } from "bootstrap";
+import { Modal, Popover } from "bootstrap";
 
 @Component({
     tagName: "czm-measure",
@@ -18,7 +18,7 @@ export default class Measure extends BaseWidget {
         super();
     }
 
-    async onInit() {
+    public beforeInit(): void {
         this.$data = {
             measures: [
                 {
@@ -37,12 +37,23 @@ export default class Measure extends BaseWidget {
                     icon: "bi-bounding-box-circles"
                 },
                 {
+                    name: "设置",
+                    type: "setting",
+                    icon: "bi-gear"
+                },
+                {
                     name: "清除",
                     type: "clear",
                     icon: "bi-trash"
                 }
-            ]
+            ],
+            distanceUnit: "meter",
+            areaUnit: "squareMeter"
         }
+    }
+
+    async onInit() {
+
 
     }
 
@@ -55,6 +66,15 @@ export default class Measure extends BaseWidget {
     }
 
     startMeasure(type: string) {
+        if (type === 'setting') {
+            const modal = new Modal(document.getElementById('measureSettingModal') as Element, {
+                focus: true,
+                backdrop: 'static'
+            })
+            modal.show()
+            // this.measureHandler?.setting();
+            return;
+        }
         this.measureHandler?.startMeasure(type);
     }
 
@@ -64,5 +84,13 @@ export default class Measure extends BaseWidget {
 
     clearMeasure() {
         this.measureHandler?.clearMeasure();
+    }
+
+    setMeasureUnit() {
+        console.log(this.$data.distanceUnit, this.$data.areaUnit);
+        if (this.measureHandler) {
+            this.measureHandler.distanceUnit = this.$data.distanceUnit;
+            this.measureHandler.areaUnit = this.$data.areaUnit;
+        }
     }
 }

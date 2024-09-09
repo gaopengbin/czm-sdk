@@ -1,4 +1,4 @@
-import { CallbackProperty, Cartesian2, Cartesian3, Cartographic, Cesium3DTileFeature, Cesium3DTileset, Color, HorizontalOrigin, Model, ScreenSpaceEventHandler, ScreenSpaceEventType, VerticalOrigin, Viewer, Math as CMath, EllipsoidTerrainProvider, Ellipsoid, PolygonHierarchy, PolylineDashMaterialProperty, Ray, Scene, SceneMode } from "cesium";
+import { CallbackProperty, Cartesian2, Cartesian3, Cartographic, Cesium3DTileFeature, Cesium3DTileset, Color, HorizontalOrigin, Model, ScreenSpaceEventHandler, ScreenSpaceEventType, VerticalOrigin, Viewer, Math as CMath, EllipsoidTerrainProvider, Ellipsoid, PolygonHierarchy, PolylineDashMaterialProperty, Ray, Scene, SceneMode, ClassificationType } from "cesium";
 import { Helper } from "../helper";
 export class MeasureTool {
     viewer: Viewer;
@@ -35,6 +35,18 @@ export class MeasureHandler {
         this.measure.type = type;
         this.measure.measure();
     }
+
+    set distanceUnit(unit: string) {
+        if (this.measure) {
+            this.measure.distanceUnit = unit;
+        }
+    }
+    set areaUnit(unit: string) {
+        if (this.measure) {
+            this.measure.areaUnit = unit;
+        }
+    }
+
     endMeasure() {
         this.measureType = "";
         // this.measure = null;
@@ -53,6 +65,8 @@ class Measure {
     endDrawing: any = [];
     disposer: any = [];
     helper: Helper;
+    _distanceUnit: string;
+    _areaUnit: string;
     constructor(viewer: Viewer, type: string) {
         this.viewer = viewer;
         this.type = type;
@@ -70,7 +84,23 @@ class Measure {
             disableDepthTestDistance: 1000000,
         }
         this.helper = new Helper(viewer);
+        this._distanceUnit = "meter";
+        this._areaUnit = "squareMeter";
     }
+
+    set distanceUnit(unit: string) {
+        this._distanceUnit = unit;
+    }
+    get distanceUnit() {
+        return this._distanceUnit;
+    }
+    set areaUnit(unit: string) {
+        this._areaUnit = unit
+    }
+    get areaUnit() {
+        return this._areaUnit;
+    }
+
     measure() {
         this.endMeasure();
         switch (this.type) {
@@ -137,8 +167,8 @@ class Measure {
             labels.push(point);
         }, ScreenSpaceEventType.LEFT_CLICK);
         this.handler.setInputAction((move: any) => {
-            // let position = getCartesian3FromCartesian2(this.viewer, move.endPosition);
-            let position = PickPosition(this.viewer.scene, move.endPosition, new Cartesian3());
+            let position = getCartesian3FromCartesian2(this.viewer, move.endPosition);
+            // let position = PickPosition(this.viewer.scene, move.endPosition, new Cartesian3());
             if (!position) {
                 return;
             }
@@ -146,7 +176,7 @@ class Measure {
             if (!jwd) return;
             (label as any).point.show = false;
             labelPosition = position;
-            labelText = `经度:${jwd.lon.toFixed(6)} \n纬度:${jwd.lat.toFixed(6)}\n 高度:${jwd.alt.toFixed(2)}`;
+            labelText = `经度:${jwd.lon.toFixed(6)} \n纬度:${jwd.lat.toFixed(6)}\n 高度:${Number(jwd.alt.toFixed(2)) > 0 ? jwd.alt.toFixed(2) : '0.00'}`;
         }, ScreenSpaceEventType.MOUSE_MOVE);
 
         const endDrawing = () => {
@@ -218,7 +248,7 @@ class Measure {
             }, false) as any,
             label: {
                 text: new CallbackProperty(() => {
-                    return `总长度${(totalDistance + moveDistance).toFixed(2)}m`;
+                    return `总长度${transformDistanceUnit(this.distanceUnit, (totalDistance + moveDistance))}`;
                 }, false),
                 ...this.labelStyle
             },
@@ -254,7 +284,9 @@ class Measure {
                 let _text = this.viewer.entities.add({
                     position: textPosition,
                     label: {
-                        text: '距离:' + distance.toFixed(2) + "m",
+                        text: new CallbackProperty(() => {
+                            return '距离:' + transformDistanceUnit(this.distanceUnit, distance);
+                        }, false),
                         ...this.labelStyle
                     },
                 });
@@ -274,7 +306,7 @@ class Measure {
             }, false) as any,
             label: {
                 text: new CallbackProperty(() => {
-                    return `距离:${moveDistance.toFixed(2)}m`;
+                    return `距离:${transformDistanceUnit(this.distanceUnit, moveDistance)}`;
                 }, false),
                 ...this.labelStyle
             },
@@ -360,6 +392,8 @@ class Measure {
 
                 }, false),
                 material: Color.AQUA.withAlpha(0.5),
+                perPositionHeight: true,
+                outline: true,
             },
         });
         //绘制移动点
@@ -387,7 +421,7 @@ class Measure {
             }, false) as any,
             label: {
                 text: new CallbackProperty(() => {
-                    return `总面积${(moveArea).toFixed(2)}m²`;
+                    return `总面积${transformAreaUnit(this.areaUnit, moveArea)}`;
                 }, false),
                 ...this.labelStyle
             },
@@ -616,7 +650,47 @@ const getCenter = (positions: any) => {
     return null
 }
 
+const transformDistanceUnit = (unit: string, number: number) => {
+    switch (unit) {
+        case "meter":
+            return number.toFixed(2) + "米"
+        case "kilometer":
+            return (number / 1000).toFixed(2) + "千米"
+        case "mile":
+            return (number / 1609.344).toFixed(2) + "英里"
+        case "yard":
+            return (number / 0.9144).toFixed(2) + "码"
+        case "foot":
+            return (number / 0.3048).toFixed(2) + "英尺"
+        default:
+            return number.toFixed(2) + "米"
+    }
+}
+
+const transformAreaUnit = (unit: string, number: number) => {
+    switch (unit) {
+        case "squareMeter":
+            return number.toFixed(2) + "平方米"
+        case "hectare":
+            return (number / 10000).toFixed(2) + "公顷"
+        case "acre":
+            // 3亩=2000平米
+            return (number / 2000 * 3).toFixed(2) + "亩"
+        case "squareKilometer":
+            return (number / 1000000).toFixed(2) + "平方千米"
+        case "squareMile":
+            return (number / 2590000).toFixed(2) + "平方英里"
+        case "squareYard":
+            return (number / 0.836127).toFixed(2) + "平方码"
+        case "squareFoot":
+            return (number / 0.092903).toFixed(2) + "平方英尺"
+        default:
+            return number.toFixed(2) + "平方米"
+    }
+}
+
 export {
+    PickPosition,
     getCartesian3FromCartesian2,
     transformWGS84ToCartesian,
     transformCartesianToWGS84,

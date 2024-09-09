@@ -162,12 +162,20 @@
     {
       "label": "绘制",
       "tagName": "czm-draw",
-      "icon": "bi-image",
+      "icon": "bi-pen",
       "position": {
         "left": 10,
-        "top": 400,
-        "width": 600,
-        "height": 400
+        "top": 400
+      },
+      "inPanel": false
+    },
+    {
+      "label": "漫游",
+      "tagName": "czm-path-fly",
+      "icon": "bi-arrows-move",
+      "position": {
+        "left": 10,
+        "top": 550
       },
       "inPanel": true
     }

@@ -28,14 +28,6 @@ export default class BaseEarth extends BaseWidget {
                 initViewer(this.viewer, viewer);
             }
             await initEarth(this.sceneTree, this.config.earth);
-            // if (this.config.earth.graphicManager) {
-            //     const graphics = this.graphicManager.fromJSON(this.config.earth.graphicManager);
-            //     console.log(graphics)
-            //     // this.sceneTree.root.children.push(...graphics)
-            //     graphics.forEach((graphics: any) => {
-            //         this.sceneTree.root.addLayer(graphics);
-            //     })
-            // }
         }, 500);
 
         const widgetManager = this.globalConfig?.widgetManager || 'webgis-widget-manager';

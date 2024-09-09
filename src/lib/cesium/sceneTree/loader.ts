@@ -75,6 +75,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
             guid: leaf.guid,
             url: (leaf._imageLayer?.imageryProvider as any).url,
             layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
                 return rectangle ? [
@@ -84,6 +85,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
+            zoomTo: false
         }
     }
     return leaf;
@@ -150,6 +152,7 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
             guid: leaf.guid,
             url: (leaf._imageLayer?.imageryProvider as any).url,
             layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
                 return rectangle ? [
@@ -158,7 +161,8 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
                     CesiumMath.toDegrees(rectangle.east),
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
-            })()
+            })(),
+            zoomTo: false
         }
     }
     return leaf;
@@ -208,6 +212,8 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
             show: leaf.show,
             guid: leaf.guid,
             url: leaf?._tileset?.resource?.url,
+            zIndex: leaf.zIndex,
+            zoomTo: false
         }
     }
     return leaf;
@@ -267,6 +273,7 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
             guid: leaf.guid,
             url: (leaf._imageLayer?.imageryProvider as any).url,
             layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
                 return rectangle ? [
@@ -275,7 +282,8 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.east),
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
-            })()
+            })(),
+            zoomTo: false
         }
     }
     return leaf;
@@ -335,6 +343,7 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
             guid: leaf.guid,
             url: opt.url,
             layers: (leaf._imageLayer?.imageryProvider as any).layers,
+            zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
                 return rectangle ? [
@@ -343,7 +352,8 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.east),
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
-            })()
+            })(),
+            zoomTo: false
         }
     }
     return leaf;
@@ -401,6 +411,8 @@ export const GeoJsonLoader = async (viewer: Viewer, options: any) => {
             markerColor: options.markerColor?.toCssColorString(),
             clampToGround: options.clampToGround,
             cluster: options.cluster,
+            zIndex: leaf.zIndex,
+            zoomTo: false
         }
     }
     return leaf;
@@ -460,6 +472,7 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
             show: leaf.show,
             guid: leaf.guid,
             url: (leaf._imageLayer?.imageryProvider as any).url,
+            zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
                 return rectangle ? [
@@ -468,7 +481,8 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.east),
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
-            })()
+            })(),
+            zoomTo: false
         }
     }
     return leaf;
@@ -529,6 +543,7 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
             guid: leaf.guid,
             url: options.url,
             rectangle: options.rectangle,
+            zoomTo: false
         }
     }
     return leaf;
@@ -536,6 +551,7 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
 
 export const ModelLoader = async (viewer: Viewer, options: any) => {
     const opt = JSON.parse(JSON.stringify(options));
+    options.position = options.position ?? [116.39, 39.91, 0];
     let position = Cartesian3.fromDegrees(options.position[0], options.position[1], options.position[2]);
     const modelEntity = viewer.entities.add({
         position: position,
@@ -585,6 +601,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
             guid: leaf.guid,
             url: options.url,
             position: options.position,
+            zoomTo: false
         }
     }
     return leaf;

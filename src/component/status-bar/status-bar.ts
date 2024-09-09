@@ -50,7 +50,7 @@ export default class StatusBar extends BaseWidget {
             if (cartographic) {
                 this.$data.longitude = CesiumMath.toDegrees(cartographic.longitude).toFixed(2);
                 this.$data.latitude = CesiumMath.toDegrees(cartographic.latitude).toFixed(2);
-                this.$data.altitude = (cartographic.height / 1000).toFixed(2);
+                this.$data.altitude = (cartographic.height).toFixed(2);
             }
         }, ScreenSpaceEventType.MOUSE_MOVE);
     }

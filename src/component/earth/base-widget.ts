@@ -62,6 +62,7 @@ export default abstract class BaseWidget extends HTMLElement {
         styleModule, // 处理元素样式并支持动画
         eventListenersModule, // 附加事件侦听器
     ]);
+    patch = this.#patch;
     #vnode: VNode | HTMLElement | undefined; // 当前的虚拟dom
     #AST: ASTNode[] = [];
     #rendered: boolean = false; // 渲染是否完成
@@ -184,7 +185,11 @@ export default abstract class BaseWidget extends HTMLElement {
 
     public earthReady() { }
 
+    //在元素被添加到文档之前调用
+    public beforeInit() { }
+
     async connectedCallback() {
+        this.beforeInit();
         // 获取配置
         if (this._manifest.hasConfig) {
             this.loadConfig(

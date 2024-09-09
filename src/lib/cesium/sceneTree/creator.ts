@@ -353,8 +353,10 @@ export async function createXYZ(options: SSXYZLayerOptions) {
 }
 
 export async function createTerrain(options: SSTerrainLayerOptions) {
-    if (Array.isArray(options.rectangle)) {
+    if (options.rectangle && Array.isArray(options.rectangle)) {
         options.rectangle = Rectangle.fromDegrees(...options.rectangle);
+    } else {
+        options.rectangle = Rectangle.fromDegrees(-180.0, -90.0, 180.0, 90.0);
     }
 
     const terrainProvider = await CesiumTerrainProvider.fromUrl(options.url, options as CesiumTerrainProvider.ConstructorOptions);
@@ -407,7 +409,8 @@ const initObjects: any = {
     "model": "createModelLayer",
     "polyline": "createGraphicLayer",
     "polygon": "createGraphicLayer",
-    "marker":""
+    "marker": "createMarkerLayer",
+    "label": "createLabelLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

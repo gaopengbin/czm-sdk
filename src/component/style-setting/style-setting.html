@@ -1,0 +1,118 @@
+<If when="this.$data.type=='tileset'">
+    <div class=" p-1">
+        <div class="d-grid gap-2 p-1">
+            <select class="form-select" s-value="$data.currentStyle" onchange="this.styleChange(value)">
+                <For each="$data.defaultStyles" item="item" index="index">
+                    <option s-value="index">{{item.name}}</option>
+                </For>
+            </select>
+            <textarea class="form-control" id="styleTextarea" rows="10"
+                cols="10">{{JSON.stringify($data.currentStyle.style,null, 2)}}</textarea>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button class="btn btn-primary" type="button" onclick="this.apply()">应用样式</button>
+                <a class="btn btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button"
+                    aria-expanded="false" aria-controls="multiCollapseExample1">高级参数</a>
+            </div>
+        </div>
+
+        <div class="mb-1" class="collapse multi-collapse" id="multiCollapseExample1">
+            <!-- <fieldset class="legend-custom bg-light">
+                <legend>分类类型:{{$data.classificationType}}</legend>
+                <div class="col-sm-12">
+                    <select class="form-select" s-value="$data.classificationType"
+                        onchange="this.classificationTypeChange(value)">
+                        <option value="0">TERRAIN</option>
+                        <option value="1">CESIUM_3D_TILE</option>
+                        <option value="2">BOTH</option>
+                        <option value="3">NONE</option>
+                    </select>
+                </div>
+            </fieldset> -->
+            <fieldset class="legend-custom bg-light">
+                <legend>最大屏幕空间误差:{{Number($data.maximumScreenSpaceError)}}</legend>
+                <div class="col-sm-12">
+                    <input type="range" class="form-range" min="0.1" max="256" step="0.1"
+                        s-value="$data.maximumScreenSpaceError" oninput="this.maximumScreenSpaceErrorChange(value)">
+                </div>
+            </fieldset>
+            <fieldset class="legend-custom bg-light">
+                <legend>GPU缓存量:{{Number($data.cacheBytes)}}MB</legend>
+                <div class="col-sm-12">
+                    <input type="range" class="form-range" min="512" max="8192" step="1" s-value="$data.cacheBytes"
+                        oninput="this.cacheBytesChange(value)">
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</If>
+
+<If when="this.$data.type!=='tileset' && this.$data.type!=='terrain' && this.$data.type!=='model'">
+    <div class="d-grid p-1">
+        <fieldset class="legend-custom bg-light">
+            <legend>透明度:{{$data.alpha}}</legend>
+            <input type="range" class="form-range" min="0" max="1" step="0.01" s-value="$data.alpha"
+                oninput="this.alphaChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>亮度:{{$data.brightness}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.01" s-value="$data.brightness"
+                onchange="this.brightnessChange(value)" oninput="this.brightnessChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>对比度:{{$data.contrast}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.01" s-value="$data.contrast"
+                onchange="this.contrastChange(value)" oninput="this.contrastChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>伽马值:{{$data.gamma}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.01" s-value="$data.gamma"
+                onchange="this.gammaChange(value)" oninput="this.gammaChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>色调:{{$data.hue}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.01" s-value="$data.hue"
+                onchange="this.hueChange(value)" oninput="this.hueChange(value)">
+        </fieldset>
+
+        <fieldset class="legend-custom bg-light">
+            <legend>饱和度:{{$data.saturation}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.01" s-value="$data.saturation"
+                onchange="this.saturationChange(value)" oninput="this.saturationChange(value)">
+        </fieldset>
+    </div>
+</If>
+
+<If when="this.$data.type==='terrain'">
+    <div class="d-grid p-1">
+        <fieldset class="legend-custom bg-light">
+            <legend>地形夸张系数:{{$data.exaggeration}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.1" s-value="$data.exaggeration"
+                oninput="this.exaggerationChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>夸张相对高程:{{$data.relativeHeight}}</legend>
+            <input type="range" class="form-range" min="-1000" max="9000" step="1" s-value="$data.relativeHeight"
+                oninput="this.relativeHeightChange(value)">
+        </fieldset>
+    </div>
+</If>
+
+<If when="this.$data.type==='model'">
+    <div class="d-grid p-1">
+        <fieldset class="legend-custom bg-light">
+            <legend>缩放:{{$data.scale}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.1" s-value="$data.scale"
+                oninput="this.scaleChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>描边粗细:{{$data.silhouetteSize}}</legend>
+            <input type="range" class="form-range" min="0" max="10" step="0.1" s-value="$data.silhouetteSize"
+                oninput="this.silhouetteSizeChange(value)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
+            <legend>描边颜色:{{$data.silhouetteColor}}</legend>
+            <input type="color" class="form-range" min="0" max="10" step="0.1" s-value="$data.silhouetteColor"
+                oninput="this.silhouetteColorChange(value)">
+        </fieldset>
+    </div>
+</If>

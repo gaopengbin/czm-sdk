@@ -248,6 +248,18 @@ class SceneTree {
         return leaf;
     }
 
+    createMarkerLayer(options: SSLayerOptions) {
+        let leaf = this._markerManager.jsonToMarker(options)
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createLabelLayer(options: SSLayerOptions) {
+        let leaf = this._markerManager.jsonToLabel(options)
+        this.updateSceneTree();
+        return leaf;
+    }
+
 
 
     // 创建分组用于管理图层
