@@ -1,0 +1,10 @@
+<div class="btn-group-vertical" role="group">
+    <For each="$data.effects" item="item">
+        <input type="checkbox" name="effect-checkbox" class="btn-check" id="effect-checkbox" s-id="item.type"
+            autocomplete="off" s-checked="item.open">
+        <label class="btn btn-primary widget-icon" s-for="item.type" data-bs-toggle="popover" data-bs-trigger="hover"
+            s-data-bs-content="item.name" onclick="this.handleChangeEffect(item)">
+            <i s-class="item.icon"></i>
+        </label>
+    </For>
+</div>

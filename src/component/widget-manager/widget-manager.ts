@@ -27,6 +27,7 @@ import { WidgetConfig } from "../../component/interface";
 export default class WidgetManager extends BaseWidget {
     constructor() {
         super();
+        this.widgets = [];
     }
 
     public isReady(): boolean {
@@ -39,7 +40,7 @@ export default class WidgetManager extends BaseWidget {
     }
 
     public configLoaded(): void {
-        console.log("configLoaded", this.globalConfig);
+        // console.log("configLoaded", this.globalConfig);
     }
 
     /**
@@ -82,12 +83,14 @@ export default class WidgetManager extends BaseWidget {
                 const icon = this.createIcon(_config);
                 // 渲染图标
                 this.appendChild(icon);
+                this.widgets.push(icon);
             }
             // 创建widget
             else {
                 const widget = this.createWidget(_config);
                 // 渲染widget
                 this.appendChild(widget);
+                this.widgets.push(widget);
             }
         } catch (error) {
             console.error(error);
@@ -107,6 +110,7 @@ export default class WidgetManager extends BaseWidget {
             config: _config,
             globalConfig: this.globalConfig,
             viewer: this.viewer,
+            widgetConfig: _config
         });
 
         // 不需要宽高
@@ -116,6 +120,7 @@ export default class WidgetManager extends BaseWidget {
         // icon.style.zIndex = '2';
 
         icon.title = _config.label || _config.tagName;
+        
         return icon;
     }
 
@@ -137,14 +142,15 @@ export default class WidgetManager extends BaseWidget {
             // map: this.map,
             viewer: this.viewer,
             config: _config.config,
-            globalConfig: this.globalConfig
+            globalConfig: this.globalConfig,
+            widgetConfig: _config
         });
 
         const position = _config.position;
         const styleString = styleToString(position);
         widget.setAttribute('style', styleString);
         widget.style.zIndex = widget.style.zIndex || '1';
-
+        
         return widget;
     }
 

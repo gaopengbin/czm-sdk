@@ -9,6 +9,10 @@ import {
     EllipsoidTerrainProvider,
     Cartesian3,
     Math as CesiumMath,
+    ImageryLayer,
+    Cesium3DTileStyle,
+    JulianDate,
+    Color,
 } from "cesium";
 import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
@@ -16,8 +20,12 @@ import { getSceneTree } from "@/component";
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     const esri = await createSSMapServer(options);
-    let ssMapServerLayer: SSImageryLayer =
-        viewer.imageryLayers.addImageryProvider(esri);
+    const constructorOptions = {
+        ...opt,
+        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+    }
+    let ssMapServerLayer: SSImageryLayer = new ImageryLayer(esri, constructorOptions as any);
+    viewer.imageryLayers.add(ssMapServerLayer);
 
     Object.assign(ssMapServerLayer, {
         name: options.name,
@@ -85,7 +93,13 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
-            zoomTo: false
+            zoomTo: false,
+            alpha: leaf._imageLayer?.alpha,
+            brightness: leaf._imageLayer?.brightness,
+            contrast: leaf._imageLayer?.contrast,
+            gamma: leaf._imageLayer?.gamma,
+            hue: leaf._imageLayer?.hue,
+            saturation: leaf._imageLayer?.saturation,
         }
     }
     return leaf;
@@ -93,9 +107,12 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     const esri = await createArcGisMapServer(options);
-
-    let arcGisMapServerLayer: SSImageryLayer =
-        viewer.imageryLayers.addImageryProvider(esri);
+    const constructorOptions = {
+        ...opt,
+        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+    }
+    let arcGisMapServerLayer: SSImageryLayer = new ImageryLayer(esri, constructorOptions);
+    viewer.imageryLayers.add(arcGisMapServerLayer);
 
     Object.assign(arcGisMapServerLayer, {
         name: options.name,
@@ -162,7 +179,13 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
-            zoomTo: false
+            zoomTo: false,
+            alpha: leaf._imageLayer?.alpha,
+            brightness: leaf._imageLayer?.brightness,
+            contrast: leaf._imageLayer?.contrast,
+            gamma: leaf._imageLayer?.gamma,
+            hue: leaf._imageLayer?.hue,
+            saturation: leaf._imageLayer?.saturation,
         }
     }
     return leaf;
@@ -172,7 +195,8 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
     const opt = JSON.parse(JSON.stringify(options));
     const tileset: SSTilesetLayer = await createTileset(options);
     viewer.scene.primitives.add(tileset);
-
+    console.log('tileset', opt)
+    tileset.style = new Cesium3DTileStyle(opt.style);
     tileset.name = options.name;
     tileset.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -213,7 +237,8 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
             guid: leaf.guid,
             url: leaf?._tileset?.resource?.url,
             zIndex: leaf.zIndex,
-            zoomTo: false
+            zoomTo: false,
+            style: leaf?._tileset?.style?.style,
         }
     }
     return leaf;
@@ -222,7 +247,12 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
 export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     const wms = await createWMS(options);
-    let wmsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wms);
+    const constructorOptions = {
+        ...opt,
+        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+    }
+    let wmsLayer: SSImageryLayer = new ImageryLayer(wms, constructorOptions);
+    viewer.imageryLayers.add(wmsLayer);
     wmsLayer.name = options.name;
     wmsLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -283,7 +313,13 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
-            zoomTo: false
+            zoomTo: false,
+            alpha: leaf._imageLayer?.alpha,
+            brightness: leaf._imageLayer?.brightness,
+            contrast: leaf._imageLayer?.contrast,
+            gamma: leaf._imageLayer?.gamma,
+            hue: leaf._imageLayer?.hue,
+            saturation: leaf._imageLayer?.saturation,
         }
     }
     return leaf;
@@ -292,7 +328,12 @@ export const WMSLoader = async (viewer: Viewer, options: SSWMSLayerOptions) => {
 export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     const wmts = await createWMTS(options);
-    let wmtsLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(wmts);
+    const constructorOptions = {
+        ...opt,
+        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+    }
+    let wmtsLayer: SSImageryLayer = new ImageryLayer(wmts, constructorOptions);
+    viewer.imageryLayers.add(wmtsLayer);
     wmtsLayer.name = options.name;
     wmtsLayer.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -353,7 +394,13 @@ export const WMTSLoader = async (viewer: Viewer, options: SSLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
-            zoomTo: false
+            zoomTo: false,
+            alpha: leaf._imageLayer?.alpha,
+            brightness: leaf._imageLayer?.brightness,
+            contrast: leaf._imageLayer?.contrast,
+            gamma: leaf._imageLayer?.gamma,
+            hue: leaf._imageLayer?.hue,
+            saturation: leaf._imageLayer?.saturation,
         }
     }
     return leaf;
@@ -421,7 +468,12 @@ export const GeoJsonLoader = async (viewer: Viewer, options: any) => {
 export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     let xyz = await createXYZ(options);
-    let xyzLayer: SSImageryLayer = viewer.imageryLayers.addImageryProvider(xyz);
+    const constructorOptions = {
+        ...opt,
+        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+    }
+    let xyzLayer: SSImageryLayer = new ImageryLayer(xyz, constructorOptions);
+    viewer.imageryLayers.add(xyzLayer);
     xyzLayer.name = options.name;
     xyzLayer.show = defaultValue(options.show, true);
 
@@ -482,7 +534,13 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
             })(),
-            zoomTo: false
+            zoomTo: false,
+            alpha: leaf._imageLayer?.alpha,
+            brightness: leaf._imageLayer?.brightness,
+            contrast: leaf._imageLayer?.contrast,
+            gamma: leaf._imageLayer?.gamma,
+            hue: leaf._imageLayer?.hue,
+            saturation: leaf._imageLayer?.saturation,
         }
     }
     return leaf;
@@ -492,6 +550,8 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
     const opt = JSON.parse(JSON.stringify(options));
     let terrainProvider = await createTerrain(options);
     viewer.scene.terrainProvider = terrainProvider;
+    viewer.scene.verticalExaggeration = opt.exaggeration ?? 1.0;
+    viewer.scene.verticalExaggerationRelativeHeight = opt.relativeHeight ?? 0.0;
     const nullTerrain = new EllipsoidTerrainProvider({})
     if (options.zoomTo) {
         viewer.camera.flyTo({
@@ -543,7 +603,9 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
             guid: leaf.guid,
             url: options.url,
             rectangle: options.rectangle,
-            zoomTo: false
+            zoomTo: false,
+            exaggeration: viewer.scene.verticalExaggeration,
+            relativeHeight: viewer.scene.verticalExaggerationRelativeHeight,
         }
     }
     return leaf;
@@ -557,6 +619,9 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         position: position,
         model: {
             uri: options.url,
+            scale: options.scale,
+            silhouetteSize: options.silhouetteSize,
+            silhouetteColor: options.silhouetteColor ? Color.fromCssColorString(options.silhouetteColor) : undefined,
         }
 
     });
@@ -601,7 +666,10 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
             guid: leaf.guid,
             url: options.url,
             position: options.position,
-            zoomTo: false
+            zoomTo: false,
+            scale: modelEntity.model?.scale?.getValue(new JulianDate()),
+            silhouetteSize: modelEntity.model?.silhouetteSize?.getValue(new JulianDate()),
+            silhouetteColor: modelEntity.model?.silhouetteColor?.getValue(new JulianDate()).toCssColorString(),
         }
     }
     return leaf;

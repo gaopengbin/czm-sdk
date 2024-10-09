@@ -25,8 +25,8 @@ import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImagery
 import WMTSParser from "../parser/WMTSParser";
 import SSMapServerProvider from "../CustomImageryProvider/provider/SSMapServerProvider";
 import { getProjection } from "../CustomImageryProvider/projection/projection";
-import GraphicManager from "../draw/core/GraphicManager";
-import MarkerManager from "../draw/core/MarkerManager";
+// import GraphicManager from "../draw/core/GraphicManager";
+// import MarkerManager from "../draw/core/MarkerManager";
 
 export async function createSSMapServer(options: SSArcGisLayerOptions) {
     let rectangle: any;

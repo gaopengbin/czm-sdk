@@ -178,6 +178,43 @@
         "top": 550
       },
       "inPanel": true
+    },
+    {
+      "label": "特效",
+      "tagName": "czm-effect",
+      "position": {
+        "left": 10,
+        "top": 600
+      },
+      "inPanel": false,
+      "config": {
+        "effects": [
+          {
+            "type": "Bloom",
+            "name": "泛光",
+            "icon": "bi-lightbulb",
+            "open": true
+          },
+          {
+            "type": "DepthOfField",
+            "name": "景深",
+            "icon": "bi-hypnotize",
+            "open": false
+          },
+          {
+            "type": "HDR",
+            "name": "HDR",
+            "icon": "bi-badge-hd",
+            "open": false
+          },
+          {
+            "type": "FXAA",
+            "name": "抗锯齿",
+            "icon": "bi-gear-wide",
+            "open": true
+          }
+        ]
+      }
     }
   ]
 }

@@ -14,7 +14,6 @@ export default class StyleSetting extends BaseWidget {
         super();
     }
     public async beforeInit() {
-        console.log('style-setting init', this.config)
         this.$data = {
             // Cesium3DTiles 参数
             cacheBytes: 0,
@@ -33,6 +32,10 @@ export default class StyleSetting extends BaseWidget {
             // 地形参数
             exaggeration: 1.0,
             relativeHeight: 0.0,
+            // 模型参数
+            scale: 1.0,
+            silhouetteSize: 0.0,
+            silhouetteColor: Color.RED.toCssColorString(),
         }
         this.$data.type = this.config.layer.toJSON().type;
         if (this.$data.type === 'tileset') {
@@ -74,7 +77,6 @@ export default class StyleSetting extends BaseWidget {
     apply() {
         const styleTextarea = this.querySelector('#styleTextarea') as HTMLTextAreaElement;
         const style = JSON.parse(styleTextarea.value);
-        console.log('style', style)
         const tileset = this.config.layer._tileset;
         tileset.style = new Cesium3DTileStyle(style);
     }

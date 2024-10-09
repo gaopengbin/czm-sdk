@@ -6,6 +6,7 @@ import './base-earth.scss'
 import { Cartographic, Ion, Math } from 'cesium';
 import GraphicManager from '@/lib/cesium/draw/core/GraphicManager';
 import MarkerManager from '@/lib/cesium/draw/core/MarkerManager';
+import WidgetIcon from '../widget-icon/widget-icon';
 @Component({
     tagName: 'base-earth',
     className: 'base-earth',
@@ -138,7 +139,24 @@ export default class BaseEarth extends BaseWidget {
         }
 
         // const graphicManager = this.graphicManager.toJSON();
-
+        const widgetManager = this.querySelector('webgis-widget-manager') as BaseWidget;
+        const widgets = widgetManager.widgets;
+        const widgetConfigs: any = []
+        widgets.forEach((widget: any) => {
+            if (widget instanceof WidgetIcon) {
+                if (widget.widget) {
+                    let cfg = widget.widget.toJSON()
+                    let position = widget.getPanelPosition()
+                    cfg.position.width = position.w;
+                    cfg.position.height = position.h;
+                    widgetConfigs.push(cfg)
+                } else {
+                    widgetConfigs.push(widget.toJSON())
+                }
+            } else {
+                widgetConfigs.push(widget.toJSON())
+            }
+        })
 
         return {
             earth: {
@@ -151,7 +169,7 @@ export default class BaseEarth extends BaseWidget {
                     hpr
                 }
             },
-            widgets: this.globalConfig.widgets
+            widgets: widgetConfigs
         }
     }
 }

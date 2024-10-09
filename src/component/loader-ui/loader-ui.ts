@@ -232,7 +232,6 @@ export default class LoaderUI extends BaseWidget {
                 return;
             }
             let jwd = transformCartesianToWGS84(this.viewer, position);
-            console.log(jwd);
             if (!jwd) return;
             this.$data.lon = jwd?.lon;
             this.$data.lat = jwd?.lat;
@@ -241,4 +240,10 @@ export default class LoaderUI extends BaseWidget {
             this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
     }
+
+    // public toJSON() {
+    //     return {
+    //         test: 'test'
+    //     }
+    // }
 }

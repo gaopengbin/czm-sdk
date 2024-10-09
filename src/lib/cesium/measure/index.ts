@@ -25,7 +25,7 @@ export class MeasureHandler {
     constructor(viewer: Viewer) {
         this.viewer = viewer;
         this.measureType = "";
-        this.measure = null;
+        this.measure = new Measure(this.viewer, "");
     }
     startMeasure(type: string) {
         this.measureType = type;

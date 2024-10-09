@@ -1,4 +1,4 @@
-import { Modal } from "bootstrap";
+import { Modal, Popover } from "bootstrap";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import Template from "./draw.html?raw";
@@ -121,6 +121,13 @@ export default class Draw extends BaseWidget {
         // });
     }
 
+    async afterInit() {
+        const popoverTriggerList = this.querySelectorAll('[data-bs-toggle="popover"]');
+        popoverTriggerList.forEach((element: any) => {
+            new Popover(element);
+        });
+    }
+
     startDraw(type: string) {
         switch (type) {
             case 'poi':
@@ -193,16 +200,16 @@ export default class Draw extends BaseWidget {
 
     }
 
-    toJSON() {
-        // let res: any = []
-        // this.graphicManager.manager.forEach((item: any) => {
-        //     console.log(item);
-        //     res.push(this.graphicManager.toJSON(item.mid))
-        // })
-        // console.log(res);
-        this.res = this.marker.toJSON()
-        console.log(this.res);
-    }
+    // toJSON() {
+    //     // let res: any = []
+    //     // this.graphicManager.manager.forEach((item: any) => {
+    //     //     console.log(item);
+    //     //     res.push(this.graphicManager.toJSON(item.mid))
+    //     // })
+    //     // console.log(res);
+    //     this.res = this.marker.toJSON()
+    //     console.log(this.res);
+    // }
 
     clear() {
         this.graphicManager.removeAll()

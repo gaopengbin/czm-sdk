@@ -89,11 +89,13 @@ export default abstract class BaseWidget extends HTMLElement {
         mapConfig?: any;
         viewer?: any;
         globalConfig?: any;
+        widgetConfig?: any;
     }) {
         this.viewer = args.viewer;
         this.config = args.config;
         this.globalConfig = args.globalConfig;
         this.mapView = args.mapView;
+        this.widgetConfig = args.widgetConfig;
     }
 
     public get manifest() {
@@ -124,6 +126,18 @@ export default abstract class BaseWidget extends HTMLElement {
         if (value) {
             this._mapView = value;
         }
+    }
+
+    get widgetConfig() {
+        return this._widgetConfig;
+    }
+
+    set widgetConfig(value) {
+        this._widgetConfig = value;
+    }
+
+    public toJSON() {
+        return this.widgetConfig;
     }
 
     /**

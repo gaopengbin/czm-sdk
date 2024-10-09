@@ -15,4 +15,5 @@ export { default as SceneSaver } from "./scene-saver/scene-saver";
 export { default as Draw } from "./draw/draw";
 export { default as PathFly } from "./path-fly/path-fly";
 export { default as StyleSetting } from "./style-setting/style-setting";
+export { default as Effect } from "./effect/effect";
 export { Component } from "./core/decorators";

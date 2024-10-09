@@ -215,7 +215,8 @@ export default class WidgetIcon extends BaseWidget {
                 viewer: this.viewer,
                 globalConfig: this.globalConfig,
                 config: _config,
-                mapView: this.mapView
+                mapView: this.mapView,
+                widgetConfig: _config
             });
         }
         else {
@@ -224,6 +225,7 @@ export default class WidgetIcon extends BaseWidget {
             widget.$data.message = message;
             console.error(message);
         }
+        this.widget = widget;
         return widget;
     }
 
@@ -304,4 +306,10 @@ export default class WidgetIcon extends BaseWidget {
         y = Math.max(mixY, Math.min(maxY, y));
         return { x: x, y: y };
     }
+
+    //获取当前panel的位置和大小
+    getPanelPosition() {
+        return DomGeometry.getPosition(this.#panel, true);
+    }
+
 }
