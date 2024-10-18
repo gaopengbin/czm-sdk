@@ -16,4 +16,5 @@ export { default as Draw } from "./draw/draw";
 export { default as PathFly } from "./path-fly/path-fly";
 export { default as StyleSetting } from "./style-setting/style-setting";
 export { default as Effect } from "./effect/effect";
+export { default as ModelList } from "./model-list/model-list";
 export { Component } from "./core/decorators";

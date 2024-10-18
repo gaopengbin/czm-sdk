@@ -13,6 +13,11 @@ import {
     Cesium3DTileStyle,
     JulianDate,
     Color,
+    Model,
+    HeadingPitchRoll,
+    Transforms,
+    Ellipsoid,
+    ModelAnimationLoop,
 } from "cesium";
 import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { getSceneTree } from "@/component";
@@ -195,7 +200,6 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
     const opt = JSON.parse(JSON.stringify(options));
     const tileset: SSTilesetLayer = await createTileset(options);
     viewer.scene.primitives.add(tileset);
-    console.log('tileset', opt)
     tileset.style = new Cesium3DTileStyle(opt.style);
     tileset.name = options.name;
     tileset.show = defaultValue(options.show, true);
@@ -615,20 +619,44 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     const opt = JSON.parse(JSON.stringify(options));
     options.position = options.position ?? [116.39, 39.91, 0];
     let position = Cartesian3.fromDegrees(options.position[0], options.position[1], options.position[2]);
-    const modelEntity = viewer.entities.add({
-        position: position,
-        model: {
-            uri: options.url,
-            scale: options.scale,
-            silhouetteSize: options.silhouetteSize,
-            silhouetteColor: options.silhouetteColor ? Color.fromCssColorString(options.silhouetteColor) : undefined,
-        }
-
+    const hpr = options.hpr ?? [0, 0, 0];
+    const headingPositionRoll = new HeadingPitchRoll(
+        CesiumMath.toRadians(hpr[0]),
+        CesiumMath.toRadians(hpr[1]),
+        CesiumMath.toRadians(hpr[2])
+    );
+    const fixedFrameTransform = Transforms.localFrameToFixedFrameGenerator(
+        "east",
+        "north"
+    );
+    const model = await Model.fromGltfAsync({
+        ...opt,
+        url: options.url,
+        modelMatrix: Transforms.headingPitchRollToFixedFrame(
+            position,
+            headingPositionRoll,
+            Ellipsoid.WGS84,
+            fixedFrameTransform
+        ),
+        silhouetteColor: Color.fromCssColorString(options.silhouetteColor ?? Color.AQUA.toCssColorString()),
+        // allowPicking: opt.allowPicking,
     });
-    modelEntity.name = options.name;
-    modelEntity.show = defaultValue(options.show, true);
+    (model as any).originModelMatrix = model.modelMatrix.clone();
+    viewer.scene.primitives.add(model);
+    // model.name = options.name;
+    model.show = defaultValue(options.show, true);
+    if (options.playAnimations) {
+        model.readyEvent.addEventListener(() => {
+            model.activeAnimations.addAll({
+                loop: ModelAnimationLoop.REPEAT,
+                multiplier: 1
+            });
+        })
+    }
     if (options.zoomTo) {
-        viewer.zoomTo(modelEntity);
+        viewer.camera.flyToBoundingSphere(model.boundingSphere, {
+            duration: 0,
+        });
     }
     const leaf: Leaf = {
         name: options.name,
@@ -636,18 +664,20 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
-            modelEntity.show = visible;
+            model.show = visible;
         },
         zoomTo: () => {
-            viewer.zoomTo(modelEntity);
+            viewer.camera.flyToBoundingSphere(model.boundingSphere, {
+                duration: 0,
+            });
         },
         get show() {
-            return modelEntity.show;
+            return model.show;
         },
         set show(value: boolean) {
-            modelEntity.show = value;
+            model.show = value;
         },
-        _model: modelEntity,
+        _model: model,
         set zIndex(value: number) {
             leaf._zIndex = value;
             setLayersZIndex(viewer);
@@ -655,8 +685,42 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         get zIndex() {
             return leaf._zIndex;
         },
+        set position(value: any) {
+            leaf._position = value;
+        },
+        get position() {
+            return leaf._position ?? options.position;
+        },
+        set hpr(value: any) {
+            leaf._hpr = value;
+        },
+        get hpr() {
+            return leaf._hpr ?? options.hpr;
+        },
+        get playAnimations() {
+            return leaf._playAnimations ?? false;
+        },
+        set playAnimations(value: boolean) {
+            leaf._playAnimations = value;
+            if (value) {
+                model.activeAnimations.addAll({
+                    loop: ModelAnimationLoop.REPEAT,
+                    multiplier: 1
+                });
+            } else {
+                model.activeAnimations.removeAll();
+            }
+        },
+        get url(){
+            return options.url;
+        },
+        get scale(){
+            return model.scale;
+        },
         toJSON: toJSON
     }
+    model.id = leaf.guid;
+    (model as any).name = leaf.name;
     function toJSON() {
         return {
             ...opt,
@@ -665,11 +729,14 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
             show: leaf.show,
             guid: leaf.guid,
             url: options.url,
-            position: options.position,
+            position: leaf.position,
+            hpr: leaf.hpr,
             zoomTo: false,
-            scale: modelEntity.model?.scale?.getValue(new JulianDate()),
-            silhouetteSize: modelEntity.model?.silhouetteSize?.getValue(new JulianDate()),
-            silhouetteColor: modelEntity.model?.silhouetteColor?.getValue(new JulianDate()).toCssColorString(),
+            allowPicking: options.allowPicking,
+            playAnimations: leaf.playAnimations,
+            scale: model.scale,
+            silhouetteSize: model.silhouetteSize,
+            silhouetteColor: model.silhouetteColor.toCssColorString(),
         }
     }
     return leaf;

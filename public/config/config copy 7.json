@@ -26,7 +26,7 @@
         "type": "xyz",
         "name": "大雁塔影像",
         "url": "http://jojo1986.cn:8888/data/%E5%A4%A7%E9%9B%81%E5%A1%94%E5%85%A8%E8%A6%81%E7%B4%A0/0.%E5%BD%B1%E5%83%8F/{z}/{x}/{y}.png",
-        "show": true,
+        "show": false,
         "zoomTo": true,
         "guid": "e5d0c0e1-029d-45cf-b4b8-c41a8710c88e"
       }
@@ -91,15 +91,6 @@
   },
   "widgets": [
     {
-      "label": "状态栏",
-      "tagName": "czm-status-bar",
-      "position": {
-        "left": 0,
-        "bottom": 0
-      },
-      "inPanel": false
-    },
-    {
       "label": "底图",
       "tagName": "base-layer",
       "position": {
@@ -120,121 +111,16 @@
       "group": "1"
     },
     {
-      "label": "量测",
-      "tagName": "czm-measure",
-      "icon": "bi-ruler",
-      "position": {
-        "left": 10,
-        "top": 90
-      },
-      "inPanel": false
-    },
-    {
       "label": "识别",
       "tagName": "czm-identify",
       "icon": "bi-exclamation-circle-fill",
       "position": {
         "left": 10,
-        "top": 250,
+        "top": 100,
         "width": 370,
         "height": 400
       },
       "inPanel": true
-    },
-    {
-      "label": "加载器",
-      "tagName": "czm-loader-ui",
-      "icon": "bi-tools",
-      "position": {
-        "left": 10,
-        "top": 290,
-        "width": 600,
-        "height": 400
-      },
-      "inPanel": true
-    },
-    {
-      "label": "场景管理",
-      "tagName": "czm-scene-saver",
-      "icon": "bi-image",
-      "position": {
-        "left": 10,
-        "top": 350,
-        "width": 600,
-        "height": 400
-      },
-      "inPanel": true
-    },
-    {
-      "label": "绘制",
-      "tagName": "czm-draw",
-      "icon": "bi-pen",
-      "position": {
-        "left": 10,
-        "top": 400
-      },
-      "inPanel": false
-    },
-    {
-      "label": "漫游",
-      "tagName": "czm-path-fly",
-      "icon": "bi-arrows-move",
-      "position": {
-        "left": 10,
-        "top": 550
-      },
-      "inPanel": true
-    },
-    {
-      "label": "特效",
-      "tagName": "czm-effect",
-      "position": {
-        "left": 10,
-        "top": 600
-      },
-      "inPanel": false,
-      "config": {
-        "effects": [
-          {
-            "type": "Bloom",
-            "name": "泛光",
-            "icon": "bi-lightbulb",
-            "open": true
-          },
-          {
-            "type": "DepthOfField",
-            "name": "景深",
-            "icon": "bi-hypnotize",
-            "open": false
-          },
-          {
-            "type": "HDR",
-            "name": "HDR",
-            "icon": "bi-badge-hd",
-            "open": false
-          },
-          {
-            "type": "FXAA",
-            "name": "抗锯齿",
-            "icon": "bi-gear-wide",
-            "open": true
-          }
-        ]
-      }
-    },
-    {
-      "label": "模型库",
-      "tagName": "czm-model-list",
-      "position": {
-        "left": 10,
-        "top": 750,
-        "width": 400,
-        "height": 600
-      },
-      "inPanel": true,
-      "config": {
-        "modelListUrl": "http://jojo1986.cn:8888/data/models/modellist.json"
-      }
     }
   ]
 }

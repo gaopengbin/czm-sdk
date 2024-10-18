@@ -21,7 +21,7 @@
     ]
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "build2": "vite build && npm pack"
   },

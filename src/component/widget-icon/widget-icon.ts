@@ -214,7 +214,7 @@ export default class WidgetIcon extends BaseWidget {
             widget.startup({
                 viewer: this.viewer,
                 globalConfig: this.globalConfig,
-                config: _config,
+                config: _config.config,
                 mapView: this.mapView,
                 widgetConfig: _config
             });

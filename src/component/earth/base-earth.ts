@@ -69,7 +69,7 @@ export default class BaseEarth extends BaseWidget {
             fullscreenButton: false,
             infoBox: false,
             selectionIndicator: false,
-            msaaSamples: 8,
+            msaaSamples: 4,
             shouldAnimate: true,
         });
 
@@ -146,9 +146,9 @@ export default class BaseEarth extends BaseWidget {
             if (widget instanceof WidgetIcon) {
                 if (widget.widget) {
                     let cfg = widget.widget.toJSON()
-                    let position = widget.getPanelPosition()
-                    cfg.position.width = position.w;
-                    cfg.position.height = position.h;
+                    // let position = widget.getPanelPosition()
+                    // cfg.position.width = position.w;
+                    // cfg.position.height = position.h;
                     widgetConfigs.push(cfg)
                 } else {
                     widgetConfigs.push(widget.toJSON())

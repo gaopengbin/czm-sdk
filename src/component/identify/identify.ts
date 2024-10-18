@@ -1,5 +1,5 @@
 
-import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined, Math as CesiumMath, ScreenSpaceEventHandler, Cartographic, KeyboardEventModifier, CameraEventType } from "cesium";
+import { Cartesian2, Cartesian3, Cesium3DTileFeature, Color, ConstantPositionProperty, Entity, GeoJsonDataSource, JulianDate, Ray, ScreenSpaceEventType, Viewer, clone, defaultValue, defined, Math as CesiumMath, ScreenSpaceEventHandler, Cartographic, KeyboardEventModifier, CameraEventType, PostProcessStageLibrary, Model } from "cesium";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import esri2geo from "@/lib/cesium/parser/esri2geo";
@@ -33,6 +33,13 @@ export default class Identify extends BaseWidget {
         }
         this.highLightEntity = await this.viewer.dataSources.add(new GeoJsonDataSource());
         this.highLightAll = [];
+
+        this.stages = this.viewer.scene.postProcessStages;
+        this.silhouette = this.stages.add(
+            PostProcessStageLibrary.createSilhouetteStage()
+        );
+        this.silhouette.uniforms.color = Color.WHITE.withAlpha(0.5);
+
         const container: any = this.querySelector('#tree-container');
         // 添加缩放
         new ResizeHandle(container, {
@@ -40,7 +47,7 @@ export default class Identify extends BaseWidget {
         });
     }
 
-    // ctrl+右键框选
+    // ctrl+左键框选
     setExtentSelect(enabled: boolean = true) {
         if (enabled) {
             // 禁止ctrl+左键改变视角
@@ -56,7 +63,7 @@ export default class Identify extends BaseWidget {
             //创建框选元素
             var selDiv = document.createElement("div");
             var handler = new ScreenSpaceEventHandler(this.viewer.canvas);
-            //右键按下事件，设置起点，div设置样式和位置，添加到页面
+            //左键按下事件，设置起点，div设置样式和位置，添加到页面
             handler.setInputAction(function (event: any) {
                 flag = true;
                 startX = event.position.x;
@@ -72,6 +79,7 @@ export default class Identify extends BaseWidget {
             //鼠标抬起事件，获取div坐上和右下的x,y 转为经纬度坐标
             let _this = this;
             handler.setInputAction(function (event: any) {
+                _this.loading = true;
                 flag = false;
                 var l = parseInt(selDiv.style.left);
                 var t = parseInt(selDiv.style.top);
@@ -169,6 +177,7 @@ export default class Identify extends BaseWidget {
         if (defined(drillPick) && drillPick.length > 0) {
             let entities: any = [];
             let features: any = [];
+            let models: any = [];
             if (this.$data.range === 'top') {
                 drillPick = drillPick.slice(0, 1);
             }
@@ -188,11 +197,19 @@ export default class Identify extends BaseWidget {
                     features[(item.tileset as any).url].layerName = (item.tileset as any).name;
                     features[(item.tileset as any).url].features.push(item);
                 }
+                if (item.primitive && item.primitive instanceof Model) {
+                    if (!models[item.primitive.id]) {
+                        models[item.primitive.id] = { layerName: '', features: [] }
+                    }
+                    models[item.primitive.id].layerName = item.primitive.name;
+                    models[item.primitive.id].features.push(item.primitive);
+                }
             })
             entities = Object.values(entities);
             features = Object.values(features);
+            models = Object.values(models);
             this.$data.count = drillPick.length;
-            this.results = entities.concat(features);
+            this.results = entities.concat(features).concat(models);
             this.loading = false;
             if (this.results.length === 0) {
                 return;
@@ -204,6 +221,12 @@ export default class Identify extends BaseWidget {
                 return new Entity({
                     name: this.getCesium3DTileFeatureName(this.results[0].features[0]),
                     description: this.getCesium3DTileFeatureDescription(this.results[0].features[0]),
+                    feature: this.results[0].features[0],
+                } as any);
+            } else if (this.results[0].features[0] instanceof Model) {
+                return new Entity({
+                    name: (this.results[0].features[0] as any).name,
+                    description: '',
                     feature: this.results[0].features[0],
                 } as any);
             }
@@ -436,6 +459,32 @@ export default class Identify extends BaseWidget {
             } as any);
             return
         }
+
+        if (feature && feature instanceof Model) {
+            if (defined(feature.silhouetteSize)) {
+                feature.silhouetteSize = 3;
+            }
+
+            // 属性
+            let attrs = [
+                {
+                    key: 'name',
+                    value: (feature as any).name
+                },
+                {
+                    key: 'guid',
+                    value: feature.id
+                }
+            ];
+            this.$data.attrs = attrs
+            this.viewer.selectedEntity = new Entity({
+                name: (feature as any).name,
+                description: '',
+                feature: feature,
+            } as any);
+            return
+        }
+
         if (feature && feature.data) {
             let geojson = {};
             if (feature.data.geometryType) {
@@ -469,6 +518,7 @@ export default class Identify extends BaseWidget {
                 this.viewer.dataSources.remove(this.highLightEntity);
             }
         }
+
 
     }
 
@@ -515,6 +565,9 @@ export default class Identify extends BaseWidget {
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
             this.viewer.selectedEntity.feature.color = this.lastFeatureColor;
         }
+        if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Model) {
+            this.viewer.selectedEntity.feature.silhouetteSize = 0;
+        }
         if (this.viewer.selectedEntity) {
             if (this.viewer.selectedEntity.polygon) {
                 this.viewer.selectedEntity.polygon.material = this.lastPolygonMaterial;
@@ -550,15 +603,33 @@ export default class Identify extends BaseWidget {
         return dom.innerHTML;
     }
 
+    mouseOver(movement: any) {
+
+        // let handler = new ScreenSpaceEventHandler(this.viewer.scene.canvas);
+        // handler.setInputAction((movement: any) => {
+        const pickedObject = this.viewer.scene.pick(movement.endPosition);
+        if (defined(pickedObject)) {
+            this.silhouette.selected = [pickedObject.primitive];
+        } else {
+            this.silhouette.selected = [];
+        }
+        // }, ScreenSpaceEventType.MOUSE_MOVE);
+    }
+
+
     public onOpen(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'help';
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.pickAndSelectObject(e), ScreenSpaceEventType.LEFT_CLICK);
+        this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.mouseOver(e), ScreenSpaceEventType.MOUSE_MOVE);
         this.setExtentSelect();
+
     }
     public onClose(): void {
         (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'default';
         this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+        this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
         this.clearHighLight();
         this.setExtentSelect(false);
+        this.silhouette.selected = [];
     }
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSCesium三维引擎</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.122/Build/Cesium/Cesium.js"></script>
+  <link rel="stylesheet" href="./dist/style.css">
+  <style>
+    body,
+    #app {
+      width: 100%;
+      height: 100%;
+    }
+
+    base-earth {
+      display: block;
+      width: 100%;
+      height: 100vh;
+    }
+
+    #earth {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- <base-earth configurl="./public/config/config.json" /> -->
+     <div id="container"></div>
+  </div>
+  <script type="module" src="./dist/ssczm.js"></script>
+  <script>
+    const viewer = new Cesium.Viewer('container',{
+            baseLayerPicker: false,
+            baseLayer: false,
+            projectionPicker: false,
+            geocoder: false,
+            homeButton: false,
+            sceneModePicker: false,
+            navigationHelpButton: false,
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
+            infoBox: false,
+            selectionIndicator: false,
+            // msaaSamples: 8,
+            shouldAnimate: true,
+        });
+    // console.log(viewer);
+  </script>
+</body>
+
+</html>

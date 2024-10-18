@@ -33,6 +33,7 @@ export default class StyleSetting extends BaseWidget {
             exaggeration: 1.0,
             relativeHeight: 0.0,
             // 模型参数
+            playAnimations: false,
             scale: 1.0,
             silhouetteSize: 0.0,
             silhouetteColor: Color.RED.toCssColorString(),
@@ -47,7 +48,9 @@ export default class StyleSetting extends BaseWidget {
             this.$data.exaggeration = this.viewer.scene.verticalExaggeration;
             this.$data.relativeHeight = this.viewer.scene.verticalExaggerationRelativeHeight;
         } else if (this.$data.type === 'model') {
-            const model = this.config.layer._model.model;
+            console.log(this.config.layer);
+            const model = this.config.layer._model;
+            this.$data.playAnimations = this.config.layer.playAnimations;
             this.$data.scale = model.scale ?? 1.0;
             this.$data.silhouetteSize = model.silhouetteSize ?? 0.0;
             const silhouetteColor = model.silhouetteColor ?? Color.RED;
@@ -146,21 +149,29 @@ export default class StyleSetting extends BaseWidget {
         this.viewer.scene.verticalExaggerationRelativeHeight = Number(val);
     }
 
+    // ----------模型参数 ------------//
+
+    animationChange(e: any) {
+        this.$data.playAnimations = e.target.checked;
+        const layer = this.config.layer;
+        layer.playAnimations = e.target.checked;
+    }
+
     scaleChange(val: any) {
         this.$data.scale = val;
-        const model = this.config.layer._model.model;
+        const model = this.config.layer._model;
         model.scale = Number(val);
     }
 
     silhouetteSizeChange(val: any) {
         this.$data.silhouetteSize = val;
-        const model = this.config.layer._model.model;
+        const model = this.config.layer._model;
         model.silhouetteSize = Number(val);
     }
 
     silhouetteColorChange(val: any) {
         this.$data.silhouetteColor = val;
-        const model = this.config.layer._model.model;
+        const model = this.config.layer._model;
         model.silhouetteColor = Color.fromCssColorString(val);
     }
 }

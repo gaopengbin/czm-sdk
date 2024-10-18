@@ -100,6 +100,11 @@
 <If when="this.$data.type==='model'">
     <div class="d-grid p-1">
         <fieldset class="legend-custom bg-light">
+            <legend>动画:{{$data.playAnimations}}</legend>
+            <input type="checkbox" class="form-check-input" s-checked="$data.playAnimations"
+                onchange="this.animationChange(event)">
+        </fieldset>
+        <fieldset class="legend-custom bg-light">
             <legend>缩放:{{$data.scale}}</legend>
             <input type="range" class="form-range" min="0" max="10" step="0.1" s-value="$data.scale"
                 oninput="this.scaleChange(value)">

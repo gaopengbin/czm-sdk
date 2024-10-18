@@ -6,7 +6,7 @@ import "./loader-ui.scss";
 import WMTSParser from "@/lib/cesium/parser/WMTSParser";
 import WMSParser from "@/lib/cesium/parser/WMSParser";
 import * as Cesium from "cesium";
-import { getCartesian3FromCartesian2, PickPosition, transformCartesianToWGS84 } from "@/lib/cesium/measure";
+import { getCartesian3FromCartesian2, transformCartesianToWGS84 } from "@/lib/cesium/measure";
 @Component({
     tagName: "czm-loader-ui",
     className: "czm-loader-ui",
