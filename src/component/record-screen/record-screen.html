@@ -1,0 +1,35 @@
+<div class="record-screen">
+    <div class="toolbar">
+        <button class="toolbar-button" onclick="this.startRecording()" s-disabled="$data.recording">
+            <i class="bi bi-play-fill"></i>
+            <span>开始</span> <!-- 将文字放在图标旁边 -->
+        </button>
+        <button class="toolbar-button" onclick="this.stopRecording()" s-disabled="!$data.recording">
+            <i class="bi bi-stop-fill"></i>
+            <span>停止</span> <!-- 将文字放在图标旁边 -->
+        </button>
+        <button class="toolbar-button" onclick="this.showSaveModal()" s-disabled="$data.recording || !$data.videoUrl">
+            <i class="bi bi-download"></i>
+            <span>下载</span> <!-- 将文字放在图标旁边 -->
+        </button>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveModalLabel">保存录屏</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" placeholder="输入保存名称" s-value="$data.saveName" onchange="$data.saveName=value"/>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="this.downloadRecording()">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

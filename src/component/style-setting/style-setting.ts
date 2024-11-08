@@ -22,6 +22,8 @@ export default class StyleSetting extends BaseWidget {
             defaultStyles: defaultStyles,
             currentStyle: defaultStyles[0],
             type: 'tileset',
+            color: '#f6b73c',
+            tilesetAlpha: 1.0,
             // 影像参数
             alpha: 1.0,
             brightness: 1.0,
@@ -39,7 +41,7 @@ export default class StyleSetting extends BaseWidget {
             silhouetteColor: Color.RED.toCssColorString(),
         }
         this.$data.type = this.config.layer.toJSON().type;
-        if (this.$data.type === 'tileset') {
+        if (this.$data.type === 'tileset' || this.$data.type === 'iontileset') {
             const tileset = this.config.layer._tileset;
             this.$data.cacheBytes = tileset.cacheBytes / (1024 * 1024);
             this.$data.maximumScreenSpaceError = tileset.maximumScreenSpaceError;
@@ -75,6 +77,24 @@ export default class StyleSetting extends BaseWidget {
         this.$data.currentStyle = defaultStyles[index];
         const styleTextarea = this.querySelector('#styleTextarea') as HTMLTextAreaElement;
         styleTextarea.value = JSON.stringify(this.$data.currentStyle.style, null, 4);
+    }
+
+    colorChange(val: string) {
+        this.$data.color = val;
+        const styleTextarea = this.querySelector('#styleTextarea') as HTMLTextAreaElement;
+        const style = JSON.parse(styleTextarea.value);
+        style.color = `color('${val}', ${this.$data.tilesetAlpha})`;
+        styleTextarea.value = JSON.stringify(style, null, 4);
+        this.apply();
+    }
+
+    tilesetAlphaChange(val: number) {
+        this.$data.tilesetAlpha = val;
+        const styleTextarea = this.querySelector('#styleTextarea') as HTMLTextAreaElement;
+        const style = JSON.parse(styleTextarea.value);
+        style.color = `color('${this.$data.color}', ${val})`;
+        styleTextarea.value = JSON.stringify(style, null, 4);
+        this.apply();
     }
 
     apply() {

@@ -15,4 +15,6 @@ interface Window {
     Cesium: any;
     // CesiumJS静态文件所在服务器上的URL
     CESIUM_BASE_URL: string;
+    // flv.js
+    flvjs: any;
 }

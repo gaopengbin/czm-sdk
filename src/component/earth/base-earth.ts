@@ -3,7 +3,7 @@ import { initScene, SceneTree, initViewer } from '../../lib';
 import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
-import { Cartographic, Ion, Math } from 'cesium';
+import { Cartographic, Color, Ion, Math, Model, PostProcessStageLibrary, ScreenSpaceEventHandler, ScreenSpaceEventType } from 'cesium';
 import GraphicManager from '@/lib/cesium/draw/core/GraphicManager';
 import MarkerManager from '@/lib/cesium/draw/core/MarkerManager';
 import WidgetIcon from '../widget-icon/widget-icon';
@@ -71,6 +71,11 @@ export default class BaseEarth extends BaseWidget {
             selectionIndicator: false,
             msaaSamples: 4,
             shouldAnimate: true,
+            contextOptions: {
+                webgl: {
+                    preserveDrawingBuffer: true
+                }
+            }
         });
 
         this.viewer = viewer;
@@ -79,6 +84,63 @@ export default class BaseEarth extends BaseWidget {
         this.sceneTree = new SceneTree(viewer, this.graphicManager, this.markerManager);
         // window.viewer = viewer;
         // window.earth = this;
+        // 模型拾取
+        this.stages = this.viewer.scene.postProcessStages;
+        this.silhouette = this.stages.add(
+            PostProcessStageLibrary.createSilhouetteStage()
+        );
+        this.silhouette.uniforms.color = Color.AQUA.withAlpha(0.5);
+        this.silhouette.uniforms.length = 0.01;
+        this.silhouette.selected = [];
+        const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+        handler.setInputAction((movement: any) => {
+            const identify = document.querySelector('czm-identify');
+            if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
+                // 正在拾取属性
+                return
+            }
+            const modelList = document.querySelector('czm-model-list');
+            if (modelList && modelList.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
+                // 正在拾取属性
+                return
+            }
+            const pickedObject = viewer.scene.pick(movement.position);
+            if (pickedObject) {
+                const id = pickedObject.id;
+                console.log(pickedObject, id);
+                if (pickedObject.primitive && pickedObject.primitive instanceof Model) {
+                    const model = pickedObject.primitive;
+                    const cmodel = this.sceneTree.getLayerByGuid(id);
+                    if (cmodel && cmodel.onclick) {
+                        cmodel.onclick()
+                    }
+                }
+            }
+        }, ScreenSpaceEventType.LEFT_CLICK);
+        handler.setInputAction((movement: any) => {
+            // return
+            const identify = document.querySelector('czm-identify');
+            if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
+                // 正在拾取属性
+                return
+            }
+          
+            const pickedObject = viewer.scene.pick(movement.endPosition);
+            if (pickedObject) {
+                const id = pickedObject.id;
+                if (pickedObject.primitive && pickedObject.primitive instanceof Model) {
+                    // 鼠标移动到模型上，样式变为pointer
+                    viewer.scene.canvas.style.cursor = 'pointer';
+                    this.silhouette.selected = [pickedObject.primitive];
+                } else {
+                    viewer.scene.canvas.style.cursor = 'default';
+                    this.silhouette.selected = [];
+                }
+            } else {
+                viewer.scene.canvas.style.cursor = 'default';
+                this.silhouette.selected = [];
+            }
+        }, ScreenSpaceEventType.MOUSE_MOVE);
     }
 
     renderFromJson(config: any) {

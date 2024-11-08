@@ -91,6 +91,10 @@
         /* IE 10+ */
         user-select: none;
         font-size: 14px;
+
+        &.isFolder {
+            margin-left: -7px;
+        }
     }
 
     .expand-icon::before {

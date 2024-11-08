@@ -1,0 +1,111 @@
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button"
+            role="tab" aria-controls="home-tab-pane" aria-selected="true">动态标绘</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button"
+            role="tab" aria-controls="profile-tab-pane" aria-selected="false">符号标绘</button>
+    </li>
+    <!-- <li class="nav-item" role="presentation">
+        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane" type="button"
+            role="tab" aria-controls="contact-tab-pane" aria-selected="false">Contact</button>
+    </li> -->
+</ul>
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
+        <div class="container text-center dynamic-plot">
+            <div class="row row-cols-auto">
+                <For each="$data.drawTools" item="item" index="index">
+                    <div class="col">
+                        <div class="p-0">
+                            <i s-class="item.icon" s-title="item.name" onclick="this.startDraw(item.type)"></i>
+                            <!-- <img s-src="item.image" onclick="this.startDraw(item.type)"> -->
+                            <div class="text-center title text-truncate">
+                                <span s-title="item.name">{{item.name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </For>
+            </div>
+        </div>
+
+    </div>
+    <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+        <div class="container text-center static-plot">
+            <div class="row row-cols-auto">
+                <For each="$data.plotPic" item="item" index="index">
+                    <div class="col">
+                        <div class="p-0">
+                            <!-- <i s-class="item.icon" s-title="item.name" onclick="this.startDraw(item.type)"></i> -->
+                            <img s-src="item.url" onclick="this.startDrawBillboard(item)">
+                            <div class="text-center title text-truncate">
+                                <span s-title="item.name">{{item.name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </For>
+            </div>
+        </div>
+        <form class="p-1 overflow-hidden">
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">名称</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control modelOptions" s-value="$data.marker.name"
+                        onchange="this.nameChange(value)">
+                </div>
+            </div>
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">缩放</label>
+                <div class="col-sm-8 pt-1">
+                    <input type="range" class="form-range modelOptions" min="0.1" max="10" step="0.1"
+                        s-value="$data.marker.scale"
+                        oninput="this.scaleChange(value)">
+                </div>
+                <span class="col-sm-2 pt-1">{{$data.marker.scale}}</span>
+            </div>
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">旋转</label>
+                <div class="col-sm-8 pt-1">
+                    <input type="range" class="form-range modelOptions" min="0" max="360" step="1"
+                        s-value="$data.marker.rotation" oninput="this.rotationChange(value)">
+                </div>
+                <span class="col-sm-2 pt-1">{{$data.marker.rotation}}°</span>
+            </div>
+            <!-- 宽高 -->
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">宽度/米</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control modelOptions" s-value="$data.marker.width"
+                        onchange="this.widthChange(value)">
+                </div>
+            </div>
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">高度/米</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control modelOptions" s-value="$data.marker.height"
+                        onchange="this.heightChange(value)">
+                </div>
+            </div>
+
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">颜色</label>
+                <div class="col-sm-10 pt-1">
+                    <input type="color" class="form-control form-control-color" s-value="$data.marker.color" oninput="this.colorChange(value)">
+                </div>
+            </div>
+            <div class="mb-2 row">
+                <label for="url" class="col-sm-2 col-form-label">操作</label>
+                <div class="col-sm-10 pt-1">
+                    <button type="button" class="btn btn-primary btn-sm modelOptions"
+                        onclick="this.saveMarker()">保存</button>
+                    <button type="button" class="btn btn-danger btn-sm modelOptions"
+                        onclick="this.deleteMarker()">删除</button>
+                    <button type="button" class="btn btn-danger btn-sm modelOptions" onclick="this.cancel()">取消</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">33
+    </div>
+</div>

@@ -1,14 +1,24 @@
+<!-- <div class="btn-group" role="group" aria-label="First group"> -->
+<input type="text" class="form-control form-control-sm search" placeholder="图层过滤" s-value="$data.search"
+    oninput="this.filterNode(value)">
+<!-- <button type="button" class="btn btn-outline-primary btn-sm search-btn" title="新建分组"
+    onclick="this.filterNode(this.$data.search)">
+    <i class="bi bi-search"></i>
+</button> -->
+<div class="btns">
+    <button type="button" class="btn btn-outline-primary btn-sm" title="新建分组" onclick="this.addGroup()">
+        <i class="bi bi-folder-plus"></i>
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm" title="导入场景" onclick="this.importScene()">
+        <i class="bi bi-cloud-arrow-up"></i>
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm" title="导出场景" onclick="this.outputScene()">
+        <i class="bi bi-cloud-arrow-down"></i>
+    </button>
+</div>
+
+<!-- </div> -->
 <div id='layerlist'></div>
-<!-- 右键菜单 -->
-<!-- <div class="contextmenu">
-    <ul>
-        <li data-bs-toggle="modal" data-bs-target="#confirmModal">删除1</li>
-        <If when="this.showMenuCondition('ZIndex')">
-            <li data-bs-toggle="modal" data-bs-target="#exampleModal">设置层级</li>
-        </If>
-    </ul>
-</div> -->
-<!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

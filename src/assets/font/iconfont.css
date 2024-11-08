@@ -1,0 +1,67 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 4717981 */
+  src: url('iconfont.woff2?t=1729494479122') format('woff2'),
+       url('iconfont.woff?t=1729494479122') format('woff'),
+       url('iconfont.ttf?t=1729494479122') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-terrain:before {
+  content: "\e788";
+}
+
+.icon-si-wms:before {
+  content: "\e620";
+}
+
+.icon-tubiao_hangjunjiantou:before {
+  content: "\e66e";
+}
+
+.icon-WMTS:before {
+  content: "\e649";
+}
+
+.icon-doubleArrow:before {
+  content: "\e663";
+}
+
+.icon-arrow-up-copy:before {
+  content: "\e600";
+}
+
+.icon-3Dtiles:before {
+  content: "\e68b";
+}
+
+.icon-wms_upload:before {
+  content: "\e6df";
+}
+
+.icon-singleArrow:before {
+  content: "\e717";
+}
+
+.icon-wms-56:before {
+  content: "\e7ab";
+}
+
+.icon-wms:before {
+  content: "\e668";
+}
+
+.icon-WMTS1:before {
+  content: "\e641";
+}
+
+.icon-arrowm:before {
+  content: "\e601";
+}
+

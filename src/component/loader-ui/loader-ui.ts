@@ -21,6 +21,7 @@ export default class LoaderUI extends BaseWidget {
             active: 1,
             name: '',
             url: '',
+            IonAssetId: 0,
             layers: '', // wms
             layer: '', //wmts
             wmtsParserLayers: [],
@@ -104,11 +105,36 @@ export default class LoaderUI extends BaseWidget {
             type: "tileset",
             name: this.$data.name,
             url: this.$data.url,
+            ionAssetId: this.$data.IonAssetId,
             show: true,
             zoomTo: false,
         });
         this.sceneTree.root?.addLayer(tileset);
         tileset?.zoomTo();
+    }
+    async loadIonTileset() {
+        let tileset = await this.sceneTree.createIonTilesetLayer({
+            type: "iontileset",
+            name: this.$data.name,
+            ionAssetId: this.$data.IonAssetId,
+            show: true,
+            zoomTo: false,
+        } as any);
+        this.sceneTree.root?.addLayer(tileset);
+        tileset?.zoomTo();
+    }
+
+    async loadXYZ() {
+        let xyz = await this.sceneTree.createXYZLayer({
+            type: "xyz",
+            name: this.$data.name,
+            url: this.$data.url,
+            ionAssetId: this.$data.IonAssetId,
+            show: true,
+            zoomTo: false,
+        });
+        this.sceneTree.root?.addLayer(xyz);
+        xyz?.zoomTo();
     }
 
     async loadTerrain() {
@@ -116,6 +142,7 @@ export default class LoaderUI extends BaseWidget {
             type: "terrain",
             name: this.$data.name,
             url: this.$data.url,
+            ionAssetId: this.$data.IonAssetId,
             show: true,
             zoomTo: false,
         });

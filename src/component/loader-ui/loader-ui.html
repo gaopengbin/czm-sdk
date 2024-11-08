@@ -25,6 +25,12 @@
             <li class="nav-item">
                 <a class="nav-link" onclick="this.clickTab(event,8)">Model</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,9)">XYZ</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="this.clickTab(event,10)">IonTileset</a>
+            </li>
         </ul>
     </div>
     <div class="col-md-9">
@@ -88,6 +94,12 @@
                     <label for="url" class="col-sm-2 col-form-label">name</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="IonAssetId" class="col-sm-2 col-form-label">IonAssetId</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.IonAssetId" onchange="$data.IonAssetId=value">
                     </div>
                 </div>
                 <div class="mb-3 row">
@@ -220,6 +232,12 @@
                     </div>
                 </div>
                 <div class="mb-3 row">
+                    <label for="IonAssetId" class="col-sm-2 col-form-label">IonAssetId</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.IonAssetId" onchange="$data.IonAssetId=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
                     <label for="url" class="col-sm-2 col-form-label">url</label>
                     <div class="col-sm-10">
                         <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
@@ -266,6 +284,45 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadModel()">加载</button>
+            </If>
+            <If when="$data.active === 9">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">url</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.url" onchange="$data.url=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">IonAssetId</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.IonAssetId" onchange="$data.IonAssetId=value">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadXYZ()">加载</button>
+            </If>
+            <If when="$data.active === 10">
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.name" onchange="$data.name=value">
+                    </div>
+                </div>
+                <div class="mb-3 row">
+                    <label for="url" class="col-sm-2 col-form-label">IonAssetId</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" s-value="$data.IonAssetId" onchange="$data.IonAssetId=value">
+                    </div>
+                    <div class="form-text">
+                        输入一个3DTiles的IonAssetId，例如：96188
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mb-3 w-100" onclick="this.loadIonTileset()">加载</button>
             </If>
         </div>
     </div>

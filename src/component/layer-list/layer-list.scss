@@ -8,6 +8,34 @@ layer-list {
     padding: 10px 10px 10px 0;
     border-radius: 5px;
 
+    .btns {
+        display: flex;
+        justify-content: end;
+        margin-bottom: 10px;
+    }
+
+    .btn {
+        padding: 1px 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        position: relative;
+        margin-right: 5px;
+    }
+
+    .search {
+        position: absolute;
+        display: inline-block;
+        width: 60%;
+        left: 10px;
+        top: 6px;
+    }
+
+
+
+    #layerlist {
+        // margin-top: 30px;
+    }
+
     .contextmenu {
         position: absolute;
         background-color: var(--bs-body-bg);

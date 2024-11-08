@@ -16,7 +16,16 @@ type TreeOptions = {
         handleNodeClick: Function;
         handleRightClick: Function;
         handleNodeExpand: Function;
+        handleDoubleClick?: Function;
         extraBtns: any[];
+        draggable?: boolean;
+        onDragStart?: Function;
+        onDrag?: Function;
+        onDragEnd?: Function;
+        onDragEnter?: Function;
+        onDragOver?: Function;
+        onDragLeave?: Function;
+        onDrop?: Function;
     }
 }
 
@@ -24,6 +33,7 @@ class Tree {
     options: TreeOptions;
     element: HTMLElement | null;
     selectedNode: HTMLElement | null;
+    dragNode: HTMLElement | null;
     constructor(options?: TreeOptions) {
         this.options = {
             el: document.createElement("div"),
@@ -41,11 +51,13 @@ class Tree {
                 handleNodeClick: () => { },
                 handleRightClick: () => { },
                 handleNodeExpand: () => { },
+                handleDoubleClick: () => { },
                 extraBtns: [],
             }
         };
         this.element = options?.el || document.createElement("div");
         this.selectedNode = null;
+        this.dragNode = null;
         if (options) {
             this.setOptions(options);
         }
@@ -71,7 +83,17 @@ class Tree {
             props: this.options.props,
             handleNodeClick: this.options.props.handleNodeClick,
             handleRightClick: this.options.props.handleRightClick,
+            handleDoubleClick: this.options.props.handleDoubleClick,
             handleNodeSelect: this.nodeSelect,
+            draggable: this.options.props.draggable,
+            onDragStart: this.options.props.onDragStart,
+            onDrag: this.options.props.onDrag,
+            onDragEnd: this.options.props.onDragEnd,
+            onDragEnter: this.options.props.onDragEnter,
+            onDragOver: this.options.props.onDragOver,
+            onDragLeave: this.options.props.onDragLeave,
+            onDrop: this.options.props.onDrop,
+
         });
         root.initialize();
         this.registerExpandEvents();
@@ -79,6 +101,7 @@ class Tree {
     }
 
     updateTree(data: TreeData) {
+        // debugger
         this.destroy();
         let root = new TreeNode({
             store: this,
@@ -96,6 +119,16 @@ class Tree {
         root.initialize();
         this.registerExpandEvents();
         this.registerOutsideClickEvents();
+        if (this.selectedNode) {
+            const guid = this.selectedNode.getAttribute("guid");
+            if (guid) {
+                let node = this.element?.querySelector(`[guid='${guid}']`);
+                console.log(node);
+                if (node) {
+                    this.nodeSelect(node as HTMLElement);
+                }
+            }
+        }
     }
 
     registerExpandEvents() {
@@ -135,7 +168,10 @@ class Tree {
 
     registerOutsideClickEvents() {
         document.addEventListener("click", (evt) => {
-            if (this.selectedNode && !this.selectedNode.contains(evt.target as HTMLElement)) {
+            if (this.selectedNode && !this.selectedNode.contains(evt.target as HTMLElement)
+                && document.querySelector("layer-list")?.contains(evt.target as HTMLElement)
+                && !document.querySelector(".btn-group")?.contains(evt.target as HTMLElement)
+            ) {
                 this.selectedNode.classList.remove("selected");
                 this.selectedNode = null;
             }
@@ -252,6 +288,132 @@ class TreeNode {
         }
     }
 
+    set dragEl(el: HTMLElement | null) {
+        this.store.dragNode = el;
+    }
+
+    get dragEl() {
+        return this.store.dragNode;
+    }
+
+    registerDragEvents(el: HTMLElement) {
+        el.addEventListener("dragstart", (evt: any) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            this.dragEl = e.target;
+            this.store.options.props.onDragStart?.(this.data, e);
+        });
+        el.addEventListener("dragover", (evt: any) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            let node = e.target;
+            if (evt.target.classList.contains("label")) {
+                node = evt.target.parentElement;
+                // console.log("dragover", node);
+                // node.style.border = "1px dashed blue";
+            }
+            if (node.classList.contains("tree-node-content")) {
+                if (node.classList.contains("leaf")) {
+                    node.style.borderTop = "1px solid blue";
+                } else {
+                    // 如果鼠标位置在节点的上半部分，就在节点上方显示虚线
+                    if (e.offsetY < node.offsetHeight / 2) {
+                        node.style.border = 'none';
+                        node.style.borderTop = "1px solid blue";
+                    } else {
+                        node.style.border = "1px solid blue";
+                    }
+                }
+
+            }
+
+            e.preventDefault();
+        });
+
+        el.addEventListener("dragleave", (evt: any) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            let node = e.target;
+            if (evt.target.classList.contains("label")) {
+                node = evt.target.parentElement;
+                // node.style.border = "none";
+            }
+            if (node.classList.contains("tree-node-content")) {
+                node.style.border = "none";
+            }
+        });
+
+        el.addEventListener("dragend", (evt: any) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            let node = e.target;
+            if (evt.target.classList.contains("label")) {
+                node = evt.target.parentElement;
+            }
+            if (node.classList.contains("tree-node-content")) {
+                console.log("dragend", node);
+                node.style.borderTop = "none";
+            }
+        });
+
+        el.addEventListener("drop", (evt: any) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            let node = e.target;
+            if (evt.target.classList.contains("label")) {
+                node = evt.target.parentElement;
+            }
+            console.log("drop", node);
+            if (node.classList.contains("tree-node-content")) {
+                node.style.border = "none";
+                // this.store.options.props.onDrop?.(this.data, e);
+                if (node.classList.contains("leaf")) {
+                    if (this.dragEl) {
+                        node.parentElement?.parentElement?.insertBefore(this.dragEl, node.parentElement);
+                        const parentGuid = node.parentElement?.parentElement?.previousElementSibling?.getAttribute("guid");
+                        const dragGuid = this.dragEl.firstElementChild?.getAttribute("guid");
+                        const targetGuid = node.getAttribute("guid");
+                        this.store.options.props.onDragEnd?.({
+                            parentGuid: parentGuid,
+                            dragGuid: dragGuid,
+                            targetGuid: targetGuid
+                        }, 'moveForward', e);
+                    }
+                } else {
+                    // 如果鼠标位置在节点的上半部分，就移动到节点上方，否则移入为子节点
+                    if (e.offsetY < node.offsetHeight / 2) {
+                        if (this.dragEl) {
+                            node.parentElement?.parentElement?.insertBefore(this.dragEl, node.parentElement);
+                            const parentGuid = node.parentElement?.parentElement?.previousElementSibling?.getAttribute("guid");
+                            const dragGuid = this.dragEl.firstElementChild?.getAttribute("guid");
+                            const targetGuid = node.getAttribute("guid");
+                            this.store.options.props.onDragEnd?.({
+                                parentGuid: parentGuid,
+                                dragGuid: dragGuid,
+                                targetGuid: targetGuid
+                            }, 'moveForward', e);
+                        }
+                    } else {
+                        if (this.dragEl) {
+                            node.parentElement?.querySelector(".tree-node-children")?.appendChild(this.dragEl);
+                            const parentGuid = node?.getAttribute("guid");
+                            const dragGuid = this.dragEl.firstElementChild?.getAttribute("guid");
+                            const targetGuid = node.getAttribute("guid");
+                            this.store.options.props.onDragEnd?.({
+                                parentGuid: parentGuid,
+                                dragGuid: dragGuid,
+                                targetGuid: targetGuid
+                            }, 'moveInto', e);
+                            // console.log("drop", this.data, e);
+                        }
+                    }
+                }
+
+                // const cloneNode = dragEl!.cloneNode(true);
+                // dragEl!.parentElement?.removeChild(dragEl);
+                // if (node.classList.contains("leaf")) {
+
+                // }
+            }
+        });
+
+    }
+
     initialize() {
         // this.expand = this._expand;
         if (Array.isArray(this.data)) {
@@ -259,6 +421,11 @@ class TreeNode {
         } else {
             let parentElement = this.el;
             let parentNode = document.createElement("li");
+            parentNode.draggable = true;
+
+            // 拖拽事件
+            this.registerDragEvents(parentNode);
+
             parentElement?.appendChild(parentNode);
 
             let contendNode = document.createElement("span");
@@ -282,6 +449,7 @@ class TreeNode {
             iconNode.classList.add("icon");
             // 父节点图标
             if (this.style?.parentIcon && this.data?.children) {
+                icon.classList.add("isFolder");
                 if (this.style?.parentIcon.startsWith("bi")) {
                     let iconClass = this.style.parentIcon.split(" ");
                     iconNode.classList.add(...iconClass);
@@ -306,6 +474,7 @@ class TreeNode {
                 contendNode.innerHTML += `<span class='label'>${this.label}</span>`;
             }
             this.registerClickEvents(contendNode);
+            this.registerDoubleClickEvents(contendNode);
             this.registerSelectEvents(contendNode);
             this.registerExpandEvents(contendNode);
             this.registerExtraBtns(contendNode);
@@ -466,6 +635,16 @@ class TreeNode {
                 contendNode.appendChild(extraBtn);
             }
         }
+    }
+
+    registerDoubleClickEvents(element: HTMLElement | null) {
+        element?.addEventListener("dblclick", (evt) => {
+            let e = evt as HTMLElementMouseEvent<HTMLElement>;
+            if (e.target?.classList.contains('label')) {
+                this.store.options.props.handleDoubleClick?.(this, element);
+            }
+            evt.preventDefault();
+        });
     }
 }
 

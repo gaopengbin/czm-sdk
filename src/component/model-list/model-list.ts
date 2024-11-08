@@ -4,6 +4,8 @@ import BaseWidget from "../earth/base-widget";
 import Template from "./model-list.html?raw";
 import "./model-list.scss";
 import { Cartesian3, Ellipsoid, HeadingPitchRoll, Matrix3, Matrix4, ScreenSpaceEventType, Transforms, Math as CesiumMath, Quaternion, ModelAnimationLoop, HeightReference, Model } from "cesium";
+import { Group } from "@/lib/cesium/sceneTree";
+import { Tooltip } from "bootstrap";
 
 @Component({
     tagName: "czm-model-list",
@@ -28,10 +30,13 @@ export default class ModelList extends BaseWidget {
                 rotation: 0,
                 animation: false,
                 clampToGround: false,
+                link: '',
+                linkType: 'url',
             },
             canMove: false,
             cmodel: null,
             disabled: true,
+            continuousDraw: true
         }
     }
 
@@ -51,12 +56,13 @@ export default class ModelList extends BaseWidget {
             }
             this.typeChange(this.$data.modelTypes[0]);
         }
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
 
-        this.pickPosition(this.setPositon.bind(this));
-        this.changeDisabled();
     }
 
     typeChange(type: any) {
+        this.$data.selectType = type;
         this.$data.modelList = this.$data.models[type].map((item: any) => {
             if (item.style.url && !item.style.url.startsWith('http')) {
                 item.style.url = '//' + item.style.url;
@@ -78,6 +84,8 @@ export default class ModelList extends BaseWidget {
             rotation: 0,
             clampToGround: false,
             url: model.style.url,
+            link: model.style.link ?? '',
+            linkType: model.style.link ?? 'url',
         }
         if (model.animation) {
             this.$data.currentModel.animation = model.animation.play;
@@ -91,6 +99,8 @@ export default class ModelList extends BaseWidget {
             show: true,
             allowPicking: false,
             scale: this.$data.currentModel.scale,
+            link: this.$data.currentModel.link,
+            linkType: this.$data.currentModel.linkType,
         } as any);
         m._model.originModelMatrix = m._model.modelMatrix.clone();
         m._model.playAnimations = true;
@@ -125,6 +135,11 @@ export default class ModelList extends BaseWidget {
         // Matrix4
         this.cmodel._model.modelMatrix = modelMatrix;
         this.cmodel._model.originModelMatrix = modelMatrix.clone();
+    }
+
+    linkTypeChange(e: any) {
+        console.log(e);
+        this.$data.currentModel.linkType = e;
     }
 
     scaleChange(e: any) {
@@ -182,6 +197,11 @@ export default class ModelList extends BaseWidget {
         // }
 
     }
+
+    continuousDrawChange(e: any) {
+        this.$data.continuousDraw = e.target.checked;
+    }
+
     clampToGroundChange(e: any) {
         this.$data.currentModel.clampToGround = e.target.checked;
         const model = this.cmodel._model;
@@ -196,7 +216,9 @@ export default class ModelList extends BaseWidget {
         this.$data.canMove = true;
     }
     async saveModel() {
-        if (this._model) {
+        if (!this.cmodel && !this._model) return;
+        console.log('saveModel', this.cmodel, this._model, this.editGuid);
+        if (this._model && !this.editGuid) {
             this._model.remove();
         }
         let position = this.cmodel.position ?? [0, 0, 0];
@@ -204,6 +226,7 @@ export default class ModelList extends BaseWidget {
         let name = this.$data.currentModel.name;
         let url = this.$data.currentModel.url;
         const m = await this.sceneTree.createModelLayer({
+            guid: this.editGuid,
             type: "model",
             name: name,
             url: url,
@@ -213,17 +236,41 @@ export default class ModelList extends BaseWidget {
             allowPicking: true,
             scale: this.$data.currentModel.scale,
             playAnimations: this.$data.currentModel.animation,
+            link: this.$data.currentModel.link,
+            linkType: this.$data.currentModel.linkType,
         } as any);
-        this.sceneTree.root?.addLayer(m);
-        this.deleteModel();
+        console.log('saveModel', m);
+        if (this.editGuid) {
+            this.sceneTree.updateLayerByGuid(this.editGuid, m);
+        } else {
+            const selectedNode = this.treeView?.selectedNode
+            if (selectedNode) {
+                const guid = selectedNode.getAttribute('guid');
+                if (!guid) return;
+                const node = this.sceneTree.getLayerByGuid(guid);
+                if (node instanceof Group) {
+                    node.addLayer(m);
+                } else {
+                    this.sceneTree.root.addLayer(m);
+                }
+            } else {
+                this.sceneTree.root.addLayer(m);
+            }
+        }
+        if (this.editGuid || (this.cmodel && !this.$data.continuousDraw)) {
+            console.log('enne');
+            this.deleteModel();
+        }
     }
     deleteModel() {
+        this.forceRefresh();
         if (this.cmodel) {
             this.cmodel._model.destroy();
+            this.cmodel._label.entityCollection.remove(this.cmodel._label);
             this.cmodel = null;
             this.changeDisabled();
         }
-        if(this._model){
+        if (this._model) {
             this._model.show = true;
             this._model = null;
         }
@@ -233,10 +280,13 @@ export default class ModelList extends BaseWidget {
             rotation: 0,
             animation: false,
             clampToGround: false,
+            link: '',
         }
     }
 
     cancel() {
+        this.forceRefresh();
+        this.editGuid = '';
         if (this.cmodel && this._model) {
             this._model.show = true;
             this.deleteModel();
@@ -246,7 +296,6 @@ export default class ModelList extends BaseWidget {
     pickPosition(callback: any) {
         // 鼠标样式设置为十字
         // this.viewer.container.style.cursor = "crosshair";
-
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction(async (click: any) => {
             let position = getCartesian3FromCartesian2(this.viewer, click.position);
             if (!position) {
@@ -256,10 +305,13 @@ export default class ModelList extends BaseWidget {
             if (!jwd) return;
 
             callback(jwd);
-            this.$data.canMove = false;
+
             let pick = this.viewer.scene.pick(click.position);
             // 点击模型进入编辑状态
             if (pick && pick.id && pick.primitive instanceof Model) {
+                this.$data.canMove = false;
+                this.cancel();
+                this.editGuid = pick.id;
                 const _model = this.sceneTree.getLayerByGuid(pick.id)
                 this._model = _model;
                 let json = _model.toJSON();
@@ -274,15 +326,34 @@ export default class ModelList extends BaseWidget {
                     scale: this.cmodel.scale,
                     rotation: 0,
                     animation: this.cmodel.playAnimations,
-                    clampToGround: this.cmodel.clampToGround
+                    clampToGround: this.cmodel.clampToGround,
+                    link: this.cmodel.link ?? '',
+                    linkType: this.cmodel.linkType ?? 'url',
                 }
                 this.changeDisabled();
             } else {
-                if (!this.$data.canMove) {
-                    this.cancel();
+                if (this.$data.continuousDraw && !this.editGuid) {
+                    this.saveModel();
+                } else {
+                    if (!this.$data.canMove) {
+                        this.cancel();
+                    } else {
+                        // callback(jwd)
+                        this.$data.canMove = false;
+                    }
                 }
+
             }
+
         }, ScreenSpaceEventType.LEFT_CLICK);
+
+        this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction(async (click: any) => {
+            if (this.$data.continuousDraw && !this.editGuid) {
+                console.log('continuousDraw', this.cmodel);
+                this.$data.canMove = false;
+                this.deleteModel();
+            }
+        }, ScreenSpaceEventType.RIGHT_CLICK);
 
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((movement: any) => {
             if (!this.$data.canMove) return;
@@ -301,6 +372,55 @@ export default class ModelList extends BaseWidget {
         optionBtns.forEach((item: any) => {
             item.disabled = this.cmodel ? false : true;
         })
+    }
+
+    uploadFile() {
+        const input: any = document.querySelector('#uploadFile');
+        input?.click();
+    }
+
+    handleUploadFile(e: any) {
+        console.log(e);
+        let file = e.target.files[0];
+        // 读取json文件
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = async (evt) => {
+            let data = JSON.parse(evt.target?.result as string);
+            console.log(evt, data);
+            if (Array.isArray(data)) {
+                data.forEach(async (item: any) => {
+                    const m = await this.sceneTree.createModelLayer(item);
+                    const selectedNode = this.treeView?.selectedNode
+                    if (selectedNode) {
+                        const guid = selectedNode.getAttribute('guid');
+                        if (!guid) return;
+                        const node = this.sceneTree.getLayerByGuid(guid);
+                        if (node instanceof Group) {
+                            node.addLayer(m);
+                        } else {
+                            this.sceneTree.root.addLayer(m);
+                        }
+                    } else {
+                        this.sceneTree.root.addLayer(m);
+                    }
+                })
+            }
+
+        }
+
+    }
+
+    public onOpen(): void {
+        this.pickPosition(this.setPositon.bind(this));
+        this.changeDisabled();
+    }
+
+    public onClose(): void {
+        this.cancel();
+        this.deleteModel();
+        this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+        this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
     }
 
 }

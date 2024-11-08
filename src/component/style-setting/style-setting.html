@@ -1,11 +1,25 @@
-<If when="this.$data.type=='tileset'">
+<If when="this.$data.type=='tileset'||this.$data.type=='iontileset'">
     <div class=" p-1">
         <div class="d-grid gap-2 p-1">
+
+
             <select class="form-select" s-value="$data.currentStyle" onchange="this.styleChange(value)">
                 <For each="$data.defaultStyles" item="item" index="index">
                     <option s-value="index">{{item.name}}</option>
                 </For>
             </select>
+            <If when="$data.currentStyle.name=='改变颜色'">
+                <!-- 颜色 -->
+                <fieldset class="legend-custom bg-light">
+                    <legend>颜色:{{$data.color}}</legend>
+                    <input type="color" class="form-range" s-value="$data.color" oninput="this.colorChange(value)">
+                </fieldset>
+                <fieldset class="legend-custom bg-light">
+                    <legend>透明度:{{$data.tilesetAlpha}}</legend>
+                    <input type="range" class="form-range" min="0" max="1" step="0.01" s-value="$data.tilesetAlpha"
+                        oninput="this.tilesetAlphaChange(value)">
+                </fieldset>
+            </If>
             <textarea class="form-control" id="styleTextarea" rows="10"
                 cols="10">{{JSON.stringify($data.currentStyle.style,null, 2)}}</textarea>
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -46,7 +60,8 @@
     </div>
 </If>
 
-<If when="this.$data.type!=='tileset' && this.$data.type!=='terrain' && this.$data.type!=='model'">
+<If
+    when="this.$data.type!=='tileset' &&this.$data.type!=='iontileset' && this.$data.type!=='terrain' && this.$data.type!=='model'">
     <div class="d-grid p-1">
         <fieldset class="legend-custom bg-light">
             <legend>透明度:{{$data.alpha}}</legend>

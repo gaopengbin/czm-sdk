@@ -1,0 +1,100 @@
+{
+  "id": "4717981",
+  "name": "军标",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "737107",
+      "name": "terrain",
+      "font_class": "terrain",
+      "unicode": "e788",
+      "unicode_decimal": 59272
+    },
+    {
+      "icon_id": "5122357",
+      "name": "si-wms",
+      "font_class": "si-wms",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
+      "icon_id": "6434435",
+      "name": "行军箭头",
+      "font_class": "tubiao_hangjunjiantou",
+      "unicode": "e66e",
+      "unicode_decimal": 58990
+    },
+    {
+      "icon_id": "11522910",
+      "name": "WMTS",
+      "font_class": "WMTS",
+      "unicode": "e649",
+      "unicode_decimal": 58953
+    },
+    {
+      "icon_id": "13176198",
+      "name": "钳形箭头",
+      "font_class": "doubleArrow",
+      "unicode": "e663",
+      "unicode_decimal": 58979
+    },
+    {
+      "icon_id": "13514339",
+      "name": "长箭头",
+      "font_class": "arrow-up-copy",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "16923366",
+      "name": "3Dtiles",
+      "font_class": "3Dtiles",
+      "unicode": "e68b",
+      "unicode_decimal": 59019
+    },
+    {
+      "icon_id": "17887955",
+      "name": "wms_upload",
+      "font_class": "wms_upload",
+      "unicode": "e6df",
+      "unicode_decimal": 59103
+    },
+    {
+      "icon_id": "21594530",
+      "name": "军标箭头",
+      "font_class": "singleArrow",
+      "unicode": "e717",
+      "unicode_decimal": 59159
+    },
+    {
+      "icon_id": "35345860",
+      "name": "wms-56",
+      "font_class": "wms-56",
+      "unicode": "e7ab",
+      "unicode_decimal": 59307
+    },
+    {
+      "icon_id": "36802652",
+      "name": "wms",
+      "font_class": "wms",
+      "unicode": "e668",
+      "unicode_decimal": 58984
+    },
+    {
+      "icon_id": "40449665",
+      "name": "WMTS",
+      "font_class": "WMTS1",
+      "unicode": "e641",
+      "unicode_decimal": 58945
+    },
+    {
+      "icon_id": "41923624",
+      "name": "arrowm-copy",
+      "font_class": "arrowm",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    }
+  ]
+}

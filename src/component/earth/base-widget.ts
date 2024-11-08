@@ -47,6 +47,7 @@ export default abstract class BaseWidget extends HTMLElement {
     [x: string]: any;
     static #viewer: any;
     static #sceneTree: SceneTree;
+    static #treeView: any;
     static #globalConfig: any;
     static #graphicManager: GraphicManager;
     static #markerManager: MarkerManager;
@@ -179,6 +180,14 @@ export default abstract class BaseWidget extends HTMLElement {
 
     set sceneTree(value) {
         BaseWidget.#sceneTree = value;
+    }
+
+    get treeView() {
+        return BaseWidget.#treeView;
+    }
+
+    set treeView(value) {
+        BaseWidget.#treeView = value;
     }
 
     get graphicManager() {
@@ -364,10 +373,46 @@ export default abstract class BaseWidget extends HTMLElement {
             }
             const vnode = this.render(this.#AST);
             // 更新 真实DOM
+            // this.#vnode = this.#patch(this.#vnode as VNode, h("!", {
+            //     hooks: {
+            //         post: () => {
+            //             /* patch complete */
+            //         }
+            //     }
+            // }));
             this.#vnode = this.#patch(this.#vnode as VNode, vnode);
             this.#refreshing = false;
         });
     }
+
+    forceRefresh() {
+        // if (this.#refreshing) {
+        //     return;
+        // }
+        // this.#refreshing = true;
+        // 微队列里面进行
+        timerFunc(() => {
+            // 判断是否有虚拟节点
+            if (!this.#vnode) {
+                // 创建一个容器 用于虚拟dom与真实dom更新
+                let vnodeContainer = document.createElement("v-node");
+                this.appendChild(vnodeContainer);
+                this.#vnode = vnodeContainer;
+            }
+            const vnode = this.render(this.#AST);
+            // 更新 真实DOM
+            this.#vnode = this.#patch(this.#vnode as VNode, h("!", {
+                hooks: {
+                    post: () => {
+                        /* patch complete */
+                    }
+                }
+            }));
+            this.#vnode = this.#patch(this.#vnode as VNode, vnode);
+            // this.#refreshing = false;
+        });
+    }
+
     /**
      * 获取函数
      * @param values

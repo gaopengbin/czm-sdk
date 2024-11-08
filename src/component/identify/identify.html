@@ -70,7 +70,11 @@
             <tbody>
                 <For each="$data.attrs" item="attr">
                     <tr>
-                        <td>{{attr.key}}</td>
+                        <td>{{attr.key}}
+                            <If when="this.isUrl(attr.value)">
+                                <i class="bi bi-arrow-up-right-square" onclick="this.openUrl(attr)"></i>
+                            </If>
+                        </td>
                         <td>{{attr.value}}</td>
                     </tr>
                 </For>

@@ -29,6 +29,14 @@
         td {
             border: 0.0625rem solid var(--bs-toast-border-color);
             padding: 0.125rem;
+
+            i {
+                cursor: pointer;
+
+                &:hover {
+                    color: rgb(19, 32, 201);
+                }
+            }
         }
     }
 

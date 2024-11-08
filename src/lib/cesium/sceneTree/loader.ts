@@ -18,9 +18,13 @@ import {
     Transforms,
     Ellipsoid,
     ModelAnimationLoop,
+    LabelGraphics,
+    LabelStyle,
+    VerticalOrigin,
+    CallbackProperty,
 } from "cesium";
-import { createArcGisMapServer, createGeoJson, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
-import { getSceneTree } from "@/component";
+import { createArcGisMapServer, createGeoJson, createIonTileset, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import { BaseWidget, getSceneTree } from "@/component";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
@@ -198,9 +202,13 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
 
 export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
-    const tileset: SSTilesetLayer = await createTileset(options);
+    const tileset: SSTilesetLayer | undefined = await createTileset(options);
+    if (!tileset) return;
     viewer.scene.primitives.add(tileset);
-    tileset.style = new Cesium3DTileStyle(opt.style);
+    if (opt.style) {
+        tileset.style = new Cesium3DTileStyle(opt.style);
+    }
+
     tileset.name = options.name;
     tileset.show = defaultValue(options.show, true);
     if (options.zoomTo) {
@@ -240,6 +248,60 @@ export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => 
             show: leaf.show,
             guid: leaf.guid,
             url: leaf?._tileset?.resource?.url,
+            ionAssetId: options.ionAssetId,
+            zIndex: leaf.zIndex,
+            zoomTo: false,
+            style: leaf?._tileset?.style?.style,
+        }
+    }
+    return leaf;
+}
+
+export const IonTilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
+    const opt = JSON.parse(JSON.stringify(options));
+    const tileset: SSTilesetLayer = await createIonTileset(options);
+    viewer.scene.primitives.add(tileset);
+    tileset.style = new Cesium3DTileStyle(opt.style);
+    tileset.name = options.name;
+    tileset.show = defaultValue(options.show, true);
+    if (options.zoomTo) {
+        viewer.zoomTo(tileset);
+    }
+    const leaf: Leaf = {
+        name: options.name,
+        guid: options.guid ?? uuid(),
+        customProps: options.customProps,
+        _zIndex: defaultValue(options.zIndex, 0),
+        setVisible: (visible: boolean) => {
+            tileset.show = visible;
+        },
+        zoomTo: () => {
+            viewer.zoomTo(tileset);
+        },
+        get show() {
+            return tileset.show;
+        },
+        set show(value: boolean) {
+            tileset.show = value;
+        },
+        _tileset: tileset,
+        set zIndex(value: number) {
+            leaf._zIndex = value;
+        },
+        get zIndex() {
+            return leaf._zIndex;
+        },
+        toJSON: toJSON
+    }
+    function toJSON() {
+        return {
+            ...opt,
+            type: "iontileset",
+            name: leaf.name,
+            show: leaf.show,
+            guid: leaf.guid,
+            url: leaf?._tileset?.resource?.url,
+            ionAssetId: options.ionAssetId,
             zIndex: leaf.zIndex,
             zoomTo: false,
             style: leaf?._tileset?.style?.style,
@@ -528,6 +590,7 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
             show: leaf.show,
             guid: leaf.guid,
             url: (leaf._imageLayer?.imageryProvider as any).url,
+            ionAssetId: options.ionAssetId,
             zIndex: leaf.zIndex,
             rectangle: (() => {
                 const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
@@ -553,6 +616,7 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
 export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
     let terrainProvider = await createTerrain(options);
+    if (!terrainProvider) return;
     viewer.scene.terrainProvider = terrainProvider;
     viewer.scene.verticalExaggeration = opt.exaggeration ?? 1.0;
     viewer.scene.verticalExaggerationRelativeHeight = opt.relativeHeight ?? 0.0;
@@ -606,6 +670,7 @@ export const TerrainLoader = async (viewer: Viewer, options: SSTerrainLayerOptio
             show: leaf.show,
             guid: leaf.guid,
             url: options.url,
+            ionAssetId: options.ionAssetId,
             rectangle: options.rectangle,
             zoomTo: false,
             exaggeration: viewer.scene.verticalExaggeration,
@@ -643,16 +708,65 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     });
     (model as any).originModelMatrix = model.modelMatrix.clone();
     viewer.scene.primitives.add(model);
-    // model.name = options.name;
+    const labelGraphic = new LabelGraphics({
+        text: options.name,
+        font: '14px sans-serif',
+        style: LabelStyle.FILL_AND_OUTLINE,
+        fillColor: Color.WHITE,
+        outlineColor: Color.BLACK,
+        outlineWidth: 2,
+        verticalOrigin: VerticalOrigin.TOP,
+        pixelOffset: new Cartesian3(0, -30, 0),
+    })
+
+    // model.readyEvent.addEventListener(() => {
+    //     // 绘制模型的包围球
+    //     const boundingSphere = model.boundingSphere;
+    //     const radius = boundingSphere.radius;
+    //     const position = boundingSphere.center;
+    //     const ball = viewer.entities.add({
+    //         position: position,
+    //         ellipsoid: {
+    //             radii: new Cartesian3(radius, radius, radius),
+    //             material: Color.RED.withAlpha(0.5),
+    //             outline: true,
+    //             outlineColor: Color.RED,
+    //         }
+    //     })
+    // })
+
+    const label = viewer.entities.add({
+        position: new CallbackProperty(() => {
+            if (model.ready) {
+                // 取包围盒上顶点
+                const center = model.boundingSphere.center;
+                const radius = model.boundingSphere.radius;
+                const centerJWD = Ellipsoid.WGS84.cartesianToCartographic(center);
+                const position = Cartesian3.fromRadians(centerJWD.longitude, centerJWD.latitude, centerJWD.height + radius);
+                return position;
+            } else {
+                return position;
+            }
+
+        }, false) as any,
+        label: labelGraphic,
+        // polyline: {
+        //     // 顶点和中心连线
+        //     positions: new CallbackProperty(() => {
+        //         if (model.ready) {
+        //             const center = model.boundingSphere.center;
+        //             const radius = model.boundingSphere.radius;
+        //             const centerJWD = Ellipsoid.WGS84.cartesianToCartographic(center);
+        //             console.log('centerJWD', centerJWD);
+        //             return [Cartesian3.fromRadians(centerJWD.longitude, centerJWD.latitude, centerJWD.height + radius), center];
+        //         } else {
+        //             return [position, position];
+        //         }
+        //     }, false),
+        // }
+    })
+
     model.show = defaultValue(options.show, true);
-    if (options.playAnimations) {
-        model.readyEvent.addEventListener(() => {
-            model.activeAnimations.addAll({
-                loop: ModelAnimationLoop.REPEAT,
-                multiplier: 1
-            });
-        })
-    }
     if (options.zoomTo) {
         viewer.camera.flyToBoundingSphere(model.boundingSphere, {
             duration: 0,
@@ -660,7 +774,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     }
     const leaf: Leaf = {
         name: options.name,
-        guid: uuid(),
+        guid: options.guid || uuid(),
         customProps: options.customProps,
         _zIndex: defaultValue(options.zIndex, 0),
         setVisible: (visible: boolean) => {
@@ -676,8 +790,16 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         },
         set show(value: boolean) {
             model.show = value;
+            label.show = value;
         },
         _model: model,
+        _label: label,
+        set showLabel(value: boolean) {
+            label.show = value;
+        },
+        get showLabel() {
+            return label.show;
+        },
         set zIndex(value: number) {
             leaf._zIndex = value;
             setLayersZIndex(viewer);
@@ -703,24 +825,207 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         set playAnimations(value: boolean) {
             leaf._playAnimations = value;
             if (value) {
-                model.activeAnimations.addAll({
-                    loop: ModelAnimationLoop.REPEAT,
-                    multiplier: 1
-                });
+                if (model.ready) {
+                    model.activeAnimations.addAll({
+                        loop: ModelAnimationLoop.REPEAT,
+                        multiplier: 1
+                    });
+                } else {
+                    model.readyEvent.addEventListener(() => {
+                        model.activeAnimations.addAll({
+                            loop: ModelAnimationLoop.REPEAT,
+                            multiplier: 1
+                        });
+                    })
+                }
             } else {
                 model.activeAnimations.removeAll();
             }
         },
-        get url(){
+        get url() {
             return options.url;
         },
-        get scale(){
+        get scale() {
             return model.scale;
         },
+        get link() {
+            return leaf._link;
+        },
+        set link(value: string) {
+            leaf._link = value;
+        },
+        get linkType() {
+            return leaf._linkType;
+        },
+        set linkType(value: string) {
+            leaf._linkType = value;
+        },
+        get panoramas() {
+            return leaf._panoramas;
+        },
+        set panoramas(value: any[]) {
+            leaf._panoramas = value;
+        },
+        onclick: options.onclick ?? onclick,
         toJSON: toJSON
     }
+    leaf.link = options.link;
+    leaf.linkType = options.linkType;
+    leaf.panoramas = options.panoramas;
+    leaf.playAnimations = options.playAnimations;
     model.id = leaf.guid;
+    console.log('model', model.id);
     (model as any).name = leaf.name;
+    (model as any).link = leaf.link;
+
+    function onclick() {
+        // debugger
+        if (leaf.link || leaf.panoramas) {
+            if (leaf.linkType === 'panorama') {
+                const panel = document.createElement('webgis-widget-panel') as BaseWidget;
+                panel.startup({
+                    // mapView: this.mapView,
+                    viewer: viewer,
+                    config: {
+                        "label": leaf.name,
+                        icon: "bi bi-list",
+                        position: {
+                            top: 100,
+                            left: 300,
+                            width: '400px',
+                            height: '400px',
+                        }
+                    },
+                    globalConfig: BaseWidget.prototype.globalConfig,
+                })
+                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+
+                const panorama = document.createElement('czm-panorama') as BaseWidget;
+                panorama.startup({
+                    viewer: viewer,
+                    config: {
+                        url: leaf.link,
+                        urls: leaf.panoramas,
+                        position: {
+                            top: 100,
+                            left: 300,
+                            width: '400px',
+                            height: '400px',
+                        }
+                    },
+                    globalConfig: BaseWidget.prototype.globalConfig,
+                })
+                panel.querySelector('.widget-content')?.appendChild(panorama)
+                panel.setWidget(panorama);
+
+            } else if (leaf.linkType === 'flv') {
+                const panel = document.createElement('webgis-widget-panel') as BaseWidget;
+                panel.startup({
+                    // mapView: this.mapView,
+                    viewer: viewer,
+                    config: {
+                        "label": leaf.link,
+                        icon: "bi bi-list",
+                        position: {
+                            top: 100,
+                            left: 300,
+                            width: '600px',
+                            height: '400px',
+                        }
+                    },
+                    globalConfig: BaseWidget.prototype.globalConfig,
+                })
+                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+                function reload() {
+                    const video = document.getElementById('videoElement') as HTMLVideoElement;
+                    if (video) {
+                        // 销毁之前的video
+                        if (leaf._flvPlayer) {
+                            leaf._flvPlayer.pause();
+                            leaf._flvPlayer.unload();
+                            leaf._flvPlayer.detachMediaElement();
+                            leaf._flvPlayer.destroy();
+                            leaf._flvPlayer = null;
+                        }
+                        if (window['flvjs']) {
+                            const flv = window['flvjs'];
+                            const flvPlayer = flv.createPlayer({
+                                type: 'flv',
+                                hasAudio: false,
+                                isLive: true,
+                                url: leaf.link,
+                            });
+                            leaf._flvPlayer = flvPlayer;
+                            flvPlayer.on(flv.Events.ERROR, (err: any) => {
+                                console.log('flv error', err);
+                                reload();
+                            })
+                            flvPlayer.attachMediaElement(video);
+                            flvPlayer.load();
+                        }
+                    }
+                }
+                const video = document.createElement('video');
+                video.id = 'videoElement';
+                video.autoplay = true;
+                video.muted = true;
+                import('../../third/flv.min.js' as any).then((flvjs) => {
+                    console.log('flvjs', flvjs);
+                    const flv = window['flvjs'];
+                    const flvPlayer = flv.createPlayer({
+                        type: 'flv',
+                        hasAudio: false,
+                        isLive: true,
+                        url: leaf.link,
+                    });
+                    leaf._flvPlayer = flvPlayer;
+                    flvPlayer.on(flv.Events.ERROR, (err: any) => {
+                        reload();
+                    })
+                    flvPlayer.attachMediaElement(video);
+                    flvPlayer.load();
+                })
+                video.style.width = '100%';
+                video.style.height = '100%';
+                panel.onClose = () => {
+                    console.log('close');
+                    if (leaf._flvPlayer) {
+                        leaf._flvPlayer.pause();
+                        leaf._flvPlayer.unload();
+                        leaf._flvPlayer.detachMediaElement();
+                        leaf._flvPlayer.destroy();
+                        leaf._flvPlayer = null;
+                    }
+                }
+                panel.querySelector('.widget-content')?.appendChild(video)
+            }
+            else {
+                const panel = document.createElement('webgis-widget-panel') as BaseWidget;
+                panel.startup({
+                    // mapView: this.mapView,
+                    viewer: viewer,
+                    config: {
+                        "label": leaf.link,
+                        icon: "bi bi-list",
+                        position: {
+                            top: 100,
+                            left: 300,
+                            width: '400px',
+                            height: '400px',
+                        }
+                    },
+                    globalConfig: BaseWidget.prototype.globalConfig,
+                })
+                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+                const iframe = document.createElement('iframe');
+                iframe.src = leaf.link;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                panel.querySelector('.widget-content')?.appendChild(iframe)
+            }
+        }
+    }
+
     function toJSON() {
         return {
             ...opt,
@@ -737,6 +1042,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
             scale: model.scale,
             silhouetteSize: model.silhouetteSize,
             silhouetteColor: model.silhouetteColor.toCssColorString(),
+            link: leaf.link,
         }
     }
     return leaf;
@@ -744,7 +1050,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
 
 // 根据图层的zIndex属性大小顺序设置图层的顺序
 export const setLayersZIndex = (viewer: Viewer) => {
-    // return
+    return
     let sceneTree = getSceneTree();
     if (!sceneTree) {
         return;

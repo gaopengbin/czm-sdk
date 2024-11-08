@@ -6,10 +6,10 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, GeoJsonLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, GeoJsonLoader, IonTilesetLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
-import { CesiumPolygon, CesiumPolyline } from "../draw/core/Graphic";
+// import { CesiumPolygon, CesiumPolyline } from "../draw/core/Graphic";
 import GraphicManager from "../draw/core/GraphicManager";
 import MarkerManager from "../draw/core/MarkerManager";
 
@@ -146,7 +146,11 @@ class SceneTree {
                     this._viewer.scene.primitives.remove(node._tileset);
                 } else if (node._model) {
                     this._viewer.scene.primitives.remove(node._model);
-                } else if (node._terrain) {
+                    if (node._label) {
+                        this._viewer.entities.remove(node._label);
+                    }
+                }
+                else if (node._terrain) {
                     if (this._viewer.terrainProvider === node._terrain) {
                         (this._viewer.terrainProvider as any) = undefined;
                     }
@@ -154,6 +158,11 @@ class SceneTree {
                     this._viewer.dataSources.remove(node._dataSource);
                 } else if (node._graphic) {
                     node.remove();
+                } else if (node._entity) {
+                    this._viewer.entities.remove(node._entity);
+                } 
+                else {
+                    // node.remove();
                 }
                 this.layersMap.delete(node.guid);
             }
@@ -229,6 +238,12 @@ class SceneTree {
         return leaf;
     }
 
+    async createIonTilesetLayer(options: SSLayerOptions) {
+        let leaf = await IonTilesetLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
     async createTerrainLayer(options: SSTerrainLayerOptions) {
         let leaf = await TerrainLoader(this._viewer, options);
         this.updateSceneTree();
@@ -244,7 +259,6 @@ class SceneTree {
     createGraphicLayer(options: SSLayerOptions) {
         let leaf = this._graphicManager.jsonToGraphic(options)
         this.updateSceneTree();
-        console.log(leaf)
         return leaf;
     }
 
@@ -267,6 +281,39 @@ class SceneTree {
         const group = new Group(groupName);
         group._sceneTree = this;
         return group;
+    }
+
+    moveIntoGroup(source: any, group: any) {
+        if (!source || !group) return;
+        group.children.push(source);
+        const index = source.parent.children.indexOf(source);
+        source.parent.children.splice(index, 1);
+        source.parent = group;
+    }
+
+    moveForward(source: any, target: any) {
+        let sourceIndex = source.parent.children.indexOf(source);
+        const targetIndex = target.parent.children.indexOf(target);
+        if (sourceIndex > -1 && targetIndex > -1) {
+            if (source.parent === target.parent) {
+                target.parent.children.splice(targetIndex, 0, target.parent.children.splice(sourceIndex, 1)[0]);
+            } else {
+                const sourceParent = source.parent;
+                target.parent.children.splice(targetIndex, 0, source);
+                sourceParent.children.splice(sourceIndex, 1);
+                source.parent = target.parent;
+            }
+        }
+
+    }
+
+    updateLayerByGuid(guid: any, newLayer: any) {
+        let node = this.layersMap.get(guid);
+        if (node) {
+            node.parent.updateLayer(guid, newLayer);
+            this.layersMap.set(guid, newLayer);
+            this.updateSceneTree();
+        }
     }
 
     // addGroup(group: any) {
@@ -352,6 +399,7 @@ class Group {
     guid: string = uuid();
     _expand: boolean = false;
     _sceneTree: SceneTree | null = null;
+    parent: Group | null = null;
     constructor(name: string) {
         this.name = name;
     }
@@ -363,6 +411,29 @@ class Group {
     get expand() {
         return this._expand;
     }
+
+    get showStatus() {
+        // 分全选true 全空false 部分选中half
+        let show = this.children.every((child: any) => {
+            return child.show;
+        });
+        let hide = this.children.every((child: any) => {
+            return !child.show;
+        });
+        if (this.children.length === 0) {
+            return 'null';
+        }
+        return show ? 'all' : hide ? 'null' : "half";
+    }
+
+    set show(value: boolean) {
+        this.setVisible(value);
+    }
+
+    get show() {
+        return this.showStatus === 'all' ? true : this.showStatus === 'null' ? false : false;
+    }
+
 
     async addLayer(layer: any, item?: any) {
         if (layer instanceof Promise) {
@@ -394,10 +465,36 @@ class Group {
         this._sceneTree?.updateSceneTree();
     }
 
+    updateLayer(guid: any, newLayer: any) {
+        newLayer.parent = this;
+        newLayer.remove = () => {
+            if (this._sceneTree) {
+                this._sceneTree.removeLayerByGuid(guid);
+            }
+        }
+        let index = this.children.findIndex((child: any) => {
+            return child.guid === guid;
+        });
+        if (index > -1) {
+            this.children[index] = newLayer;
+            let old = this._sceneTree?.getLayerByGuid(guid);
+            old && old.destroy && old.destroy();
+            old && old.remove();
+        }
+
+    }
+
     removeLayer(layer: any) {
         const index = this.children.indexOf(layer);
-        console.log("index", index);
         if (index > -1) {
+            if (layer.children) {
+                for (let i = layer.children.length - 1; i >= 0; i--) {
+                    layer.removeLayer(layer.children[i]);
+                }
+            } else {
+                layer && layer.destroy && layer.destroy();
+                layer && layer.remove();
+            }
             this.children.splice(index, 1);
         }
     }
@@ -410,6 +507,15 @@ class Group {
             child.setVisible(visible);
             // }
         });
+    }
+
+    moveForward(layer: any, targetLayer: any) {
+        let index = this.children.indexOf(layer);
+        let targetIndex = this.children.indexOf(targetLayer);
+        if (index > -1 && targetIndex > -1) {
+            this.children.splice(index, 1);
+            this.children.splice(targetIndex, 0, layer);
+        }
     }
 
     toJSON() {
@@ -425,5 +531,5 @@ class Group {
     }
 
 }
-export { SceneTree };
+export { SceneTree, Group };
 

@@ -16,6 +16,8 @@ import {
     Color,
     Model,
     PinBuilder,
+    IonImageryProvider,
+    Cesium3DTileStyle,
 } from "cesium";
 import proj4 from "proj4";
 import { SSArcGisLayerOptions, SSLayerOptions, SSTerrainLayerOptions, SSWMSLayerOptions, SSXYZLayerOptions } from "./types";
@@ -322,34 +324,41 @@ function createCanvas(text: string, color: string, width: number = 32, height: n
 }
 
 export async function createXYZ(options: SSXYZLayerOptions) {
-    if (options.url === 'NaturalEarthII') {
-        const xyz = await TileMapServiceImageryProvider.fromUrl(buildModuleUrl('Assets/Textures/NaturalEarthII'));
-        return xyz;
-    }
+    if (options.url) {
 
-    if (options.rectangle && Array.isArray(options.rectangle)) {
-        options.rectangle = Rectangle.fromDegrees(...options.rectangle);
-    }
-    if (options.tilingScheme) {
-        if (typeof options.tilingScheme === 'string') {
-            if (options.tilingScheme === 'geographic') {
-                options.tilingScheme = new GeographicTilingScheme();
-            } else if (options.tilingScheme === 'webMercator') {
-                options.tilingScheme = new WebMercatorTilingScheme();
-            } else if (options.tilingScheme === 'gcj02') {
-                options.tilingScheme = new GCJ02TilingScheme();
-            } else if (options.tilingScheme === 'bd09') {
 
+        if (options.url === 'NaturalEarthII') {
+            const xyz = await TileMapServiceImageryProvider.fromUrl(buildModuleUrl('Assets/Textures/NaturalEarthII'));
+            return xyz;
+        }
+
+        if (options.rectangle && Array.isArray(options.rectangle)) {
+            options.rectangle = Rectangle.fromDegrees(...options.rectangle);
+        }
+        if (options.tilingScheme) {
+            if (typeof options.tilingScheme === 'string') {
+                if (options.tilingScheme === 'geographic') {
+                    options.tilingScheme = new GeographicTilingScheme();
+                } else if (options.tilingScheme === 'webMercator') {
+                    options.tilingScheme = new WebMercatorTilingScheme();
+                } else if (options.tilingScheme === 'gcj02') {
+                    options.tilingScheme = new GCJ02TilingScheme();
+                } else if (options.tilingScheme === 'bd09') {
+
+                }
             }
         }
-    }
-    if (options.tilingScheme === 'bd09') {
-        const xyz = new BaiduImageryProvider(options);
+        if (options.tilingScheme === 'bd09') {
+            const xyz = new BaiduImageryProvider(options);
+            return xyz;
+        }
+        const xyz = new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions);
+
+        return xyz;
+    } else if (options.ionAssetId) {
+        const xyz = await IonImageryProvider.fromAssetId(options.ionAssetId);
         return xyz;
     }
-    const xyz = new UrlTemplateImageryProvider(options as UrlTemplateImageryProvider.ConstructorOptions);
-
-    return xyz;
 }
 
 export async function createTerrain(options: SSTerrainLayerOptions) {
@@ -359,7 +368,12 @@ export async function createTerrain(options: SSTerrainLayerOptions) {
         options.rectangle = Rectangle.fromDegrees(-180.0, -90.0, 180.0, 90.0);
     }
 
-    const terrainProvider = await CesiumTerrainProvider.fromUrl(options.url, options as CesiumTerrainProvider.ConstructorOptions);
+    let terrainProvider;
+    if (options.url) {
+        terrainProvider = await CesiumTerrainProvider.fromUrl(options.url, options as CesiumTerrainProvider.ConstructorOptions);
+    } else if (options.ionAssetId) {
+        terrainProvider = await CesiumTerrainProvider.fromIonAssetId(options.ionAssetId, options as CesiumTerrainProvider.ConstructorOptions);
+    }
     return terrainProvider;
 }
 
@@ -367,10 +381,36 @@ export async function createTileset(options: SSLayerOptions) {
     if (!(options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes) {
         (options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes = 5368709120;
     }
-    const tileset = await Cesium3DTileset.fromUrl(
-        options.url,
-        options as Cesium3DTileset.ConstructorOptions
-    );
+    let tileset;
+    if (options.url) {
+        tileset = await Cesium3DTileset.fromUrl(
+            options.url,
+            options as Cesium3DTileset.ConstructorOptions
+        );
+    } else if (options.ionAssetId) {
+        tileset = await Cesium3DTileset.fromIonAssetId(
+            options.ionAssetId,
+            options as Cesium3DTileset.ConstructorOptions
+        );
+        // Apply the default style if it exists
+        const extras = tileset.asset.extras;
+        if (
+            defined(extras) &&
+            defined(extras.ion) &&
+            defined(extras.ion.defaultStyle)
+        ) {
+            tileset.style = new Cesium3DTileStyle(extras.ion.defaultStyle);
+        }
+        console.log(tileset)
+    }
+    return tileset;
+}
+
+export async function createIonTileset(options: SSLayerOptions) {
+    if (!(options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes) {
+        (options as Cesium3DTileset.ConstructorOptions).maximumCacheOverflowBytes = 5368709120;
+    }
+    const tileset = await Cesium3DTileset.fromIonAssetId(options.ionAssetId!, options as Cesium3DTileset.ConstructorOptions);
     return tileset;
 }
 
@@ -389,6 +429,7 @@ const Objects: any = {
     "wmts": createWMTS,
     "geojson": createGeoJson,
     "model": createModel,
+    "iontileset": createIonTileset,
 }
 
 export const createProvider = async (options: any) => {
@@ -411,6 +452,7 @@ const initObjects: any = {
     "polygon": "createGraphicLayer",
     "marker": "createMarkerLayer",
     "label": "createLabelLayer",
+    "iontileset": "createIonTilesetLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

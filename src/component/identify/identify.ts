@@ -35,10 +35,8 @@ export default class Identify extends BaseWidget {
         this.highLightAll = [];
 
         this.stages = this.viewer.scene.postProcessStages;
-        this.silhouette = this.stages.add(
-            PostProcessStageLibrary.createSilhouetteStage()
-        );
-        this.silhouette.uniforms.color = Color.WHITE.withAlpha(0.5);
+        this.silhouette = this.stages.getStageByName('czm_silhouette');
+        // this.silhouette.uniforms.color = Color.WHITE.withAlpha(0.5);
 
         const container: any = this.querySelector('#tree-container');
         // 添加缩放
@@ -435,8 +433,9 @@ export default class Identify extends BaseWidget {
 
             // 属性
             let attrs = [];
-            for (let key in feature.properties?.getValue(new JulianDate())) {
-                attrs.push({ key, value: feature.properties[key] })
+            let properties = feature.properties?.getValue(new JulianDate());
+            for (let key in properties) {
+                attrs.push({ key, value: properties[key] })
             }
             this.$data.attrs = attrs;
             this.viewer.selectedEntity = feature;
@@ -474,6 +473,10 @@ export default class Identify extends BaseWidget {
                 {
                     key: 'guid',
                     value: feature.id
+                },
+                {
+                    key: 'link',
+                    value: (feature as any).link
                 }
             ];
             this.$data.attrs = attrs
@@ -616,16 +619,86 @@ export default class Identify extends BaseWidget {
         // }, ScreenSpaceEventType.MOUSE_MOVE);
     }
 
+    isUrl(str: string) {
+        let reg = /^(http|https):\/\/([\w.]+\/?)\S*/;
+        return reg.test(str);
+    }
+
+    openUrl(attr: any) {
+        if (attr.key === 'qj_url' || attr.key === 'qjurl' || attr.key === '全景') {
+            const panel = document.createElement('webgis-widget-panel') as BaseWidget;
+            panel.startup({
+                mapView: this.mapView,
+                viewer: this.viewer,
+                config: {
+                    "label": '全景',
+                    icon: "bi bi-list",
+                    position: {
+                        top: 100,
+                        left: 300,
+                        width: '400px',
+                        height: '400px',
+                    }
+                },
+                globalConfig: this.globalConfig,
+            })
+            document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+
+            const panorama = document.createElement('czm-panorama') as BaseWidget;
+            panorama.startup({
+                viewer: this.viewer,
+                config: {
+                    url: attr.value,
+                    // urls: leaf.panoramas,
+                    position: {
+                        top: 100,
+                        left: 300,
+                        width: '400px',
+                        height: '400px',
+                    }
+                },
+                globalConfig: this.globalConfig,
+            })
+            panel.querySelector('.widget-content')?.appendChild(panorama)
+            panel.setWidget(panorama);
+        } else {
+            const panel = document.createElement('webgis-widget-panel') as BaseWidget;
+            panel.startup({
+                mapView: this.mapView,
+                viewer: this.viewer,
+                config: {
+                    "label": attr.key + ":" + attr.value,
+                    icon: "bi bi-list",
+                    position: {
+                        top: 100,
+                        left: 300,
+                        width: '400px',
+                        height: '400px',
+                    }
+                },
+                globalConfig: this.globalConfig
+            })
+            document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+            const iframe = document.createElement('iframe');
+            iframe.src = attr.value;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            panel.querySelector('.widget-content')?.appendChild(iframe)
+        }
+
+
+    }
 
     public onOpen(): void {
-        (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'help';
+        console.log('open');
+        this.viewer.scene.canvas.style.cursor = 'help';
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.pickAndSelectObject(e), ScreenSpaceEventType.LEFT_CLICK);
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((e: any) => this.mouseOver(e), ScreenSpaceEventType.MOUSE_MOVE);
         this.setExtentSelect();
 
     }
     public onClose(): void {
-        (document.querySelector('.cesium-viewer') as HTMLElement).style.cursor = 'default';
+        this.viewer.scene.canvas.style.cursor = 'default';
         this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
         this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
         this.clearHighLight();

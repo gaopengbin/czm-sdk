@@ -8,11 +8,13 @@
         min-height: 100px;
         max-width: unset;
         max-height: unset;
-        margin-right: 10px; /*防止紧贴图标*/
+        margin-right: 10px;
+        /*防止紧贴图标*/
 
         .widget-header {
             cursor: move;
             height: 2.25rem;
+
             .icon {
                 width: 1rem;
                 height: 1rem;
@@ -23,6 +25,14 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+
+            .me-auto {
+                max-width: 80%;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                word-break: break-all;
+                white-space: nowrap;
             }
         }
 
@@ -41,6 +51,7 @@
 // 打开模块效果
 .webgis-widget-icon.webgis-widget-icon-open {
     z-index: 3;
+
     .widget-icon {
         color: var(--bs-btn-hover-color);
         background-color: var(--bs-btn-hover-bg);

@@ -1,9 +1,18 @@
 czm-model-list {
     display: inline-block;
     height: 100%;
+    width: 100%;
     background-color: aliceblue;
+
     .model-content {
         height: 100%;
+
+        &:first-child {
+            .form-select {
+                height: 40px;
+            }
+        }
+
     }
 
     .model-list {
@@ -11,23 +20,31 @@ czm-model-list {
         overflow-y: auto;
 
         img {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
             &:hover {
                 cursor: pointer;
+                border: 1px solid #007bff;
             }
         }
 
-        .title{
-            width: 100px;
+        .title {
+            width: 80px;
         }
     }
 
-    form{
-        .form-check-input{
+    form {
+        .form-check-input {
             height: 1.5em;
             width: 3em !important;
             margin-left: -2em !important;
+        }
+
+        .col-form-label {
+            padding-bottom: 0;
+            padding-right: 0;
         }
     }
 }

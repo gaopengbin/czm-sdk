@@ -73,6 +73,12 @@ export default class WidgetPanel extends BaseWidget {
         this.initPanel();
     }
 
+    setWidget(widget: BaseWidget) {
+        this.#widget = widget;
+        // let content = this.#panel.querySelectorAll('.widget-content')[0];
+        // content.appendChild(widget);
+    }
+
     // 初始化Panel
     initPanel() {
         // this.#widget = this.createWidget(this.config);
@@ -185,11 +191,14 @@ export default class WidgetPanel extends BaseWidget {
     }
 
     closeWidget() {
+        console.log('close', this, this.#widget);
+        this.onClose();
         this.classList.remove('isopen');
         // 取消容器变化事件
         this.#observer.unobserve(this.parentElement as HTMLElement);
-        // this.#widget?.onClose();
+        this.#widget?.onClose();
         this.#isOpen = false;
+        this.destroy();
     }
 
     // 关闭其他同组的widget

@@ -11,6 +11,12 @@ export const defaultStyles = [
         }
     },
     {
+        name: "改变颜色",
+        style: {
+            color: "color('yellow', 0.3)",
+        }
+    },
+    {
         name: "按高度",
         style: {
             color: {
@@ -21,6 +27,12 @@ export const defaultStyles = [
                     ["true", "color('yellow')"]
                 ]
             },
+        }
+    },
+    {
+        name: "点云点尺寸",
+        style: {
+            pointSize: "5.0",
         }
     },
     {
