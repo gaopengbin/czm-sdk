@@ -1,0 +1,8 @@
+<!-- <div style="width: 80%;"> -->
+    <label for="customRange3" class="form-label">亮度</label>
+    <input type="checkbox" class="form-check-input" id="customRange3" s-checked="$data.brightnessShow"
+        onchange="this.changeBrightnessShow(event)">
+    <span>{{$data.brightnessValue}}</span>
+    <input type="range" class="form-range" min="0" max="2" step="0.01" s-value="$data.brightnessValue"
+        oninput="this.changeBrightnessValue(value)">
+<!-- </div> -->

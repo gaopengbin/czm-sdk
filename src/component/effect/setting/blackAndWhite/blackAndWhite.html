@@ -1,0 +1,8 @@
+<!-- <div style="width: 80%;"> -->
+    <label for="customRange3" class="form-label">黑白程度</label>
+    <input type="checkbox" class="form-check-input" s-checked="$data.blackAndWhiteShow"
+        onchange="this.changeblackAndWhiteShow(event)">
+    <span>{{$data.blackAndWhiteValue}}</span>
+    <input type="range" class="form-range" min="1" max="10" step="1" s-value="$data.blackAndWhiteValue"
+        oninput="this.changeblackAndWhiteValue(value)">
+<!-- </div> -->

@@ -102,11 +102,10 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "50px"
+        "top": "10px"
       },
       "inPanel": true,
       "icon": "bi-map",
-      "config": {},
       "group": "1"
     },
     {
@@ -116,7 +115,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "90px"
+        "top": "50px"
       },
       "inPanel": false,
       "icon": "bi-ruler",
@@ -131,7 +130,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "250px"
+        "top": "210px"
       },
       "inPanel": true,
       "icon": "bi-exclamation-circle-fill",
@@ -146,7 +145,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "290px"
+        "top": "250px"
       },
       "inPanel": true,
       "icon": "bi-tools",
@@ -161,7 +160,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "350px"
+        "top": "290px"
       },
       "inPanel": true,
       "icon": "bi-image",
@@ -174,7 +173,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "400px"
+        "top": "330px"
       },
       "inPanel": false,
       "icon": "bi-pen",
@@ -189,7 +188,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "550px"
+        "top": "460px"
       },
       "inPanel": true,
       "icon": "bi-arrows-move",
@@ -202,7 +201,7 @@
         "left": "10px",
         "right": "auto",
         "bottom": "auto",
-        "top": "600px"
+        "top": "500px"
       },
       "inPanel": false,
       "icon": "",
@@ -215,10 +214,22 @@
             "open": false
           },
           {
+            "type": "Silhouette",
+            "name": "描边",
+            "icon": "bi-houses",
+            "open": false
+          },
+          {
             "type": "DepthOfField",
             "name": "景深",
             "icon": "bi-hypnotize",
-            "open": false
+            "open": false,
+            "config": {
+              "focalDistance": 90,
+              "delta": 1,
+              "sigma": 3.8,
+              "stepSize": 2
+            }
           },
           {
             "type": "HDR",
@@ -231,6 +242,60 @@
             "name": "抗锯齿",
             "icon": "bi-gear-wide",
             "open": false
+          },
+          {
+            "type": "Mosaic",
+            "name": "马赛克",
+            "icon": "bi-grid-3x3-gap",
+            "open": false
+          },
+          {
+            "type": "BlackAndWhite",
+            "name": "黑白",
+            "icon": "bi-circle-half",
+            "open": false,
+            "config": {
+              "blackAndWhiteValue": 5
+            }
+          },
+          {
+            "type": "NightVision",
+            "name": "夜视",
+            "icon": "bi-binoculars",
+            "open": false
+          },
+          {
+            "type": "Brightness",
+            "name": "亮度",
+            "icon": "bi-brightness-alt-high",
+            "open": true,
+            "config": {
+              "brightnessValue": 1.0
+            }
+          },
+          {
+            "type": "Cloud",
+            "name": "云",
+            "icon": "bi-cloud",
+            "open": false
+          },
+          {
+            "type": "Rain",
+            "name": "雨",
+            "icon": "bi-cloud-rain",
+            "open": false
+          },
+          {
+            "type": "Snow",
+            "name": "雪",
+            "icon": "bi-cloud-snow",
+            "open": false
+          },
+          {
+            "type": "Fog",
+            "name": "雾",
+            "icon": "bi-cloud-fog2",
+            "open": false
           }
         ]
       }
@@ -241,10 +306,9 @@
       "position": {
         "width": "460px",
         "height": "690px",
-        "left": "10px",
-        "right": "auto",
+        "right": "10px",
         "bottom": "auto",
-        "top": "750px"
+        "top": "370px"
       },
       "inPanel": true,
       "icon": "",
@@ -261,7 +325,7 @@
         "left": "auto",
         "right": "10px",
         "bottom": "auto",
-        "top": "400px"
+        "top": "410px"
       },
       "inPanel": true,
       "icon": "bi-pen",
@@ -316,7 +380,7 @@
     },
     {
       "label": "全屏",
-      "tagName":"czm-fullscreen",
+      "tagName": "czm-fullscreen",
       "position": {
         "left": "auto",
         "right": "10px",

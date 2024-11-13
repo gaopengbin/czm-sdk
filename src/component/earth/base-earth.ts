@@ -3,7 +3,7 @@ import { initScene, SceneTree, initViewer } from '../../lib';
 import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
-import { Cartographic, Color, Ion, Math, Model, PostProcessStageLibrary, ScreenSpaceEventHandler, ScreenSpaceEventType } from 'cesium';
+import { Cartographic, Color, Ion, Math, Model, PostProcessStage, PostProcessStageLibrary, ScreenSpaceEventHandler, ScreenSpaceEventType } from 'cesium';
 import GraphicManager from '@/lib/cesium/draw/core/GraphicManager';
 import MarkerManager from '@/lib/cesium/draw/core/MarkerManager';
 import WidgetIcon from '../widget-icon/widget-icon';
@@ -86,12 +86,34 @@ export default class BaseEarth extends BaseWidget {
         // window.earth = this;
         // 模型拾取
         this.stages = this.viewer.scene.postProcessStages;
-        this.silhouette = this.stages.add(
-            PostProcessStageLibrary.createSilhouetteStage()
-        );
-        this.silhouette.uniforms.color = Color.AQUA.withAlpha(0.5);
-        this.silhouette.uniforms.length = 0.01;
-        this.silhouette.selected = [];
+        // this.silhouette = this.stages.add(
+        //     PostProcessStageLibrary.createSilhouetteStage()
+        // );
+        const fs = `
+    uniform sampler2D colorTexture;
+    in vec2 v_textureCoordinates;
+    uniform vec4 highlight;
+    void main() {
+        vec4 color = texture(colorTexture, v_textureCoordinates);
+        if (czm_selected()) {
+            vec3 highlighted = highlight.a * highlight.rgb + (1.0 - highlight.a) * color.rgb;
+            out_FragColor = vec4(highlighted, 1.0);
+        } else {
+            out_FragColor = color;
+        }
+    }`;
+        const stage = this.stages.add(new PostProcessStage({
+            fragmentShader: fs,
+            uniforms: {
+                highlight: function () {
+                    return new Color(1.0, 1.0, 1.0, 0.5);
+                }
+            }
+        }));
+        this.silhouette = stage;
+        // this.silhouette.uniforms.color = Color.AQUA.withAlpha(0.5);
+        // this.silhouette.uniforms.length = 0.01;
+        stage.selected = [];
         const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction((movement: any) => {
             const identify = document.querySelector('czm-identify');
@@ -124,7 +146,7 @@ export default class BaseEarth extends BaseWidget {
                 // 正在拾取属性
                 return
             }
-          
+
             const pickedObject = viewer.scene.pick(movement.endPosition);
             if (pickedObject) {
                 const id = pickedObject.id;

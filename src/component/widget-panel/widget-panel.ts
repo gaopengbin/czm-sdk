@@ -75,6 +75,7 @@ export default class WidgetPanel extends BaseWidget {
 
     setWidget(widget: BaseWidget) {
         this.#widget = widget;
+        this.widget = widget;
         // let content = this.#panel.querySelectorAll('.widget-content')[0];
         // content.appendChild(widget);
     }
