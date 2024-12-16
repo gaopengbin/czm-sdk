@@ -1,5 +1,5 @@
 import { Component } from '../core/decorators'
-import { initScene, SceneTree, initViewer } from '../../lib';
+import { initScene, SceneTree, initViewer, getBrowserInfo, isWebGL2Supported } from '../../lib';
 import BaseWidget from "./base-widget"
 import { initEarth } from '@/lib/cesium/sceneTree/creator';
 import './base-earth.scss'
@@ -22,6 +22,8 @@ export default class BaseEarth extends BaseWidget {
     public configLoaded(): void {
         this.globalConfig = this.config;
         Ion.defaultAccessToken = this.config.earth.ionDefaultToken;
+        console.log(isWebGL2Supported())
+        this.Browser = getBrowserInfo();
         this.initViewer();
         setTimeout(async () => {
             const { viewer } = this.config.earth;
@@ -74,7 +76,8 @@ export default class BaseEarth extends BaseWidget {
             contextOptions: {
                 webgl: {
                     preserveDrawingBuffer: true
-                }
+                },
+                requestWebgl1: !isWebGL2Supported(),
             }
         });
 
@@ -89,19 +92,33 @@ export default class BaseEarth extends BaseWidget {
         // this.silhouette = this.stages.add(
         //     PostProcessStageLibrary.createSilhouetteStage()
         // );
-        const fs = `
-    uniform sampler2D colorTexture;
-    in vec2 v_textureCoordinates;
-    uniform vec4 highlight;
-    void main() {
-        vec4 color = texture(colorTexture, v_textureCoordinates);
-        if (czm_selected()) {
-            vec3 highlighted = highlight.a * highlight.rgb + (1.0 - highlight.a) * color.rgb;
-            out_FragColor = vec4(highlighted, 1.0);
-        } else {
-            out_FragColor = color;
-        }
-    }`;
+        const fs_webgl2 = `
+                    uniform sampler2D colorTexture;
+                    in vec2 v_textureCoordinates;
+                    uniform vec4 highlight;
+                    void main() {
+                        vec4 color = texture(colorTexture, v_textureCoordinates);
+                        if (czm_selected()) {
+                            vec3 highlighted = highlight.a * highlight.rgb + (1.0 - highlight.a) * color.rgb;
+                            out_FragColor = vec4(highlighted, 1.0);
+                        } else {
+                            out_FragColor = color;
+                        }
+                    }`;
+        const fs_webgl1 = `
+                    uniform sampler2D colorTexture;
+                    in vec2 v_textureCoordinates;
+                    uniform vec4 highlight;
+                    void main() {
+                        vec4 color = texture2D(colorTexture, v_textureCoordinates);
+                        if (czm_selected()) {
+                            vec3 highlighted = highlight.a * highlight.rgb + (1.0 - highlight.a) * color.rgb;
+                            gl_FragColor = vec4(highlighted, 1.0);
+                        } else {
+                            gl_FragColor = color;
+                        }
+                    }`;
+        const fs = isWebGL2Supported() ? fs_webgl2 : fs_webgl1;
         const stage = this.stages.add(new PostProcessStage({
             fragmentShader: fs,
             uniforms: {
@@ -181,7 +198,7 @@ export default class BaseEarth extends BaseWidget {
     toJSON() {
         const layers = this.sceneTree.root.toJSON().children;
         let baseLayers = this.config.earth.baseLayers;
-        const ionDefaultToken = this.config.earth.viewer.ionDefaultToken;
+        const ionDefaultToken = this.config.earth.viewer.ionDefaultToken ?? '';
         const currentPositon = this.viewer.camera.position;
         // 转为经纬度
         const cartographic = Cartographic.fromCartesian(currentPositon);

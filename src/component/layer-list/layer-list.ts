@@ -5,9 +5,11 @@ import { Tree } from "../../lib/tree/tree";
 import "../../lib/tree/tree-view.scss";
 import Template from "./layer-list.html?raw";
 import "./layer-list.scss"
-import { Modal, Popover } from "bootstrap";
+// import { Modal, Popover } from "bootstrap";
 import { showLegend, showStyle } from "./utils";
 import { Group } from "@/lib/cesium/sceneTree";
+import Popover from "./popover";
+import "./popover.scss";
 @Component({
     tagName: "layer-list",
     className: "layer-list",
@@ -87,6 +89,9 @@ export default class LayerList extends BaseWidget {
                     this.$data.menuItems.forEach((item: any) => {
                         contextmenu.querySelector(`#${item.id}`).style.display = this.showMenuCondition(item.id, type) ? 'block' : 'none'
                     })
+                    contextmenu.querySelector('#delete').addEventListener('click', () => {
+                        this.$data.layer = layer
+                    })
                     if (this.showMenuCondition('legend', type)) {
                         contextmenu.querySelector('#legend').addEventListener('click', () => {
                             showLegend(layer, this)
@@ -105,13 +110,18 @@ export default class LayerList extends BaseWidget {
                         this.exportJSON(layer)
                     })
 
-                    moreIcon.setAttribute('tabindex', '0')
+                    // moreIcon.setAttribute('tabindex', '0')
+                    // new Popover(moreIcon, {
+                    //     placement: "bottom",
+                    //     trigger: 'focus',
+                    //     content: contextmenu,
+                    //     html: true,
+                    // });
+                    console.log(contextmenu)
                     new Popover(moreIcon, {
-                        placement: "bottom",
-                        trigger: 'focus',
                         content: contextmenu,
-                        html: true,
-                    });
+                    })
+
                 })
             }, 100);
         });
@@ -250,16 +260,6 @@ export default class LayerList extends BaseWidget {
                         show: (node: any) => !node.children,
                     },
                     {
-                        name: "更多选项",
-                        icon: "bi bi-three-dots",
-                        onClick: (node: any, el: Element) => {
-                            this.$data.layer = node;
-                            this.layer = node;
-                            this.showZIndex()
-                        },
-                        show: (node: any) => !node.children,
-                    },
-                    {
                         name: "删除",
                         icon: "bi bi-trash",
                         onClick: (data: any) => {
@@ -278,26 +278,44 @@ export default class LayerList extends BaseWidget {
                                         }, 100);
                                     }
                                 }
+                            }else{
+                                this.$data.layer = node;
+                                this.delete()
                             }
                         },
-                        show: (node: any) => node.children,
-                    }
+                        // show: (node: any) => node.children,
+                    },
+                    {
+                        name: "更多选项",
+                        icon: "bi bi-three-dots",
+                        onClick: (node: any, el: Element) => {
+                            this.$data.layer = node;
+                            this.layer = node;
+                            this.showZIndex()
+                        },
+                        show: (node: any) => !node.children,
+                    },
+
                 ],
             },
         });
         this.treeView.initialize();
-        const more = this.treeView.element?.querySelectorAll('.bi-three-dots')
+        // const more = this.treeView.element?.querySelectorAll('.bi-three-dots')
 
-        const contextmenu: any = document.querySelector('.contextmenu')
-        more?.forEach((el: any) => {
-            el.setAttribute('tabindex', '0')
-            new Popover(el, {
-                placement: "bottom",
-                trigger: 'focus',
-                content: contextmenu,
-                html: true,
-            });
-        })
+        // const contextmenu:any = document.querySelector('.contextmenu')
+        // contextmenu?.addEventListener('Conten')
+        // more?.forEach((el: any) => {
+        //     // el.setAttribute('tabindex', '0')
+        //     // new Popover(el, {
+        //     //     placement: "bottom",
+        //     //     trigger: 'focus',
+        //     //     content: contextmenu,
+        //     //     html: true,
+        //     // });
+        //     new Popover(el,{
+        //         content: contextmenu,
+        //     } )
+        // })
     };
 
     filterNode = (val: string) => {

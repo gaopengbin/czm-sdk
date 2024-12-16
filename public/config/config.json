@@ -3,9 +3,10 @@
     "layers": [
       {
         "type": "iontileset",
-        "name": "倾斜",
+        "name": "点云",
         "ionAssetId": "43978",
-        "show": true
+        "show": true,
+        "zoomTo": true
       }
     ],
     "baseLayers": [
@@ -373,6 +374,20 @@
         "top": "530px",
         "width": "230px",
         "height": "62px"
+      },
+      "inPanel": true,
+      "icon": "bi-record-circle",
+      "group": "2"
+    },
+    {
+      "label": "SHP预览",
+      "tagName": "czm-white-model",
+      "position": {
+        "left": "auto",
+        "right": "10px",
+        "bottom": "auto",
+        "top": "570px",
+        "height": "520px"
       },
       "inPanel": true,
       "icon": "bi-record-circle",

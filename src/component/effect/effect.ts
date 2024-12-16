@@ -4,7 +4,7 @@ import BaseWidget from "../earth/base-widget";
 import Template from "./effect.html?raw";
 import "./effect.scss"
 import { Popover } from "bootstrap";
-import { creatPanel } from "@/lib";
+import { creatPanel, isWebGL2Supported } from "@/lib";
 import Brightness from "./setting/brightness/brightness";
 import BlackAndWhite from "./setting/blackAndWhite/blackAndWhite";
 import DepthOfField from "./setting/depthOfField/depthOfField";
@@ -427,7 +427,8 @@ export default class Effect extends BaseWidget {
 
     setRain = (enabled: boolean) => {
         if (!this.rain) {
-            const fs = `uniform sampler2D colorTexture;
+            const fs_webgl2 = `
+            uniform sampler2D colorTexture;
                     in vec2 v_textureCoordinates;
                     uniform float tiltAngle;
                     uniform float rainSize;
@@ -452,6 +453,32 @@ export default class Effect extends BaseWidget {
                         vFragColor = mix(texture(colorTexture, v_textureCoordinates), vec4(c,.3), .3);
                     }
             `;
+            const fs_webgl1 = `
+            uniform sampler2D colorTexture;
+            varying vec2 v_textureCoordinates;
+            uniform float tiltAngle;
+            uniform float rainSize;
+            uniform float rainWidth;
+            uniform float rainSpeed;
+            float hash(float x){
+                return fract(sin(x*233.3)*13.13);
+            }
+            void main(void){
+                float time = czm_frameNumber / rainSpeed;
+                vec2 resolution = czm_viewport.zw;
+                vec2 uv=(gl_FragCoord.xy*2.-resolution.xy)/min(resolution.x,resolution.y);
+                vec3 c=vec3(1.0,1.0,1.0);
+                float a= tiltAngle;
+                float si=sin(a),co=cos(a);
+                uv*=mat2(co,-si,si,co);
+                uv*=length(uv+vec2(0,4.9))*rainSize + 1.;
+                float v = 1.0 - abs(sin(hash(floor(uv.x * rainWidth)) * 2.0));
+                float b=clamp(abs(sin(20.*time*v+uv.y*(5./(2.+v))))-.95,0.,1.)*20.;
+                c*=v*b;
+                gl_FragColor = mix(texture2D(colorTexture, v_textureCoordinates), vec4(c,.3), .3);
+            }
+            `;
+            const fs = isWebGL2Supported() ? fs_webgl2 : fs_webgl1;
             this.rain = this.viewer.scene.postProcessStages.add(
                 new PostProcessStage({
                     fragmentShader: fs,
@@ -469,7 +496,7 @@ export default class Effect extends BaseWidget {
 
     setSnow = (enabled: boolean) => {
         if (!this.snow) {
-            const fs = `uniform sampler2D colorTexture;
+            const fs_webgl2 = `uniform sampler2D colorTexture;
                         in vec2 v_textureCoordinates;
                         uniform float snowSpeed;
                         float snow(vec2 uv,float scale){
@@ -498,6 +525,36 @@ export default class Effect extends BaseWidget {
                             vFragColor = mix(texture(colorTexture, v_textureCoordinates), vec4(finalColor,1), 0.3);
                         }
                     `;
+            const fs_webgl1 = `
+            uniform sampler2D colorTexture;
+            varying vec2 v_textureCoordinates;
+            uniform float snowSpeed;
+            float snow(vec2 uv,float scale){
+                float time = czm_frameNumber / snowSpeed;
+                float w=smoothstep(1.,0.,-uv.y*(scale/10.));if(w<.1)return 0.;
+                uv+=time/scale;uv.y+=time*2./scale;uv.x+=sin(uv.y+time*.5)/scale;
+                uv*=scale;vec2 s=floor(uv),f=fract(uv),p;float k=3.,d;
+                p=.5+.35*sin(11.*fract(sin((s+p+scale)*mat2(7,3,6,5))*5.))-f;d=length(p);k=min(d,k);
+                k=smoothstep(0.,k,sin(f.x+f.y)*0.01);
+                return k*w;
+            }
+            void main(void){
+                vec2 resolution = czm_viewport.zw;
+                vec2 uv=(gl_FragCoord.xy*2.-resolution.xy)/min(resolution.x,resolution.y);
+                vec3 finalColor=vec3(0);
+                float c = 0.0;
+                c+=snow(uv,50.)*.0;
+                c+=snow(uv,30.)*.0;
+                c+=snow(uv,10.)*.0;
+                c+=snow(uv,5.);
+                c+=snow(uv,4.);
+                c+=snow(uv,3.);
+                c+=snow(uv,2.);
+                finalColor=(vec3(c));
+                gl_FragColor = mix(texture2D(colorTexture, v_textureCoordinates), vec4(finalColor,1), 0.3);
+            }
+            `;
+            const fs = isWebGL2Supported() ? fs_webgl2 : fs_webgl1;
             this.snow = this.viewer.scene.postProcessStages.add(
                 new PostProcessStage({
                     fragmentShader: fs,

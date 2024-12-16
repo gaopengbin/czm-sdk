@@ -1,0 +1,33 @@
+<div class="mb-1">
+    <label for="formFileMultiple" class="form-label">输入SHP文件</label>
+    <input class="form-control" type="file" id="formFileMultiple" multiple onchange="this.inputFiles(event)">
+</div>
+<div class="mb-1">
+    <label for="formFileMultiple" class="form-label">选择拉伸字段</label>
+    <select class="form-select" aria-label="Default select example" s-value="$data.selectedField"
+        onchange="$data.selectedField = value">
+        <For each="$data.fields" item>
+            <option s-value="item">{{item}}</option>
+        </For>
+    </select>
+</div>
+<div class="mb-1">
+    <label for="staticEmail" class="form-label">建筑基础高度</label>
+    <input type="number" class="form-control" s-value="$data.baseHeight" oninput="$data.baseHeight = value">
+</div>
+<div class="mb-1">
+    <label for="staticEmail" class="form-label">建筑填充颜色</label>
+    <input type="color" class="form-control" s-value="$data.fillColor" oninput="this.onchangeFillColor(value)">
+</div>
+<div class="mb-1">
+    <label for="staticEmail" class="form-label">建筑边框颜色</label>
+    <input type="color" class="form-control" s-value="$data.strokeColor" oninput="this.onchangeStrokeColor(value)">
+</div>
+<div class="mb-1">
+    <label for="staticEmail" class="form-label">建筑底面边框颜色</label>
+    <input type="color" class="form-control" s-value="$data.outlineColor" oninput="this.onchangeOutlineColor(value)">
+</div>
+<div class="d-grid gap-2">
+    <button class="btn btn-primary" onclick="this.setExtrudedHeight()">拉伸</button>
+    <button class="btn btn-primary" onclick="this.setRandomColor()">随机色</button>
+</div>

@@ -37,14 +37,60 @@
   <script type="module" src="/src/index.ts"></script>
   <script>
 
-    // let earth = document.querySelector('base-earth');
-    // console.log(earth);
-    // setTimeout(async () => {
-    //   let viewer = earth.viewer;
-    //   const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(43978);
-    //   viewer.scene.primitives.add(tileset);
-    //   viewer.zoomTo(tileset);
-    // }, 2000);
+    let earth = document.querySelector('base-earth');
+
+    setTimeout(() => {
+      console.log('earth:', earth);
+      const viewer = earth.viewer;
+      window.viewer = viewer;
+      viewer.container.addEventListener('dragover', (event) => {
+        event.preventDefault();
+      });
+
+      viewer.container.addEventListener('dragleave', () => {
+      });
+
+      viewer.container.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const files = event.dataTransfer.files;
+        handleFiles(files);
+      });
+    }, 1000);
+
+    function handleFiles(files) {
+      for (const file of files) {
+        console.log('File dropped:', file.name);
+        const filePath = electron.showFilePath(file);
+        console.log('File path:', filePath);
+        if (file.name.endsWith('tileset.json')) {
+          const url = 'file:///' + filePath.replace(/\\/g, '/');
+          load3DTiles(file.name, url);
+        }
+        // send('upload-file', filePath);
+        // 在此处添加处理文件的逻辑
+      }
+    }
+
+    async function load3DTiles(name, url) {
+      let tileset = await earth.sceneTree.addTilesetLayer({
+        type: "tileset",
+        name: name,
+        url: url,
+        show: true,
+        zoomTo: false,
+      });
+      earth.sceneTree.root.addLayer(tileset);
+      tileset.zoomTo();
+      // const tileset = new Cesium.Cesium3DTileset({
+      //   url: url
+      // });
+      // viewer.scene.primitives.add(tileset);
+      // tileset.readyPromise.then(() => {
+      //   viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0, -0.5, tileset.boundingSphere.radius));
+      // }).otherwise((error) => {
+      //   console.error(error);
+      // });
+    }
 
   </script>
 </body>

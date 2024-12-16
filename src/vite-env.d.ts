@@ -17,4 +17,6 @@ interface Window {
     CESIUM_BASE_URL: string;
     // flv.js
     flvjs: any;
+    // shp.min.js
+    shp: any;
 }

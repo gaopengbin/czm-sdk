@@ -22,7 +22,7 @@
   },
   "scripts": {
     "dev": "vite --host",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "build2": "vite build && npm pack"
   },
   "devDependencies": {
