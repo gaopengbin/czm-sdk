@@ -12,7 +12,7 @@ import { WidgetConfig } from "../../component/interface";
  * - 该widget一般由地图widget调用，不需要手动配置
  *
  * @label 组件管理器
- * @tagName webgis-widget-manager
+ * @tagName czm-widget-manager
  * @inPanel false
  * @icon 不需要
  * @sample
@@ -20,8 +20,8 @@ import { WidgetConfig } from "../../component/interface";
  * @category Widget-Manager
  */
 @Component({
-    tagName: 'webgis-widget-manager',
-    className: 'webgis-widget-manager',
+    tagName: 'czm-widget-manager',
+    className: 'czm-widget-manager',
     hasConfig: true
 })
 export default class WidgetManager extends BaseWidget {
@@ -103,7 +103,7 @@ export default class WidgetManager extends BaseWidget {
      * @returns {BaseWidget}
      */
     createIcon(_config: WidgetConfig): BaseWidget {
-        const icon = document.createElement('webgis-widget-icon') as BaseWidget;
+        const icon = document.createElement('czm-widget-icon') as BaseWidget;
         icon.startup({
             mapView: this.mapView,
             // map: this.map,

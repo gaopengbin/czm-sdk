@@ -1,0 +1,33 @@
+<!-- <div class="btn-group" role="group" aria-label="Basic outlined example">
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(2)"><i class="bi bi-square"></i>矩形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(3)"><i class="bi bi-circle"></i>圆形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(4)"><i
+            class="bi bi-heptagon"></i>多边形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.clear()"><i class="bi bi-eraser"></i>清除</button>
+
+</div> -->
+<div class="input-group input-group-sm mt-2">
+    <span class="input-group-text">绘制范围：</span>
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(2)"><i class="bi bi-square"></i>矩形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(3)"><i class="bi bi-circle"></i>圆形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.draw(4)"><i
+            class="bi bi-heptagon"></i>多边形</button>
+    <button type="button" class="btn btn-outline-primary" onclick="this.clear()"><i class="bi bi-eraser"></i>清除</button>
+</div>
+<div class="input-group input-group-sm mt-2">
+    <span class="input-group-text">导出格式：</span>
+    <select class="form-select" s-value="$data.dataType" onchange="this.changeDataType(value)">
+        <option value="0">GDB</option>
+        <option value="1">SHP</option>
+    </select>
+    <button type="button" class="btn btn-outline-primary" onclick="this.outputFile()"><i
+            class="bi bi-download"></i>导出</button>
+</div>
+<!-- <div id="liveAlertPlaceholder"></div> -->
+<!-- <button onclick="this.draw(1)">绘制线</button>
+<button onclick="this.draw(2)">绘制矩形</button>
+<button onclick="this.draw(3)">绘制圆形</button>
+<button onclick="this.draw(4)">绘制多边形</button>
+<button onclick="this.draw(5)">绘制点</button>
+<button onclick="this.draw(6)">绘制文本</button>
+<button onclick="this.outputFile()">导出数据</button> -->

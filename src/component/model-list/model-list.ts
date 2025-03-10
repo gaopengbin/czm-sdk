@@ -6,6 +6,9 @@ import "./model-list.scss";
 import { Cartesian3, Ellipsoid, HeadingPitchRoll, Matrix3, Matrix4, ScreenSpaceEventType, Transforms, Math as CesiumMath, Quaternion, ModelAnimationLoop, HeightReference, Model } from "cesium";
 import { Group } from "@/lib/cesium/sceneTree";
 import { Tooltip } from "bootstrap";
+import { TreeSelect } from "./tree-select";
+import "./tree-select.scss"
+import { DrawTool } from "./draw-tool";
 
 @Component({
     tagName: "czm-model-list",
@@ -36,7 +39,9 @@ export default class ModelList extends BaseWidget {
             canMove: false,
             cmodel: null,
             disabled: true,
-            continuousDraw: true
+            continuousDraw: false,
+            drawType: 0,
+            spacing: 10,
         }
     }
 
@@ -58,7 +63,58 @@ export default class ModelList extends BaseWidget {
         }
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
+        const ts = new TreeSelect(document.querySelector('.treeSelect') as HTMLElement,
+            (item) => {
+                console.log(item)
+                this.selectNode = item;
+            },
+            () => {
+                ts.treeData = (document.querySelector('base-earth') as any).toJSON().earth.layers
+                ts.buildTree()
+            });
+        // ts.dropdown.appendChild(this.treeView.element)
+        this.drawTool = new DrawTool(this.viewer, this.drawEnd.bind(this));
+    }
 
+    async drawEnd(item: any) {
+        let positions: any;
+        if (this.$data.drawType === 2) {
+            positions = this.drawTool.getSampledPointsForLineEntity(item, Number(this.$data.spacing));
+        } else if (this.$data.drawType === 3) {
+            positions = this.drawTool.getSampledPointsForPolygonEntity(item, Number(this.$data.spacing));
+        }
+
+        const modelJson = this.cmodel.toJSON();
+        modelJson.allowPicking = true;
+        modelJson.guid = '';
+        let selectedNode: any;
+        if (this.selectNode) {
+            selectedNode = this.sceneTree.getLayerByGuid(this.selectNode.guid);
+
+        } else {
+            selectedNode = this.sceneTree.root
+        }
+
+        for (let i = 0; i < positions.length; i++) {
+            const position = positions[i];
+            let jwd = transformCartesianToWGS84(this.viewer, position);
+            if (!jwd) return;
+            const json = JSON.parse(JSON.stringify(modelJson));
+            json.position = [jwd.lon, jwd.lat, jwd.alt];
+            const m = await this.sceneTree.createModelLayer(json);
+            selectedNode.addLayer(m);
+        }
+        this.viewer.entities.remove(item);
+    }
+
+    selectModelInRect() {
+        this.viewer.scene.postProcessStages.getStageByName('czm_silhouette').enabled = true
+        this.viewer.scene.postProcessStages.getStageByName('czm_silhouette').selected = []
+        this.drawTool.selectModelsInRectangle((models: any) => {
+            console.log(models)
+            this.selected = models
+            this.viewer.scene.postProcessStages.getStageByName('czm_silhouette').selected = models
+        })
     }
 
     typeChange(type: any) {
@@ -77,6 +133,7 @@ export default class ModelList extends BaseWidget {
     }
 
     async selectModel(model: any) {
+        console.log(model);
         this.deleteModel()
         this.$data.currentModel = {
             name: model.name,
@@ -101,6 +158,7 @@ export default class ModelList extends BaseWidget {
             scale: this.$data.currentModel.scale,
             link: this.$data.currentModel.link,
             linkType: this.$data.currentModel.linkType,
+            playAnimations: this.$data.currentModel.animation,
         } as any);
         m._model.originModelMatrix = m._model.modelMatrix.clone();
         m._model.playAnimations = true;
@@ -111,7 +169,16 @@ export default class ModelList extends BaseWidget {
             });
         })
         this.cmodel = m;
-        this.$data.canMove = true;
+        console.log('drawType', this.$data.drawType, this.$data.spacing);
+        if (this.$data.drawType === 2) {
+            const line = this.drawTool.drawLine(Number(this.$data.spacing))
+        } else if (this.$data.drawType === 3) {
+            this.drawTool.drawPolygon(Number(this.$data.spacing))
+        }
+        else {
+            this.$data.canMove = true;
+        }
+
         this.changeDisabled();
     }
 
@@ -138,14 +205,22 @@ export default class ModelList extends BaseWidget {
     }
 
     linkTypeChange(e: any) {
-        console.log(e);
         this.$data.currentModel.linkType = e;
     }
 
     scaleChange(e: any) {
         this.$data.currentModel.scale = e;
-        const model = this.cmodel._model;
-        model.scale = e;
+        if (this.selected) {
+            this.selected.forEach((model: any) => {
+                const m = this.sceneTree.getLayerByGuid(model.id);
+                m._model.scale = e;
+            })
+        } else {
+            const model = this.cmodel._model;
+            model.scale = e;
+        }
+
+
     }
     rotationChange(e: any) {
         this.$data.currentModel.rotation = e;
@@ -198,8 +273,8 @@ export default class ModelList extends BaseWidget {
 
     }
 
-    continuousDrawChange(e: any) {
-        this.$data.continuousDraw = e.target.checked;
+    changeDrawType(type: number) {
+        this.$data.drawType = type;
     }
 
     clampToGroundChange(e: any) {
@@ -217,7 +292,6 @@ export default class ModelList extends BaseWidget {
     }
     async saveModel() {
         if (!this.cmodel && !this._model) return;
-        console.log('saveModel', this.cmodel, this._model, this.editGuid);
         if (this._model && !this.editGuid) {
             this._model.remove();
         }
@@ -239,31 +313,24 @@ export default class ModelList extends BaseWidget {
             link: this.$data.currentModel.link,
             linkType: this.$data.currentModel.linkType,
         } as any);
-        console.log('saveModel', m);
         if (this.editGuid) {
             this.sceneTree.updateLayerByGuid(this.editGuid, m);
         } else {
-            const selectedNode = this.treeView?.selectedNode
-            if (selectedNode) {
-                const guid = selectedNode.getAttribute('guid');
-                if (!guid) return;
-                const node = this.sceneTree.getLayerByGuid(guid);
-                if (node instanceof Group) {
-                    node.addLayer(m);
-                } else {
-                    this.sceneTree.root.addLayer(m);
-                }
+            // const selectedNode = this.treeView?.selectedNode || this.treeView2?.selectedNode;
+            let selectedNode: any;
+            if (this.selectNode) {
+                selectedNode = this.sceneTree.getLayerByGuid(this.selectNode.guid);
+                selectedNode.addLayer(m);
             } else {
                 this.sceneTree.root.addLayer(m);
             }
         }
-        if (this.editGuid || (this.cmodel && !this.$data.continuousDraw)) {
-            console.log('enne');
+        if (this.editGuid || (this.cmodel && this.$data.drawType !== 1)) {
             this.deleteModel();
         }
     }
     deleteModel() {
-        this.forceRefresh();
+        // this.forceRefresh();
         if (this.cmodel) {
             this.cmodel._model.destroy();
             this.cmodel._label.entityCollection.remove(this.cmodel._label);
@@ -285,7 +352,7 @@ export default class ModelList extends BaseWidget {
     }
 
     cancel() {
-        this.forceRefresh();
+        // this.forceRefresh();
         this.editGuid = '';
         if (this.cmodel && this._model) {
             this._model.show = true;
@@ -303,9 +370,7 @@ export default class ModelList extends BaseWidget {
             }
             let jwd = transformCartesianToWGS84(this.viewer, position);
             if (!jwd) return;
-
             callback(jwd);
-
             let pick = this.viewer.scene.pick(click.position);
             // 点击模型进入编辑状态
             if (pick && pick.id && pick.primitive instanceof Model) {
@@ -332,23 +397,36 @@ export default class ModelList extends BaseWidget {
                 }
                 this.changeDisabled();
             } else {
-                if (this.$data.continuousDraw && !this.editGuid) {
-                    this.saveModel();
+                if (this.$data.drawType === 2 || this.$data.drawType === 3) {
+                    if (this.editGuid) {
+                        if (!this.$data.canMove) {
+                            this.cancel();
+                        } else {
+                            this.$data.canMove = false;
+                        }
+                    }
                 } else {
-                    if (!this.$data.canMove) {
-                        this.cancel();
+                    if (!this.editGuid) {
+                        this.saveModel();
+                        if (this.$data.drawType === 1 && this.$data.currentModel.url) {
+                            this.$data.canMove = true;
+                        } else {
+                            this.$data.canMove = false;
+                        }
                     } else {
-                        // callback(jwd)
-                        this.$data.canMove = false;
+                        if (!this.$data.canMove) {
+                            this.cancel();
+                        } else {
+                            this.$data.canMove = false;
+                        }
                     }
                 }
-
             }
 
         }, ScreenSpaceEventType.LEFT_CLICK);
 
         this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction(async (click: any) => {
-            if (this.$data.continuousDraw && !this.editGuid) {
+            if (this.$data.drawType === 1 && !this.editGuid) {
                 console.log('continuousDraw', this.cmodel);
                 this.$data.canMove = false;
                 this.deleteModel();
@@ -372,43 +450,6 @@ export default class ModelList extends BaseWidget {
         optionBtns.forEach((item: any) => {
             item.disabled = this.cmodel ? false : true;
         })
-    }
-
-    uploadFile() {
-        const input: any = document.querySelector('#uploadFile');
-        input?.click();
-    }
-
-    handleUploadFile(e: any) {
-        console.log(e);
-        let file = e.target.files[0];
-        // 读取json文件
-        let reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = async (evt) => {
-            let data = JSON.parse(evt.target?.result as string);
-            console.log(evt, data);
-            if (Array.isArray(data)) {
-                data.forEach(async (item: any) => {
-                    const m = await this.sceneTree.createModelLayer(item);
-                    const selectedNode = this.treeView?.selectedNode
-                    if (selectedNode) {
-                        const guid = selectedNode.getAttribute('guid');
-                        if (!guid) return;
-                        const node = this.sceneTree.getLayerByGuid(guid);
-                        if (node instanceof Group) {
-                            node.addLayer(m);
-                        } else {
-                            this.sceneTree.root.addLayer(m);
-                        }
-                    } else {
-                        this.sceneTree.root.addLayer(m);
-                    }
-                })
-            }
-
-        }
-
     }
 
     public onOpen(): void {

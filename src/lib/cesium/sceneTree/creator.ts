@@ -27,6 +27,7 @@ import BaiduImageryProvider from "../CustomImageryProvider/provider/BaiduImagery
 import WMTSParser from "../parser/WMTSParser";
 import SSMapServerProvider from "../CustomImageryProvider/provider/SSMapServerProvider";
 import { getProjection } from "../CustomImageryProvider/projection/projection";
+import { SSPolygon } from "../CustomEntity";
 // import GraphicManager from "../draw/core/GraphicManager";
 // import MarkerManager from "../draw/core/MarkerManager";
 
@@ -401,7 +402,6 @@ export async function createTileset(options: SSLayerOptions) {
         ) {
             tileset.style = new Cesium3DTileStyle(extras.ion.defaultStyle);
         }
-        console.log(tileset)
     }
     return tileset;
 }
@@ -418,6 +418,10 @@ export async function createModel(options: SSLayerOptions) {
     const model = await Model.fromGltfAsync(options)
     return model;
 }
+
+// export function createSSPolygon(options: any) {
+//     const polygon = new SSPolygon
+// }
 
 const Objects: any = {
     "ssmapserver": createSSMapServer,
@@ -453,14 +457,16 @@ const initObjects: any = {
     "marker": "createMarkerLayer",
     "label": "createLabelLayer",
     "iontileset": "createIonTilesetLayer",
+    "sspolygon": "createSSPolygonLayer",
+    "ssrectangle": "createSSRectangleLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {
     const { layers = [] } = config;
     layers.reverse();
     for (const layer of layers) {
-        let node = await buildLayers(sceneTree, layer);
-        sceneTree.root.addLayer(node);
+        let node = buildLayers(sceneTree, layer);
+        sceneTree.root.addLayer(node, layer);
     }
 }
 
@@ -471,6 +477,7 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
         layer.type = "group";
         let group = sceneTree.createGroup(layer.name);
         group.expand = layer.expand;
+        group.isScene = layer.isScene;
         for (const child of layer.children) {
             // let childLayer = await buildLayers(sceneTree, child);
             let childLayer = buildLayers(sceneTree, child);
@@ -483,7 +490,6 @@ export const buildLayers = async (sceneTree: SceneTree, layer: any) => {
             // node = sceneTree[initObjects[layer.type]](layer);
             node = await sceneTree[initObjects[layer.type]](layer);
         } catch (error) {
-            console.error(error);
             node = {
                 name: layer.name,
                 ...layer,

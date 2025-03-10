@@ -50,7 +50,6 @@ class Popover {
 
     init() {
         this.triggerElement.addEventListener('click', (event) => {
-            event.stopPropagation();
             this.togglePopover();
         });
         document.addEventListener('click', (event) => this.handleDocumentClick(event));
@@ -120,7 +119,7 @@ class Popover {
     }
 
     handleDocumentClick(event: MouseEvent) {
-        if (this.isVisible) {
+        if (this.isVisible && !this.popoverElement.contains(event.target as Node) && !this.triggerElement.contains(event.target as Node)) {
             this.hidePopover();
         }
     }

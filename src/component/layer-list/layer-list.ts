@@ -83,7 +83,7 @@ export default class LayerList extends BaseWidget {
                 leafList.forEach((leaf) => {
                     const guid: any = leaf.getAttribute('guid')
                     const layer = this.sceneTree.getLayerByGuid(guid)
-                    const type = layer.toJSON().type
+                    const type = (layer.status === 'loading' || layer.status === 'error') ? '' : layer.toJSON().type
                     const moreIcon: any = leaf.querySelector('.bi-three-dots')
                     const contextmenu: any = m.cloneNode(true)
                     this.$data.menuItems.forEach((item: any) => {
@@ -117,8 +117,7 @@ export default class LayerList extends BaseWidget {
                     //     content: contextmenu,
                     //     html: true,
                     // });
-                    console.log(contextmenu)
-                    new Popover(moreIcon, {
+                    this.pop = new Popover(moreIcon, {
                         content: contextmenu,
                     })
 
@@ -152,7 +151,7 @@ export default class LayerList extends BaseWidget {
                         return `<font color='gray'><i class="bi bi-hourglass-split"></i>${data.name}</font>`;
                     }
                     else {
-                        return data.name;
+                        return data.children ? data.name + `<font color='gray'>(${data.children.length})</font>` : data.name;
                     }
                     // if (data.children) {
                     //   return `<font style="color:var(--bs-emphasis-color)">${data.label}</font>`;
@@ -197,6 +196,7 @@ export default class LayerList extends BaseWidget {
                 handleNodeExpand: (node: any) => {
                     node.data.expand = !node.data.expand
                     this.sceneTree.layersMap.get(node.data.guid).expand = node.data.expand;
+                    this.sceneTree.updateSceneTree();
                 },
                 onDragStart: (node: any) => {
 
@@ -278,7 +278,7 @@ export default class LayerList extends BaseWidget {
                                         }, 100);
                                     }
                                 }
-                            }else{
+                            } else {
                                 this.$data.layer = node;
                                 this.delete()
                             }
@@ -289,6 +289,8 @@ export default class LayerList extends BaseWidget {
                         name: "更多选项",
                         icon: "bi bi-three-dots",
                         onClick: (node: any, el: Element) => {
+                            console.log("更多选项", node, this.pop);
+                            // this.pop.showPopover()
                             this.$data.layer = node;
                             this.layer = node;
                             this.showZIndex()
@@ -331,6 +333,7 @@ export default class LayerList extends BaseWidget {
         this.sceneTree.removeLayerByGuid(this.$data.layer.guid);
     }
     showZIndex = () => {
+        console.log('showZIndex', this.$data.layer);
         const zIndexInput = this.querySelector('#layerIndex') as HTMLInputElement;
         if (zIndexInput) {
             zIndexInput.value = this.$data.layer.zIndex;
@@ -403,7 +406,6 @@ export default class LayerList extends BaseWidget {
     }
 
     outputScene = () => {
-        console.log(this.mapView);
         const json = this.mapView.toJSON();
         const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
         const url = URL.createObjectURL(blob);

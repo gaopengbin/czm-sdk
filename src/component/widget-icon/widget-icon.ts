@@ -19,7 +19,7 @@ import { Popover } from "bootstrap";
  * - 该widget一般由widget-manager调用，不需要手动配置
  *
  * @label 主题切换
- * @tagName webgis-widget-icon
+ * @tagName czm-widget-icon
  * @inPanel false
  * @icon 不需要
  * @sample
@@ -27,8 +27,8 @@ import { Popover } from "bootstrap";
  * @category Widget-Manager
  */
 @Component({
-    tagName: 'webgis-widget-icon',
-    className: 'webgis-widget-icon',
+    tagName: 'czm-widget-icon',
+    className: 'czm-widget-icon',
     template: template,
     hasConfig: true
 })
@@ -171,7 +171,7 @@ export default class WidgetIcon extends BaseWidget {
     openWidget() {
         this.closeOthers();
 
-        this.classList.add('webgis-widget-icon-open');
+        this.classList.add('czm-widget-icon-open');
         if (!this.#widget) {
             this.initPanel();
         }
@@ -182,7 +182,7 @@ export default class WidgetIcon extends BaseWidget {
     }
 
     closeWidget() {
-        this.classList.remove('webgis-widget-icon-open');
+        this.classList.remove('czm-widget-icon-open');
         // 取消容器变化事件
         this.#observer.unobserve(this.parentElement as HTMLElement);
         this.#widget?.onClose();
@@ -191,7 +191,7 @@ export default class WidgetIcon extends BaseWidget {
 
     // 关闭其他同组的widget
     closeOthers() {
-        const others = this.parentNode?.querySelectorAll('webgis-widget-icon');
+        const others = this.parentNode?.querySelectorAll('czm-widget-icon');
         others?.forEach((item: any) => {
             // 防止多次关闭
             if (this.group == item.group && item.isOpen === true) {

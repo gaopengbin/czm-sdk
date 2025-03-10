@@ -20,3 +20,5 @@ interface Window {
     // shp.min.js
     shp: any;
 }
+
+declare module 'element-resize-detector';

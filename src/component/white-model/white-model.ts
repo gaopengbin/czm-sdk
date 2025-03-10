@@ -157,6 +157,7 @@ export default class WhiteModel extends BaseWidget {
                 });
                 this.$data.fields = this.fields;
                 // this.loadAsPrimitiveGeoJson(geojson);
+                console.log(geojson);
                 const shp = await this.sceneTree.createGeoJsonLayer({
                     type: "geojson",
                     url: geojson,

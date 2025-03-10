@@ -19,7 +19,7 @@ import { Popover } from "bootstrap";
  * - 该widget一般由widget-manager调用，不需要手动配置
  *
  * @label 主题切换
- * @tagName webgis-widget-icon
+ * @tagName czm-widget-icon
  * @inPanel false
  * @icon 不需要
  * @sample
@@ -204,7 +204,7 @@ export default class WidgetPanel extends BaseWidget {
 
     // 关闭其他同组的widget
     closeOthers() {
-        const others = this.parentNode?.querySelectorAll('webgis-widget-icon');
+        const others = this.parentNode?.querySelectorAll('czm-widget-icon');
         others?.forEach((item: any) => {
             // 防止多次关闭
             if (this.group == item.group && item.isOpen === true) {

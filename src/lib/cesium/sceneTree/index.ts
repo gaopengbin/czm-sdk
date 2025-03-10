@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, GeoJsonLoader, IonTilesetLoader, ModelLoader, SSMapServerLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, GeoJsonLoader, IonTilesetLoader, ModelLoader, SSMapServerLoader, SSPolygonLoader, SSRectangleLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 // import { CesiumPolygon, CesiumPolyline } from "../draw/core/Graphic";
@@ -22,6 +22,7 @@ class SceneTree {
     _imageryLayers: any;
     _imageryCollection: any = [];
     _tilesetCollection: any;
+    _groupCollection: any = [];
     updateEvent: Event = new Event();
     pickEvent: Event = new Event();
     defaultImageryLayerOptions: SSLayerOptions = {
@@ -72,9 +73,12 @@ class SceneTree {
                         name: child.name,
                         guid: child.guid,
                         expand: child.expand,
+                        isScene: child.isScene,
                         children: this.treeToArray(child),
                     });
+                    this._groupCollection.push(child);
                     this.layersMap.set(child.guid, child);
+                    // console.log("child", child.guid, child);
                 } else {
                     result.push(child);
                     this.layersMap.set(child.guid, child);
@@ -95,13 +99,15 @@ class SceneTree {
             }
 
         }
-        return result.reverse();
+        // return result.reverse();
+        return result;
     }
 
     // 做个防抖处理，避免频繁调用
     updateSceneTree = debounce(() => {
         this._imageryCollection = [];
         this._tilesetCollection = [];
+        this._groupCollection = [];
         this._imageryLayers = this.treeToArray(this._root);
         this.updateEvent.raiseEvent(this._imageryLayers);
         setLayersZIndex(this._viewer);
@@ -133,12 +139,16 @@ class SceneTree {
     removeLayerByGuid(guid: any) {
         let node = this.layersMap.get(guid);
         if (node) {
+            if (node.guid === 'fb3fa1af-a71a-4084-ad71-3fe7b7cc87e8') {
+                console.log("removeLayerByGuid", node);
+            }
             if (node.children) {
                 const children = node.children;
                 //逆向删除
                 for (let i = children.length - 1; i >= 0; i--) {
                     this.removeLayerByGuid(children[i].guid);
                 }
+                this.layersMap.delete(node.guid);
             } else {
                 if (node._imageLayer) {
                     this._viewer.imageryLayers.remove(node._imageLayer);
@@ -160,7 +170,7 @@ class SceneTree {
                     node.remove();
                 } else if (node._entity) {
                     this._viewer.entities.remove(node._entity);
-                } 
+                }
                 else {
                     // node.remove();
                 }
@@ -274,11 +284,53 @@ class SceneTree {
         return leaf;
     }
 
+    createSSPolygonLayer(options: SSLayerOptions) {
+        let leaf = SSPolygonLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createSSRectangleLayer(options: SSLayerOptions) {
+        let leaf = SSRectangleLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createLayer(options: SSLayerOptions) {
+        const type = options.type.toLocaleLowerCase();
+        switch (type) {
+            case "wms":
+                return this.createWMSLayer(options as SSWMSLayerOptions);
+            case "xyz":
+                return this.createXYZLayer(options);
+            case "arcgismapserver":
+                return this.createArcGisMapServerLayer(options);
+            case "geojson":
+                return this.createGeoJsonLayer(options);
+            case "tileset":
+                return this.addTilesetLayer(options);
+            case "iontileset":
+                return this.createIonTilesetLayer(options);
+            case "terrain":
+                return this.createTerrainLayer(options as SSTerrainLayerOptions);
+            case "model":
+                return this.createModelLayer(options);
+            case "graphic":
+                return this.createGraphicLayer(options);
+            case "marker":
+                return this.createMarkerLayer(options);
+            case "label":
+                return this.createLabelLayer(options);
+            default:
+                return this.createWMSLayer(options as SSWMSLayerOptions);
+        }
+    }
+
 
 
     // 创建分组用于管理图层
-    createGroup(groupName: string) {
-        const group = new Group(groupName);
+    createGroup(groupName: string, guid?: string) {
+        const group = new Group(groupName, guid);
         group._sceneTree = this;
         return group;
     }
@@ -396,12 +448,14 @@ class children extends Array {
 class Group {
     name: string;
     children: children = new children();
-    guid: string = uuid();
+    guid: string;
     _expand: boolean = false;
     _sceneTree: SceneTree | null = null;
     parent: Group | null = null;
-    constructor(name: string) {
+    isScene: boolean = false;
+    constructor(name: string, guid?: string) {
         this.name = name;
+        this.guid = guid || uuid();
     }
 
     set expand(value: boolean) {
@@ -462,6 +516,7 @@ class Group {
             }
             this.children.push(layer)
         }
+        this._sceneTree?.layersMap.set(layer.guid, layer);
         this._sceneTree?.updateSceneTree();
     }
 
@@ -518,12 +573,21 @@ class Group {
         }
     }
 
-    toJSON() {
-        this.children.reverse();
+    toJSON(): any {
+        // this.children.reverse();
+        let parent: any;
+        if (this.parent) {
+            parent = {
+                name: this.parent.name,
+                guid: this.parent.guid,
+            }
+        }
         return {
             name: this.name,
             guid: this.guid,
             expand: this.expand,
+            isScene: this.isScene,
+            parent: this.parent ? parent : null,
             children: this.children.map((child: any) => {
                 return child.toJSON ? child.toJSON() : child;
             })

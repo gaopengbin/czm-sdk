@@ -1,5 +1,5 @@
 import * as Cesium from "cesium";
-import { CesiumPoint, CesiumPolyline, CesiumPolygon } from "./Graphic";
+import { CesiumPoint, CesiumPolyline, CesiumPolygon, CesiumCircle } from "./Graphic";
 import utils from "../js/utils";
 import { CVT } from "../js/utils";
 import GraphicType from "./GraphicType";
@@ -218,7 +218,6 @@ class GraphicManager {
       options.material = options.material || this.material
     }
     options.width = options.style.width || this.style.width
-    console.log(options);
     const manager = new CesiumPolyline(this.viewer, options);
     manager.mid = id
     // manager.id = id
@@ -261,7 +260,6 @@ class GraphicManager {
       options.outlineColor = Cesium.Color.fromCssColorString(options.style.outlineColor)
     }
     // options.outlineColor = options.outlineColor || this.style.outlineColor
-    console.log(options);
     const manager = new CesiumPolygon(this.viewer, options);
     manager.mid = id
     // manager.id = id
@@ -326,6 +324,49 @@ class GraphicManager {
     this.addEventListener();
     return manager;
   }
+
+  /**
+   *
+   * @param {Object} options 定义一个CesiumCircle
+   */
+  createCircle(options: any = CesiumCircle.defaultStyle) {
+    this.graphicType = GraphicType.CIRCLE;
+    const id = this.generateId();
+    this.graphicId = id;
+    options.center = this.positions[0];
+    options.radius = this.positions[1] ? Cesium.Cartesian3.distance(this.positions[0], this.positions[1]) : 0;
+    if (/.*GROUND.*/.test(this._heightReference)) {
+      options.heightReference = Cesium.HeightReference.CLAMP_TO_GROUND;
+    } else {
+      options.heightReference = Cesium.HeightReference.NONE;
+    }
+
+    options.material = this.material || options.material;
+    options.outlineWidth = this.style.outlineWidth || options.outlineWidth;
+    options.outlineColor = this.style.outlineColor || options.outlineColor;
+    const manager = new CesiumCircle(this.viewer, options);
+    manager.mid = id;
+    manager.heightReference = this.heightReference;
+    this.tip.visible = true;
+    this.tip.updateText("左键标绘，右键结束.");
+    this.manager.set(id, manager);
+    this.editManager = manager;
+    const evt = new CustomEvent("addEvent", {
+      detail: {
+        mid: manager.mid,
+        mtype: manager.mtype,
+        mname: manager.mname,
+      },
+    });
+    document.dispatchEvent(evt);
+    const self = this;
+    this.handler.setInputAction((e: any) => {
+      self.tip && self.tip.updatePosition(e.endPosition);
+    }, MOUSE_MOVE);
+    this.addEventListener();
+    return manager;
+  }
+
   generateId() {
     return (
       (Math.random() * 10000000).toString(16).substr(0, 4) +
@@ -419,7 +460,8 @@ class GraphicManager {
       //非法的要素类型
       if (
         self.graphicType != GraphicType.POLYLINE &&
-        self.graphicType != GraphicType.POLYGON
+        self.graphicType != GraphicType.POLYGON &&
+        self.graphicType != GraphicType.CIRCLE
       ) {
         return;
       }
@@ -433,17 +475,38 @@ class GraphicManager {
       }
       //添加第一个点后再监听鼠标移动事件，绘绘完成后移除监听，以免不必要的事件监听
       const target = self.manager.get(self.graphicId);
-      if (target && target.positions.length === 0) {
-        self.handler.removeInputAction(MOUSE_MOVE);
-        self.handler.setInputAction(moseMoveHandler, MOUSE_MOVE);
+      if (self.graphicType == GraphicType.CIRCLE) {
+        if (target && target.positions.length === 0) {
+          self.handler.removeInputAction(MOUSE_MOVE);
+          self.handler.setInputAction(moseMoveHandler, MOUSE_MOVE);
+        }
+        if (self.positions.length === 0) {
+          self.positions.push(cartesian);
+          target.center = cartesian;
+          target.startEdit();
+        } else if (self.positions.length === 1) {
+          self.positions.push(cartesian);
+          target.radius = Cesium.Cartesian3.distance(
+            self.positions[0],
+            self.positions[1]
+          );
+          
+          // self.createCircle();
+        }
+      } else {
+        if (target && target.positions.length === 0) {
+          self.handler.removeInputAction(MOUSE_MOVE);
+          self.handler.setInputAction(moseMoveHandler, MOUSE_MOVE);
+        }
+        if (
+          Cesium.defined(cartesian) &&
+          self.manager.has(self.graphicId) &&
+          target
+        ) {
+          target.addNode(cartesian);
+        }
       }
-      if (
-        Cesium.defined(cartesian) &&
-        self.manager.has(self.graphicId) &&
-        target
-      ) {
-        target.addNode(cartesian);
-      }
+
       self.mode = "create";
     };
     const rightHandler = function () {
@@ -489,6 +552,13 @@ class GraphicManager {
       }
       self.tip.updatePosition(e.endPosition);
       if (self.mode === "create") {
+        if (self.graphicType === GraphicType.CIRCLE) {
+          self.manager.get(self.graphicId).radius = Cesium.Cartesian3.distance(
+            self.positions[0],
+            cartesian
+          );
+          return;
+        }
         //如果当前是create模式，创建辅助线
         if (self.positions.length > 1) {
           self.manager.get(self.graphicId).popNode();
@@ -550,7 +620,6 @@ class GraphicManager {
   }
   toJSONById(id: string) {
     const graphic = this.get(id)
-    console.log(graphic);
     if (graphic) {
       let json: any = {}
       json.id = graphic.mid
@@ -643,7 +712,6 @@ class GraphicManager {
   edit(id: string) {
     const self = this;
     const manager = self.manager.get(id);
-    console.log(manager);
     this.handler.setInputAction((e: any) => {
       self.tip.updatePosition(e.endPosition);
     }, MOUSE_MOVE);
@@ -799,5 +867,8 @@ class GraphicManager {
 
     document.dispatchEvent(evt);
   }
+
+
+
 }
 export default GraphicManager;

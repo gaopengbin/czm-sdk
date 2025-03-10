@@ -58,7 +58,6 @@ export const isWebGL2Supported = () => {
         const browser = getBrowserInfo();
         const [name, version] = browser.split(': ');
         const versionNumber = parseFloat(version);
-        console.log('browser:', name, versionNumber);
         if (name === 'IE') {
             return false;
         }

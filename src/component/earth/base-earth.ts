@@ -17,12 +17,12 @@ import WidgetIcon from '../widget-icon/widget-icon';
 export default class BaseEarth extends BaseWidget {
     constructor() {
         super();
+        // this.manifest.template = `<div id="s${this.id}"></div>`;
     }
 
     public configLoaded(): void {
         this.globalConfig = this.config;
         Ion.defaultAccessToken = this.config.earth.ionDefaultToken;
-        console.log(isWebGL2Supported())
         this.Browser = getBrowserInfo();
         this.initViewer();
         setTimeout(async () => {
@@ -33,7 +33,7 @@ export default class BaseEarth extends BaseWidget {
             await initEarth(this.sceneTree, this.config.earth);
         }, 500);
 
-        const widgetManager = this.globalConfig?.widgetManager || 'webgis-widget-manager';
+        const widgetManager = this.globalConfig?.widgetManager || 'czm-widget-manager';
         const widgetManagerEl = document.createElement(widgetManager) as BaseWidget;
         widgetManagerEl.startup({
             config: this.globalConfig.widgets,
@@ -58,7 +58,7 @@ export default class BaseEarth extends BaseWidget {
     }
 
     initViewer() {
-        let viewer = initScene("earth", {
+        let viewer = initScene('earth', {
             baseLayerPicker: false,
             baseLayer: false,
             projectionPicker: false,
@@ -134,19 +134,18 @@ export default class BaseEarth extends BaseWidget {
         const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
         handler.setInputAction((movement: any) => {
             const identify = document.querySelector('czm-identify');
-            if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
+            if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('czm-widget-icon-open')) {
                 // 正在拾取属性
                 return
             }
             const modelList = document.querySelector('czm-model-list');
-            if (modelList && modelList.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
+            if (modelList && modelList.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('czm-widget-icon-open')) {
                 // 正在拾取属性
                 return
             }
             const pickedObject = viewer.scene.pick(movement.position);
             if (pickedObject) {
                 const id = pickedObject.id;
-                console.log(pickedObject, id);
                 if (pickedObject.primitive && pickedObject.primitive instanceof Model) {
                     const model = pickedObject.primitive;
                     const cmodel = this.sceneTree.getLayerByGuid(id);
@@ -156,35 +155,35 @@ export default class BaseEarth extends BaseWidget {
                 }
             }
         }, ScreenSpaceEventType.LEFT_CLICK);
-        handler.setInputAction((movement: any) => {
-            // return
-            const identify = document.querySelector('czm-identify');
-            if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('webgis-widget-icon-open')) {
-                // 正在拾取属性
-                return
-            }
+        // handler.setInputAction((movement: any) => {
+        //     // return
+        //     const identify = document.querySelector('czm-identify');
+        //     if (identify && identify.parentNode?.parentNode?.parentNode?.parentElement?.classList?.contains('czm-widget-icon-open')) {
+        //         // 正在拾取属性
+        //         return
+        //     }
 
-            const pickedObject = viewer.scene.pick(movement.endPosition);
-            if (pickedObject) {
-                const id = pickedObject.id;
-                if (pickedObject.primitive && pickedObject.primitive instanceof Model) {
-                    // 鼠标移动到模型上，样式变为pointer
-                    viewer.scene.canvas.style.cursor = 'pointer';
-                    this.silhouette.selected = [pickedObject.primitive];
-                } else {
-                    viewer.scene.canvas.style.cursor = 'default';
-                    this.silhouette.selected = [];
-                }
-            } else {
-                viewer.scene.canvas.style.cursor = 'default';
-                this.silhouette.selected = [];
-            }
-        }, ScreenSpaceEventType.MOUSE_MOVE);
+        //     const pickedObject = viewer.scene.pick(movement.endPosition);
+        //     if (pickedObject) {
+        //         const id = pickedObject.id;
+        //         if (pickedObject.primitive && pickedObject.primitive instanceof Model) {
+        //             // 鼠标移动到模型上，样式变为pointer
+        //             viewer.scene.canvas.style.cursor = 'pointer';
+        //             this.silhouette.selected = [pickedObject.primitive];
+        //         } else {
+        //             viewer.scene.canvas.style.cursor = 'default';
+        //             this.silhouette.selected = [];
+        //         }
+        //     } else {
+        //         viewer.scene.canvas.style.cursor = 'default';
+        //         this.silhouette.selected = [];
+        //     }
+        // }, ScreenSpaceEventType.MOUSE_MOVE);
     }
 
     renderFromJson(config: any) {
         if (config) {
-            const wm = this.querySelector('webgis-widget-manager');
+            const wm = this.querySelector('czm-widget-manager');
             wm?.remove();
             if (this.viewer) {
                 this.viewer.destroy();
@@ -240,7 +239,7 @@ export default class BaseEarth extends BaseWidget {
         }
 
         // const graphicManager = this.graphicManager.toJSON();
-        const widgetManager = this.querySelector('webgis-widget-manager') as BaseWidget;
+        const widgetManager = this.querySelector('czm-widget-manager') as BaseWidget;
         const widgets = widgetManager.widgets;
         const widgetConfigs: any = []
         widgets.forEach((widget: any) => {

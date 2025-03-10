@@ -249,6 +249,170 @@ export default class LoaderUI extends BaseWidget {
 
     }
 
+    addModelBatch = () => {
+        const centerLongitude = 110.8;
+        const centerLatitude = 30.5;
+        const sideLength = 0.01; // 正方形边长
+
+        for (let i = 0; i < 500; i++) {
+            const offsetX = (Math.random() - 0.5) * sideLength;
+            const offsetY = (Math.random() - 0.5) * sideLength;
+            const entity = this.viewer.entities.add({
+                position: Cesium.Cartesian3.fromDegrees(centerLongitude + offsetX, centerLatitude + offsetY, 0),
+                model: {
+                    uri: "https://mapinner-test.wz-inc.com/shangyu/device/pole/B70202.gltf",
+                    scale: 1,
+                    show: true,
+                    silhouetteSize: 1,
+                    silhouetteColor: Cesium.Color.RED,
+                    distanceDisplayCondition: new Cesium.DistanceDisplayCondition(
+                        0,
+                        1000000
+                    ),
+                },
+            });
+            this.viewer.zoomTo(entity);
+        }
+    };
+
+    async loadGeoJSONModel() {
+
+        const urls = [
+            'https://rc-cdn.wzw.cn/project3D/Geojson/signal.json',
+            'https://rc-cdn.wzw.cn/project3D/Geojson/sign.json',
+            'https://rc-cdn.wzw.cn/project3D/Geojson/pole.json',
+        ]
+
+        for (let i = 0; i < urls.length; i++) {
+            const url = urls[i];
+            const json = await fetch(url).then((res) => res.json());
+            console.log(json);
+            Cesium.GeoJsonDataSource.load(json).then((dataSource) => {
+                // https://mapinner-test.wz-inc.com/shangyu/device/pole/B70202.gltf
+                this.viewer.dataSources.add(dataSource);
+                this.viewer.zoomTo(dataSource);
+                console.log(dataSource);
+                dataSource.entities.values.forEach((entity) => {
+                    const type = entity.properties?.type?.getValue();
+                    const mode = entity.properties?.mode?.getValue();
+                    const item = entity.properties?.item?.getValue();
+                    console.log(type, mode, item);
+                    entity.billboard = undefined;
+                    const angle = parseFloat(item.modelangle) || 90;
+                    const origin = entity.position?.getValue(Cesium.JulianDate.now());
+
+                    const height = item.altitude ? item.altitude : 0;
+                    entity.position = new Cesium.ConstantPositionProperty(
+                        Cesium.Cartesian3.fromDegrees(item.geometry.coordinates[0], item.geometry.coordinates[1], Number(height))
+                    );
+                    if (item.devicetype === 'pole') {
+                        if (origin) {
+                            entity.orientation = new Cesium.ConstantProperty(
+                                Cesium.Transforms.headingPitchRollQuaternion(
+                                    origin,
+                                    new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(angle + 180), 0, 0)
+                                )
+                            );
+                        }
+                        entity.model = new Cesium.ModelGraphics({
+                            uri: `https://mapinner-test.wz-inc.com/shangyu/device/${item.devicetype}/${item.modelid}.gltf`,
+                            scale: 1,
+                            color: Cesium.Color.WHITE,
+                            colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
+                            colorBlendAmount: 0.5,
+                            show: true,
+                            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
+                            // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                        });
+                    } else if (item.devicetype === 'sign') {
+
+                        if (origin) {
+
+                            const poleAngle = Cesium.defined(item.poleitem.modelangle) ? parseFloat(item.poleitem.modelangle) - 180 : angle;
+                            const poleHeading = Cesium.Math.toRadians(poleAngle);
+                            const poleOrientation = new Cesium.HeadingPitchRoll(poleHeading, 0, 0);
+
+                            let frontDistance = 0.1;
+                            if (item.poleitem.poletype === 'B70205') frontDistance = 1;
+                            if (item.realpos[2]) frontDistance = item.realpos[2];
+
+                            const offset = new Cesium.Cartesian3(frontDistance, item.realpos[0], item.poleitem.verticalbarlength + item.realpos[1]);
+                            let matrix = Cesium.Transforms.eastNorthUpToFixedFrame(origin);
+                            const rotationMatrix = Cesium.Matrix3.fromHeadingPitchRoll(poleOrientation);
+                            matrix = Cesium.Matrix4.multiplyByMatrix3(matrix, rotationMatrix, matrix);
+                            const finalPosition = Cesium.Matrix4.multiplyByPoint(matrix, offset, new Cesium.Cartesian3());
+
+                            entity.orientation = new Cesium.ConstantProperty(
+                                Cesium.Transforms.headingPitchRollQuaternion(
+                                    finalPosition, Cesium.HeadingPitchRoll.fromDegrees(angle - 90, 0, 0)
+                                )
+                            );
+                            entity.position = new Cesium.ConstantPositionProperty(finalPosition);
+                        }
+                        entity.model = new Cesium.ModelGraphics({
+                            uri: `https://mapinner-test.wz-inc.com/shangyu/device/trafficSign/${item.devicetype}/${item.modelid}.glb`,
+                            scale: 1,
+                            color: Cesium.Color.WHITE,
+                            colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
+                            colorBlendAmount: 0.5,
+                            show: true,
+                            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
+                            // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                        });
+                    } else if (item.devicetype === 'signal') {
+                        item.modelid = 'signalLight';
+                        const poleItem = item.poleitem;
+                        if (!poleItem) return;
+                        if (poleItem.poletype === "B70301") {
+                            item.modelid = "signalLight2";
+                        }
+                        const realPos = item.realpos;
+                        if (realPos) {
+                            realPos[1] -= 0.2;
+                        }
+
+                        if (origin) {
+
+                            const poleAngle = Cesium.defined(item.poleitem.modelangle) ? parseFloat(item.poleitem.modelangle) - 180 : angle;
+                            const poleHeading = Cesium.Math.toRadians(poleAngle);
+                            const poleOrientation = new Cesium.HeadingPitchRoll(poleHeading, 0, 0);
+
+                            let frontDistance = 0.1;
+                            if (item.poleitem.poletype === 'B70205') frontDistance = 1;
+                            if (item.realpos[2]) frontDistance = item.realpos[2];
+
+                            const offset = new Cesium.Cartesian3(frontDistance, item.realpos[0], item.poleitem.verticalbarlength + item.realpos[1]);
+                            let matrix = Cesium.Transforms.eastNorthUpToFixedFrame(origin);
+                            const rotationMatrix = Cesium.Matrix3.fromHeadingPitchRoll(poleOrientation);
+                            matrix = Cesium.Matrix4.multiplyByMatrix3(matrix, rotationMatrix, matrix);
+                            const finalPosition = Cesium.Matrix4.multiplyByPoint(matrix, offset, new Cesium.Cartesian3());
+
+                            entity.orientation = new Cesium.ConstantProperty(
+                                Cesium.Transforms.headingPitchRollQuaternion(
+                                    finalPosition, Cesium.HeadingPitchRoll.fromDegrees(angle - 90, 0, 0)
+                                )
+                            );
+                            entity.position = new Cesium.ConstantPositionProperty(finalPosition);
+                        }
+
+                        entity.model = new Cesium.ModelGraphics({
+                            uri: `https://mapinner-test.wz-inc.com/shangyu/device/trafficSignal/${item.modelid}.glb`,
+                            scale: 1,
+                            color: Cesium.Color.WHITE,
+                            colorBlendMode: Cesium.ColorBlendMode.HIGHLIGHT,
+                            colorBlendAmount: 0.5,
+                            show: true,
+                            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 100000),
+                            // heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+                        })
+                    }
+                });
+            });
+        }
+
+
+    }
+
     pickPosition() {
         // 鼠标样式设置为十字
         this.viewer.container.style.cursor = "crosshair";

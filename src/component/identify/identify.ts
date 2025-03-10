@@ -565,7 +565,7 @@ export default class Identify extends BaseWidget {
         if (!onlySelected) {
             this.$data.count = 0
         }
-        if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
+        if (this.viewer.selectedEntity && 'feature' in this.viewer.selectedEntity && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
             this.viewer.selectedEntity.feature.color = this.lastFeatureColor;
         }
         if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Model) {
@@ -642,7 +642,7 @@ export default class Identify extends BaseWidget {
                 },
                 globalConfig: this.globalConfig,
             })
-            document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+            document.querySelector('.czm-widget-manager')?.appendChild(panel)
 
             const panorama = document.createElement('czm-panorama') as BaseWidget;
             panorama.startup({
@@ -678,7 +678,7 @@ export default class Identify extends BaseWidget {
                 },
                 globalConfig: this.globalConfig
             })
-            document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+            document.querySelector('.czm-widget-manager')?.appendChild(panel)
             const iframe = document.createElement('iframe');
             iframe.src = attr.value;
             iframe.style.width = '100%';

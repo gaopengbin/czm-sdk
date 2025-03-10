@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path';
 import { viteExternalsPlugin } from 'vite-plugin-externals';
 export default defineConfig({
+  server: {
+    port: 5174
+  },
   plugins: [
     vue(),
     dts({

@@ -2,11 +2,64 @@
   "earth": {
     "layers": [
       {
-        "type": "iontileset",
-        "name": "点云",
-        "ionAssetId": "43978",
+        "name": "新建分组",
+        "guid": "0e2a0d63-b6d4-4f0d-bf5d-55950d7ee885",
+        "expand": false,
+        "children": [
+          {
+            "type": "tileset",
+            "name": "road",
+            "url": "https://rc-cdn.wzw.cn/project3D/3DTiles/Elevated3D/road/tileset.json",
+            "show": true,
+            "zoomTo": false,
+            "guid": "65682abf-ae14-4261-9f9a-11dd6ce10b6c",
+            "zIndex": 0
+          }
+        ]
+      },
+      {
+        "url": "http://jojo1986.cn:16080/services/中国行政区划/MapServer",
+        "type": "ssmapserver",
+        "name": "中国省市区",
+        "show": false
+      },
+      {
+        "type": "ssmapserver",
+        "name": "大雁塔矢量",
+        "url": "http://jojo1986.cn:16080/services/大雁塔矢量/MapServer",
         "show": true,
-        "zoomTo": true
+        "guid": "b29a51f6-17ea-4270-b922-245686bdeef0",
+        "rectangle": [
+          108.95198698500002, 34.20881631750001, 108.96682394400005,
+          34.232086057100105
+        ]
+      },
+      {
+        "type": "sspolygon",
+        "name": "Polygon",
+        "positions": [
+          [116.80049399483137, 40.167829110548716, 0],
+          [116.80052232770042, 40.16783131717256, 0],
+          [116.8032548576957, 40.167965992231494, 0],
+          [116.8034603396635, 40.16941481530383, 0],
+          [116.81151765576955, 40.16839963939976, 0],
+          [116.81014650439433, 40.16054799452753, 0],
+          [116.8002500294618, 40.16138502381529, 0],
+          [116.80049399483137, 40.167829110548716, 0]
+        ],
+        "material": "rgba(0,255,255,0.2)",
+        "outlineColor": "rgb(0,255,255)",
+        "outlineWidth": 3
+      },
+      {
+        "type": "ssrectangle",
+        "positions": [
+          [116.81649530358351, 40.170809918433214, -0.10662511312592741],
+          [116.82601162015085, 40.165241734586466, -0.11520878380705192]
+        ],
+        "material": "rgba(0,255,255,0.1)",
+        "outlineColor": "rgb(0,255,255)",
+        "outlineWidth": 4
       }
     ],
     "baseLayers": [
@@ -39,7 +92,6 @@
         "tooltip": "高德地图",
         "url": "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
         "maximumLevel": 16,
-        "tilingScheme": "gcj02",
         "isDefault": true
       },
       {
@@ -305,14 +357,14 @@
       "label": "模型库",
       "tagName": "czm-model-list",
       "position": {
-        "width": "460px",
-        "height": "690px",
+        "width": "400px",
+        "height": "880px",
         "right": "10px",
         "bottom": "auto",
         "top": "370px"
       },
       "inPanel": true,
-      "icon": "",
+      "icon": "bi-box-seam",
       "config": {
         "modelListUrl": "http://jojo1986.cn:8888/data/models/modellist.json"
       }
@@ -394,6 +446,35 @@
       "group": "2"
     },
     {
+      "label": "部件级场景管理器",
+      "tagName": "local-scene-manager",
+      "position": {
+        "left": "auto",
+        "right": "10px",
+        "bottom": "auto",
+        "top": "610px",
+        "height": "520px"
+      },
+      "inPanel": true,
+      "icon": "bi-buildings",
+      "group": "2"
+    },
+    {
+      "label": "统计查询",
+      "tagName": "czm-statistics",
+      "position": {
+        "left": "auto",
+        "right": "10px",
+        "bottom": "auto",
+        "top": "650px",
+        "height": "700px",
+        "width": "400px"
+      },
+      "inPanel": true,
+      "icon": "bi-bar-chart",
+      "group": "2"
+    },
+    {
       "label": "全屏",
       "tagName": "czm-fullscreen",
       "position": {
@@ -405,6 +486,33 @@
       "inPanel": false,
       "icon": "bi-arrows-fullscreen",
       "group": "2"
+    },
+    {
+      "label": "download",
+      "tagName": "czm-download",
+      "position": {
+        "left": "auto",
+        "right": "100px",
+        "bottom": "auto",
+        "top": "10px",
+        "width": "340px",
+        "height": "140px"
+      },
+      "inPanel": true,
+      "icon": "bi-emoji-expressionless",
+      "group": "2",
+      "config": {
+        "url": "http://localhost:16080/CommonDatabase/data-output",
+        "dbname": "demo",
+        "customExtentSrs": "EPSG:4326",
+        "host": "jojo1986.cn",
+        "layers": ["河流"],
+        "outputpath": "D:\\000jojo\\",
+        "password": "demo",
+        "port": 5432,
+        "user": "demo",
+        "zipName": "河流"
+      }
     }
   ]
 }

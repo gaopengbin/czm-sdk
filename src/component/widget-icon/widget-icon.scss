@@ -1,4 +1,4 @@
-.webgis-widget-icon {
+.czm-widget-icon {
     position: absolute;
     z-index: 2;
 
@@ -39,7 +39,7 @@
         .widget-content {
             overflow: auto;
             position: absolute;
-            padding: 0;
+            padding: 0px;
             left: 0;
             top: 2.25rem;
             right: 0;
@@ -49,7 +49,7 @@
 }
 
 // 打开模块效果
-.webgis-widget-icon.webgis-widget-icon-open {
+.czm-widget-icon.czm-widget-icon-open {
     z-index: 3;
 
     .widget-icon {

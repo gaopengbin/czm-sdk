@@ -1,0 +1,60 @@
+<!-- <div class="btn-group" role="group" aria-label="First group"> -->
+<input type="text" class="form-control form-control-sm search" placeholder="图层过滤" s-value="$data.search"
+    oninput="this.filterNode(value)">
+<!-- <button type="button" class="btn btn-outline-primary btn-sm search-btn" title="新建分组"
+    onclick="this.filterNode(this.$data.search)">
+    <i class="bi bi-search"></i>
+</button> -->
+<div class="btns">
+    <button type="button" class="btn btn-outline-primary btn-sm" title="新建分组" onclick="this.addGroup()">
+        <i class="bi bi-folder-plus"></i>
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm" title="导入场景" onclick="this.importScene()">
+        <i class="bi bi-cloud-arrow-down"></i>
+    </button>
+    <button type="button" class="btn btn-outline-primary btn-sm" title="导出场景" onclick="this.outputScene()">
+        <i class="bi bi-cloud-arrow-up"></i>
+    </button>
+</div>
+
+<!-- </div> -->
+<div id='localscenelist'></div>
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">设置层级</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                [{{$data.layer?$data.layer.name:''}}]的层级：
+                <input type="number" class="form-control" placeholder="请输入层级" id="layerIndex" s-value="$data.zIndex"
+                    onchange="$data.zIndex=value">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.setZIndex()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 确认框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">删除图层</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确认删除[{{ $data.layer?$data.layer.name:''}}]吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onclick="this.delete()">确定</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+{
+  "earth": {
+    "layers": [
+      {
+        "name": "新建分组",
+        "guid": "0e2a0d63-b6d4-4f0d-bf5d-55950d7ee885",
+        "expand": false,
+        "children": [
+          {
+            "type": "tileset",
+            "name": "tileset.json",
+            "url": "http://jojo1986.cn:8888/data/BIM/%E5%8D%97%E6%A7%BD%E5%AD%90%E6%A1%A5/tileset.json",
+            "show": true,
+            "zoomTo": false,
+            "guid": "65682abf-ae14-4261-9f9a-11dd6ce10b6c",
+            "zIndex": 0
+          }
+        ]
+      },
+      {
+        "url": "http://jojo1986.cn:16080/services/中国行政区划/MapServer",
+        "type": "ssmapserver",
+        "name": "中国省市区"
+      },
+      {
+        "type": "iontileset",
+        "name": "点云",
+        "ionAssetId": "43978",
+        "show": true,
+        "zoomTo": false,
+        "guid": "f370ba58-0a62-4449-b5a0-ac74146c2fe0",
+        "url": "https://assets.ion.cesium.com/ap-northeast-1/asset_depot/43978/MelbournePointCloud/v1/tileset.json?v=2",
+        "zIndex": 0,
+        "style": {}
+      }
+    ],
+    "baseLayers": [
+      {
+        "type": "wmts",
+        "name": "天地图矢量",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+        "url": "http://t0.tianditu.gov.cn/vec_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "vec",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c",
+        "isDefault": false
+      },
+      {
+        "type": "wmts",
+        "name": "天地图影像",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "url": "http://t0.tianditu.gov.cn/img_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "img",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c",
+        "isDefault": false
+      },
+      {
+        "type": "xyz",
+        "name": "高德地图",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "tooltip": "高德地图",
+        "url": "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+        "maximumLevel": 16,
+        "tilingScheme": "gcj02",
+        "isDefault": true
+      },
+      {
+        "type": "xyz",
+        "name": "百度地图",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "tooltip": "百度地图",
+        "url": "//shangetu{s}.map.bdimg.com/it/u=x={x};y={y};z={z};v=009;type=sate&fm=46",
+        "maximumLevel": 18,
+        "tilingScheme": "bd09",
+        "crs": "WGS84",
+        "isDefault": false
+      },
+      {
+        "type": "xyz",
+        "name": "Natural Earth II",
+        "iconUrl": "./libs/cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "url": "NaturalEarthII",
+        "isDefault": false
+      }
+    ],
+    "viewer": {
+      "ionDefaultToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyY2E0MTUzOC00MGU0LTQ5ZjMtYjA4ZC03NWI1MjYzMmYyNTIiLCJpZCI6NDQ0NDAsImlhdCI6MTczMTA0OTI5MX0.YfgY7nZONHMq0wLDKGIjVdVi3-Rx_7g9X3ruPItik-A",
+      "position": [116.80798340254988, 40.155193765097614, 323.21095542094633],
+      "hpr": [354.6853661992352, -24.66007658903388, 0.0011978982492255276]
+    }
+  },
+  "widgets": [{"label":"状态栏","icon":"","tagName":"czm-status-bar","position":{"left":"8px","top":"914px"},"inPanel":false,"config":{},"group":"1"},{"label":"底图","icon":"","tagName":"base-layer","position":{"left":"1822px","top":"912px"},"inPanel":false,"config":{},"group":"1"},{"label":"图层列表","icon":"bi-map","tagName":"layer-list","position":{"left":"10px","top":"834px"},"inPanel":true,"config":"","group":"1"},{"label":"量测","icon":"bi-ruler","tagName":"czm-measure","position":{"left":"1818px","top":"82px"},"inPanel":false,"config":{},"group":"1"},{"label":"识别","icon":"bi-exclamation-circle-fill","tagName":"czm-identify","position":{"left":"10px","top":"650px"},"inPanel":true,"config":{},"group":"1"},{"label":"加载器","icon":"bi-tools","tagName":"czm-loader-ui","position":{"left":"10px","top":"698px"},"inPanel":true,"config":{},"group":"1"},{"label":"场景管理","icon":"bi-image","tagName":"czm-scene-saver","position":{"left":"10px","top":"746px"},"inPanel":true,"config":{},"group":"1"},{"label":"绘制","icon":"bi-pen","tagName":"czm-draw","position":{"left":"1818px","top":"346px"},"inPanel":false,"config":{},"group":"1"},{"label":"漫游","icon":"bi-arrows-move","tagName":"czm-path-fly","position":{"left":"10px","top":"788px"},"inPanel":true,"config":{},"group":"1"},{"label":"特效","icon":"","tagName":"czm-effect","position":{"left":"10px","top":"12px"},"inPanel":false,"config":{"effects":[{"type":"Bloom","name":"泛光","icon":"bi-lightbulb","open":false},{"type":"Silhouette","name":"描边","icon":"bi-houses","open":false},{"type":"DepthOfField","name":"景深","icon":"bi-hypnotize","open":false,"config":{"focalDistance":90,"delta":1,"sigma":3.8,"stepSize":2}},{"type":"HDR","name":"HDR","icon":"bi-badge-hd","open":false},{"type":"FXAA","name":"抗锯齿","icon":"bi-gear-wide","open":false},{"type":"Mosaic","name":"马赛克","icon":"bi-grid-3x3-gap","open":false},{"type":"BlackAndWhite","name":"黑白","icon":"bi-circle-half","open":false,"config":{"blackAndWhiteValue":5}},{"type":"NightVision","name":"夜视","icon":"bi-binoculars","open":false},{"type":"Brightness","name":"亮度","icon":"bi-brightness-alt-high","open":true,"config":{"brightnessValue":1}},{"type":"Cloud","name":"云","icon":"bi-cloud","open":false},{"type":"Rain","name":"雨","icon":"bi-cloud-rain","open":false},{"type":"Snow","name":"雪","icon":"bi-cloud-snow","open":false},{"type":"Fog","name":"雾","icon":"bi-cloud-fog2","open":false}]},"group":"1"},{"label":"模型库","icon":"","tagName":"czm-model-list","position":{"left":"1366px","top":"10px"},"inPanel":true,"config":{"modelListUrl":"http://jojo1986.cn:8888/data/models/modellist.json"},"group":"1"},{"label":"军标绘制","icon":"bi-pen","tagName":"czm-military-draw","position":{"left":"1406px","top":"10px"},"inPanel":true,"config":{},"group":"1"},{"label":"电子白板","icon":"bi-easel","tagName":"czm-paint-board","position":{"left":"1566px","top":"10px"},"inPanel":true,"config":{},"group":"1"},{"label":"全景","icon":"bi-image","tagName":"czm-panorama","position":{"left":"1446px","top":"10px"},"inPanel":true,"config":{"url":"http://jojo1986.cn:8888/data/3dtiles/%E5%8C%97%E4%BA%AC%E5%9F%8E%E5%B8%82%E5%BB%BA%E7%AD%91%E5%AD%A6%E9%99%A2/%E5%85%A8%E6%99%AF%E7%85%A7%E7%89%87/1%E5%B1%82-%E5%B1%95%E5%8E%85%E4%B8%AD%E5%8E%85/1%E5%B1%82-%E5%B1%95%E5%8E%85%E4%B8%AD%E5%8E%85.JPG"},"group":"1"},{"label":"屏幕录制","icon":"bi-record-circle","tagName":"czm-record-screen","position":{"left":"1486px","top":"10px"},"inPanel":true,"config":"","group":"2"},{"label":"SHP预览","icon":"bi-record-circle","tagName":"czm-white-model","position":{"left":"1526px","top":"10px"},"inPanel":true,"config":"","group":"2"},{"label":"全屏","icon":"bi-arrows-fullscreen","tagName":"czm-fullscreen","position":{"left":"1822px","top":"10px"},"inPanel":false,"config":"","group":"2"}]
+}

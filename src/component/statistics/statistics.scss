@@ -1,0 +1,34 @@
+.czm-statistics {
+    display: block;
+    padding: 5px;
+    height: 100%;
+
+    v-node {
+        display: block;
+        height: 100%;
+
+        #myTabContent {
+            height: calc(100% - 45px);
+
+            #statistic-tab-pane {
+                height: 100%;
+            }
+        }
+
+        #query-result {
+            max-height: 400px;
+            max-width: 100%;
+            overflow: auto;
+        }
+
+        .sresult {
+            overflow: auto;
+            max-height: calc(100% - 90px);
+        }
+    }
+
+    #chart {
+        width: 100%;
+        height: calc(100% - 80px);
+    }
+}

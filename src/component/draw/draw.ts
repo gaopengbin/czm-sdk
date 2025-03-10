@@ -57,6 +57,7 @@ export default class Draw extends BaseWidget {
             currentId = e.detail.mid
         })
         window.addEventListener("marker-add", (e: any) => {
+            if (!this.isDrawing) return
             this.marker = this.markerManager.get(e.detail.id)
             if (this.marker.type === 'MARKER') {
                 const modal = new Modal(document.getElementById('markerModal') as Element, {
@@ -72,11 +73,15 @@ export default class Draw extends BaseWidget {
                 })
                 modal.show()
             }
+            this.isDrawing = false
         })
         window.addEventListener("marker-edit", (e) => {
+            if (!this.isDrawing) return
             console.log('marker-edit', e);
+            this.isDrawing = false
         })
         document.addEventListener("stopEdit", () => {
+            if (!this.isDrawing) return
             const graphic = this.graphicManager.get(currentId)
             this.graphic = graphic
             if (graphic.type === 'POLYLINE') {
@@ -93,6 +98,7 @@ export default class Draw extends BaseWidget {
                 })
                 modal.show()
             }
+            this.isDrawing = false
         })
 
         // const colorPicker = new window['iro'].ColorPicker("#fillColor", {
@@ -129,6 +135,7 @@ export default class Draw extends BaseWidget {
     }
 
     startDraw(type: string) {
+        this.isDrawing = true
         switch (type) {
             case 'poi':
                 this.markerManager.pick('marker')

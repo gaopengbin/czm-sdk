@@ -25,93 +25,125 @@ import {
 } from "cesium";
 import { createArcGisMapServer, createGeoJson, createIonTileset, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
 import { BaseWidget, getSceneTree } from "@/component";
+import { SSPolygon, SSRectangle } from "../CustomEntity";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
-    const opt = JSON.parse(JSON.stringify(options));
-    const esri = await createSSMapServer(options);
-    const constructorOptions = {
-        ...opt,
-        rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
-    }
-    let ssMapServerLayer: SSImageryLayer = new ImageryLayer(esri, constructorOptions as any);
-    viewer.imageryLayers.add(ssMapServerLayer);
-
-    Object.assign(ssMapServerLayer, {
-        name: options.name,
-        show: options.show,
-        guid: options.guid ?? uuid(),
-    });
-    ssMapServerLayer.show = defaultValue(options.show, true);
-    if (options.zoomTo) {
-        viewer.zoomTo(ssMapServerLayer);
-    }
-
-    const leaf: Leaf = {
-        name: options.name,
-        index: ssMapServerLayer._layerIndex,
-        guid: ssMapServerLayer.guid,
-        customProps: options.customProps,
-        _zIndex: defaultValue(options.zIndex, 0),
-        setVisible: (visible: boolean) => {
-            ssMapServerLayer.show = visible;
-        },
-        zoomTo: () => {
-            viewer.zoomTo(ssMapServerLayer);
-        },
-        get show() {
-            return ssMapServerLayer.show;
-        },
-        set show(value: boolean) {
-            ssMapServerLayer.show = value;
-        },
-        _imageLayer: ssMapServerLayer,
-        set zIndex(value: number) {
-            leaf._zIndex = value;
-            setLayersZIndex(viewer);
-        },
-        get zIndex() {
-            return leaf._zIndex;
-        },
-        get rectangle() {
-            const rectangle = ssMapServerLayer.imageryProvider.rectangle;
-            return rectangle ? [
-                CesiumMath.toDegrees(rectangle.west),
-                CesiumMath.toDegrees(rectangle.south),
-                CesiumMath.toDegrees(rectangle.east),
-                CesiumMath.toDegrees(rectangle.north),
-            ] : undefined;
-        },
-        toJSON: toJSON
-    }
-    function toJSON() {
-        return {
+    try {
+        const opt = JSON.parse(JSON.stringify(options));
+        const esri = await createSSMapServer(options);
+        const constructorOptions = {
             ...opt,
-            type: "ssmapserver",
-            name: leaf.name,
-            show: leaf.show,
-            guid: leaf.guid,
-            url: (leaf._imageLayer?.imageryProvider as any).url,
-            layers: (leaf._imageLayer?.imageryProvider as any).layers,
-            zIndex: leaf.zIndex,
-            rectangle: (() => {
-                const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+            rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+        }
+        let ssMapServerLayer: SSImageryLayer = new ImageryLayer(esri, constructorOptions as any);
+        viewer.imageryLayers.add(ssMapServerLayer);
+
+        Object.assign(ssMapServerLayer, {
+            name: options.name,
+            show: options.show,
+            guid: options.guid ?? uuid(),
+        });
+        ssMapServerLayer.show = defaultValue(options.show, true);
+        if (options.zoomTo) {
+            viewer.zoomTo(ssMapServerLayer);
+        }
+
+        const leaf: Leaf = {
+            name: options.name,
+            index: ssMapServerLayer._layerIndex,
+            guid: ssMapServerLayer.guid,
+            customProps: options.customProps,
+            _zIndex: defaultValue(options.zIndex, 0),
+            setVisible: (visible: boolean) => {
+                ssMapServerLayer.show = visible;
+            },
+            zoomTo: () => {
+                viewer.zoomTo(ssMapServerLayer);
+            },
+            get show() {
+                return ssMapServerLayer.show;
+            },
+            set show(value: boolean) {
+                ssMapServerLayer.show = value;
+            },
+            _imageLayer: ssMapServerLayer,
+            set zIndex(value: number) {
+                leaf._zIndex = value;
+                setLayersZIndex(viewer);
+            },
+            get zIndex() {
+                return leaf._zIndex;
+            },
+            get rectangle() {
+                const rectangle = ssMapServerLayer.imageryProvider.rectangle;
                 return rectangle ? [
                     CesiumMath.toDegrees(rectangle.west),
                     CesiumMath.toDegrees(rectangle.south),
                     CesiumMath.toDegrees(rectangle.east),
                     CesiumMath.toDegrees(rectangle.north),
                 ] : undefined;
-            })(),
-            zoomTo: false,
-            alpha: leaf._imageLayer?.alpha,
-            brightness: leaf._imageLayer?.brightness,
-            contrast: leaf._imageLayer?.contrast,
-            gamma: leaf._imageLayer?.gamma,
-            hue: leaf._imageLayer?.hue,
-            saturation: leaf._imageLayer?.saturation,
+            },
+            toJSON: toJSON
         }
+        function toJSON() {
+            return {
+                ...opt,
+                type: "ssmapserver",
+                name: leaf.name,
+                show: leaf.show,
+                guid: leaf.guid,
+                url: (leaf._imageLayer?.imageryProvider as any).url,
+                layers: (leaf._imageLayer?.imageryProvider as any).layers,
+                zIndex: leaf.zIndex,
+                rectangle: (() => {
+                    const rectangle = leaf._imageLayer?.imageryProvider.rectangle;
+                    return rectangle ? [
+                        CesiumMath.toDegrees(rectangle.west),
+                        CesiumMath.toDegrees(rectangle.south),
+                        CesiumMath.toDegrees(rectangle.east),
+                        CesiumMath.toDegrees(rectangle.north),
+                    ] : undefined;
+                })(),
+                zoomTo: false,
+                alpha: leaf._imageLayer?.alpha,
+                brightness: leaf._imageLayer?.brightness,
+                contrast: leaf._imageLayer?.contrast,
+                gamma: leaf._imageLayer?.gamma,
+                hue: leaf._imageLayer?.hue,
+                saturation: leaf._imageLayer?.saturation,
+            }
+        }
+        console.log('leaf', leaf);
+        return leaf;
+    } catch (error) {
+        let leaf: Leaf = {
+            name: options.name,
+            guid: options.guid ?? uuid(),
+            customProps: options.customProps,
+            _zIndex: defaultValue(options.zIndex, 0),
+            setVisible: (visible: boolean) => {
+                console.log('visible', visible);
+            },
+            zoomTo: () => {
+                console.log('zoomTo');
+            },
+            get show() {
+                return true;
+            },
+            set show(value: boolean) {
+                console.log('show', value);
+            },
+            set zIndex(value: number) {
+                console.log('zIndex', value);
+            },
+            get zIndex() {
+                return 0;
+            },
+            status: 'error',
+        }
+        return leaf;
     }
-    return leaf;
+
 }
 export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
@@ -717,6 +749,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
         outlineWidth: 2,
         verticalOrigin: VerticalOrigin.TOP,
         pixelOffset: new Cartesian3(0, -30, 0),
+        show: false
     })
 
     // model.readyEvent.addEventListener(() => {
@@ -874,7 +907,6 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     leaf.panoramas = options.panoramas;
     leaf.playAnimations = options.playAnimations;
     model.id = leaf.guid;
-    console.log('model', model.id);
     (model as any).name = leaf.name;
     (model as any).link = leaf.link;
 
@@ -898,7 +930,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
                 })
-                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+                document.querySelector('.czm-widget-manager')?.appendChild(panel)
 
                 const panorama = document.createElement('czm-panorama') as BaseWidget;
                 panorama.startup({
@@ -935,7 +967,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
                 })
-                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+                document.querySelector('.czm-widget-manager')?.appendChild(panel)
                 function reload() {
                     const video = document.getElementById('videoElement') as HTMLVideoElement;
                     if (video) {
@@ -1016,7 +1048,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
                 })
-                document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+                document.querySelector('.czm-widget-manager')?.appendChild(panel)
                 const iframe = document.createElement('iframe');
                 iframe.src = leaf.link;
                 iframe.style.width = '100%';
@@ -1048,9 +1080,21 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
     return leaf;
 }
 
+export const SSPolygonLoader = async (viewer: Viewer, options: any) => {
+    const polygon = new SSPolygon(viewer);
+    polygon.createFromJson(options);
+    return polygon;
+}
+
+export const SSRectangleLoader = async (viewer: Viewer, options: any) => {
+    const rectangle = new SSRectangle(viewer);
+    rectangle.createFromJson(options);
+    return rectangle;
+}
+
 // 根据图层的zIndex属性大小顺序设置图层的顺序
 export const setLayersZIndex = (viewer: Viewer) => {
-    return
+    // return
     let sceneTree = getSceneTree();
     if (!sceneTree) {
         return;

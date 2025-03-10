@@ -8,7 +8,7 @@ export const creatPanel = (options: any) => {
         config: options.config,
         globalConfig: options.globalConfig,
     })
-    document.querySelector('.webgis-widget-manager')?.appendChild(panel)
+    document.querySelector('.czm-widget-manager')?.appendChild(panel)
 
     let widget = null
     if (options.widget instanceof HTMLElement) {

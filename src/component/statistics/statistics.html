@@ -1,0 +1,160 @@
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="query-tab" data-bs-toggle="tab" data-bs-target="#query-tab-pane"
+            type="button" role="tab" aria-controls="query-tab-pane" aria-selected="true">查询</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="statistic-tab" data-bs-toggle="tab" data-bs-target="#statistic-tab-pane"
+            type="button" role="tab" aria-controls="statistic-tab-pane" aria-selected="false">统计</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="query-tab-pane" role="tabpanel" aria-labelledby="query-tab" tabindex="0">
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">查询图层：</span>
+            <select class="form-select" s-value="$data.layerGuid" onchange="this.changeLayer(value)">
+                <!-- <option value="top">[最顶部图层]</option>
+                <option value="visible">[可见图层]</option>
+                <option value="all">[所有图层]</option> -->
+                <!-- 其他图层 -->
+                <For each="$data.layers" item="layer">
+                    <option s-value="layer.guid">{{layer.name}}</option>
+                </For>
+            </select>
+        </div>
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">查询字段：</span>
+            <select class="form-select" s-value="$data.fields" onchange="this.changeField(value)">
+                <For each="$data.fields" item="field">
+                    <option s-value="field.value">{{field.field}}</option>
+                </For>
+            </select>
+        </div>
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">匹配方式：</span>
+            <select class="form-select" s-value="$data.searchWay" onchange="$data.searchWay=value">
+                <option value="like">模糊匹配</option>
+                <option value="big">大于</option>
+                <option value="equal">等于</option>
+                <option value="small">小于</option>
+            </select>
+        </div>
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">字段值：</span>
+            <input type="text" class="form-control" s-value="$data.searchValue" onchange="$data.searchValue=value">
+        </div>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="this.drawPolygon()">绘制范围</button>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="this.query()">开始查询</button>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="this.clear()">清除结果</button>
+        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="this.locate()">定位图形</button>
+        <div id="query-result" class="mt-2">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">属性名</th>
+                        <th scope="col">属性值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <For each="$data.currentProperties" item="property">
+                        <tr>
+                            <td>{{property.name}}</td>
+                            <td>{{property.value}}</td>
+                        </tr>
+                    </For>
+                </tbody>
+            </table>
+
+
+        </div>
+        <!-- 分页器 -->
+        <If when="$data.results.length>1">
+            <nav aria-label="Page navigation example" class="mt-2">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item">
+                        <a class="page-link" onclick="this.changePage(1)">
+                            <i class="bi bi-chevron-bar-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" onclick="this.changePage('prev')">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <For each="$data.showPages" index="index" item="item">
+                        <li class="page-item">
+                            <a class="page-link" onclick="this.changePage(item.page)"
+                                s-class="item.page==$data.currentPage?'active':''">
+                                {{item.page}}
+                            </a>
+                        </li>
+                    </For>
+                    <li class="page-item">
+                        <a class="page-link" onclick="this.changePage('next')">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" onclick="this.changePage($data.pages.length)">
+                            <i class="bi bi-chevron-bar-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </If>
+        <!-- 总页数和跳转 -->
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">总页数：</span>
+            <input type="text" class="form-control" s-value="$data.pages.length" readonly>
+            <span class="input-group-text">跳转：</span>
+            <input type="number" class="form-control" s-value="$data.jumpPage" onchange="$data.jumpPage=value">
+            <button type="button" class="btn btn-primary btn-sm"
+                onclick="this.changePage(Number($data.jumpPage))">跳转</button>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="statistic-tab-pane" role="tabpanel" aria-labelledby="statistic-tab" tabindex="0">
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">统计字段：</span>
+            <select class="form-select" s-value="$data.statisticField" onchange="this.changeStatisticField(value)">
+                <For each="$data.fields" item="field">
+                    <option s-value="field.value">{{field.field}}</option>
+                </For>
+            </select>
+        </div>
+        <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text">统计方式：</span>
+            <select class="form-select" s-value="$data.statisticWay" onchange="$data.statisticWay=value">
+                <option value="count">数量</option>
+                <option value="sum">求和</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" onclick="this.statistic()">开始统计</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="this.exportExcel()">导出表格</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="this.showChart()">图表<i
+                    class="bi bi-pie-chart"></i></button>
+
+        </div>
+        <div class="sresult">
+            <table class="table mt-2" id="statistic-result">
+                <thead>
+                    <tr>
+                        <th scope="col">统计字段[{{$data.statisticField}}]</th>
+                        <th scope="col">统计值[{{$data.statisticWay==='count'?'计数':'求和'}}]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <For each="$data.statisticData" item="property">
+                        <tr>
+                            <td>{{property.name}}</td>
+                            <td>{{property.value}}</td>
+                        </tr>
+                    </For>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- <div id="chart" class="mt-2"></div> -->
+    </div>
+
+
+</div>

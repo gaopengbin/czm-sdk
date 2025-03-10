@@ -1,4 +1,4 @@
-import { Cartesian3, Cartesian4, Color, EllipsoidSurfaceAppearance, GeometryInstance, JulianDate, Material, Matrix4, PostProcessStage, PostProcessStageLibrary, Primitive, Quaternion, Rectangle, RectangleGeometry } from "cesium";
+import { Cartesian4, Color, PostProcessStage, PostProcessStageLibrary } from "cesium";
 import { Component } from "../core/decorators";
 import BaseWidget from "../earth/base-widget";
 import Template from "./effect.html?raw";
@@ -21,7 +21,6 @@ export default class Effect extends BaseWidget {
     }
 
     public async onInit() {
-        console.log(this.config)
         this.$data = {
             ...this.config,
 
@@ -570,7 +569,6 @@ export default class Effect extends BaseWidget {
     setCloud = (enabled: boolean) => {
         if (!this.cloud) {
             this.cloud = new Cloud(this.viewer);
-            console.log(this.cloud)
         }
         this.cloud.enabled = enabled;
     }

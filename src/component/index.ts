@@ -22,4 +22,8 @@ export { default as PaintBoard } from "./paint-board/paint-board";
 export { default as Panorama } from "./panorama/panorama";
 export { default as RecordScreen } from "./record-screen/record-screen";
 export { default as Fullscreen } from "./fullscreen/fullscreen";
+export { default as LocalSceneManager } from "./local-scene-manager/local-scene-manager";
+export { default as Statistics } from "./statistics/statistics";
+export { default as Test } from "./test/test";
+export { default as Download } from "./download/download";
 export { Component } from "./core/decorators";

@@ -8,6 +8,7 @@ const GraphicType = (function() {
   _.POLYGON = 2
   _.LABEL = 3
   _.MODEL = 4
+  _.CIRCLE = 6
   return _
 })()
 export default GraphicType

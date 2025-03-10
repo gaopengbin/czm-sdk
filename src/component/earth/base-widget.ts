@@ -48,6 +48,7 @@ export default abstract class BaseWidget extends HTMLElement {
     static #viewer: any;
     static #sceneTree: SceneTree;
     static #treeView: any;
+    static #treeView2: any;
     static #globalConfig: any;
     static #graphicManager: GraphicManager;
     static #markerManager: MarkerManager;
@@ -190,6 +191,14 @@ export default abstract class BaseWidget extends HTMLElement {
         BaseWidget.#treeView = value;
     }
 
+    get treeView2() {
+        return BaseWidget.#treeView2;
+    }
+
+    set treeView2(value) {
+        BaseWidget.#treeView2 = value;
+    }
+
     get graphicManager() {
         return BaseWidget.#graphicManager;
     }
@@ -212,6 +221,9 @@ export default abstract class BaseWidget extends HTMLElement {
     public beforeInit() { }
 
     async connectedCallback() {
+        if (this.#vnode) {
+            return
+        }
         this.beforeInit();
         // 获取配置
         if (this._manifest.hasConfig) {

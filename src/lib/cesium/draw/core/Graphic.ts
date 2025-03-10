@@ -1262,13 +1262,107 @@ class CesiumModel extends BaseGraphic {
     minimumPixelSize: 64
   }
 }
+
+class CesiumCircle extends BaseGraphic {
+  /**
+   * Cesium CircleGraphic
+   * @param {Viewer} viewer Cesium.Viewer
+   * @param {Object} options Describes a circle. center定义其中心点，radius定义其半径，
+   * 属性定义遵循和Cesium.CircleGraphics相同的定义方式。
+   */
+  constructor(viewer: Cesium.Viewer, options: any = CesiumCircle.defaultStyle) {
+    super(viewer);
+    this._type = 'CIRCLE';
+    this.mtype = GraphicType.CIRCLE;
+    this.center = options.center;
+    this.radius = options.radius;
+    this.positions = options.positions || [];
+    const self = this;
+    this.options = {
+      mid: this.mid,
+      mtype: this.mtype,
+      position: this.center,
+      ellipse: {
+        semiMajorAxis: new Cesium.CallbackProperty(() => self.radius, false),
+        semiMinorAxis: new Cesium.CallbackProperty(() => self.radius, false),
+        ...options
+      },
+      properties: options.properties
+    };
+    delete options.properties;
+    this.graphic = undefined;
+    this.create();
+  }
+
+  create() {
+    if (this.viewer) {
+      this.graphic = this.viewer.entities.add(this.options);
+    }
+  }
+
+  startEdit() {
+    if (this.graphic) {
+      this.graphic.position = new Cesium.CallbackProperty(() => this.center, false);
+      this.graphic.ellipse.semiMajorAxis = new Cesium.CallbackProperty(() => this.radius, false);
+      this.graphic.ellipse.semiMinorAxis = new Cesium.CallbackProperty(() => this.radius, false);
+    }
+  }
+
+  stopEdit() {
+    if (this.graphic) {
+      this.graphic.position = this.center;
+      this.graphic.ellipse.semiMajorAxis = this.radius;
+      this.graphic.ellipse.semiMinorAxis = this.radius;
+    }
+  }
+
+  removeSelf() {
+    if (this.viewer) {
+      this.viewer.entities.remove(this.graphic);
+      this.graphic = undefined;
+    }
+  }
+
+  destroy() {
+    this.removeSelf();
+    this.viewer = undefined;
+    this.options = undefined;
+    this.center = undefined;
+    this.radius = undefined;
+  }
+
+  static defaultStyle = {
+    material: Cesium.Color.fromCssColorString('rgba(247,224,32,0.5)'),
+    outline: true,
+    outlineColor: Cesium.Color.fromCssColorString('rgba(255,247,145,1)'),
+    outlineWidth: 2,
+    heightReference: Cesium.HeightReference.CLAMP_TO_GROUND
+  }
+
+  static fromDegrees(viewer: Cesium.Viewer, center: any, radius: number, properties = {}) {
+    const options: any = CesiumCircle.defaultStyle;
+    options.center = Cesium.Cartesian3.fromDegrees(center.lon, center.lat, center.height);
+    options.radius = radius;
+    options.properties = properties;
+    return new CesiumCircle(viewer, options);
+  }
+
+  static fromRadians(viewer: Cesium.Viewer, center: any, radius: number) {
+    const options: any = CesiumCircle.defaultStyle;
+    options.center = Cesium.Cartesian3.fromRadians(center.lon, center.lat, center.height);
+    options.radius = radius;
+    return new CesiumCircle(viewer, options);
+  }
+}
+
 export {
   CesiumPoint,
   CesiumPolyline,
   CesiumPolygon,
   CesiumLabel,
   CesiumBillboard,
-  CesiumModel
+  CesiumModel,
+  CesiumCircle
 }
 export default {
   CesiumPoint,
@@ -1276,5 +1370,6 @@ export default {
   CesiumPolygon,
   CesiumLabel,
   CesiumBillboard,
-  CesiumModel
+  CesiumModel,
+  CesiumCircle
 }
