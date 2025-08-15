@@ -104,8 +104,8 @@ export default class Statistics extends BaseWidget {
                         const item = layerJson.fields[i];
                         if (this.$data.fields.findIndex((e: any) => e.field == item.name) == -1) {
                             this.$data.fields.push({
-                                value: item.alias,
-                                field: item.name,
+                                value: item.name,
+                                field: item.alias,
                                 type: item.type
                             });
                         }
@@ -339,11 +339,11 @@ export default class Statistics extends BaseWidget {
         json.features.push(...geojson.features)
         // })
         this.highLight = await this.viewer.dataSources.add(GeoJsonDataSource.load(json, {
-            stroke: Color.AQUA.withAlpha(0.2),
-            fill: Color.AQUA.withAlpha(0.2),
-            strokeWidth: 1,
+            stroke: Color.YELLOWGREEN.withAlpha(0.5),
+            fill: Color.YELLOW.withAlpha(0.5),
+            strokeWidth: 4,
             markerColor: Color.AQUA.withAlpha(0.5),
-            clampToGround: true
+            // clampToGround: true
         }));
         this.highLight.entities.values.forEach((entity: any) => {
             // if (entity.polygon) {
@@ -374,9 +374,9 @@ export default class Statistics extends BaseWidget {
         let geojson: any = {};
         geojson = esri2geo.toGeoJSON({ features: [feature] })
         this.highLightOne = await this.viewer.dataSources.add(GeoJsonDataSource.load(geojson, {
-            stroke: Color.AQUA,
-            fill: Color.AQUA.withAlpha(0.2),
-            strokeWidth: 3,
+            stroke: Color.YELLOW.withAlpha(1),
+            fill: Color.BLUE.withAlpha(1),
+            strokeWidth: 4,
             markerColor: Color.AQUA.withAlpha(0.6),
             // clampToGround: true
         }));
@@ -384,8 +384,8 @@ export default class Statistics extends BaseWidget {
             if (entity.polygon) {
                 entity.polyline = new PolylineGraphics({
                     positions: entity.polygon.hierarchy.getValue().positions,
-                    width: 3,
-                    material: Color.AQUA.withAlpha(0.5),
+                    width: 2,
+                    material: Color.LIGHTGREEN.withAlpha(1),
                     // clampToGround: true
                 })
             }

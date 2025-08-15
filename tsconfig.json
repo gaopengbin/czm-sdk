@@ -4,31 +4,37 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     // "declaration": true,
     // "declarationDir": "dist",
     // "emitDeclarationOnly": true
-
     "baseUrl": ".",
     "paths": {
-      "cesium":["node_modules/cesium"],
-      "@/*": ["src/*"],
+      "cesium": [
+        "node_modules/cesium"
+      ],
+      "@/*": [
+        "src/*"
+      ]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

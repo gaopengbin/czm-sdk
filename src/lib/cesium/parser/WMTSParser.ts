@@ -51,35 +51,51 @@ class WMTSParser {
         return ret;
     }
 
+    async fetchWithTimeout(url: string, options = { timeout: 8000 }) {
+        const { timeout = 8000 } = options;
+
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response.text();
+    }
+
+
     parser(url: string) {
         return new Promise((resolve, reject) => {
             //使用cesium请求
-            Resource.fetchText({ url: url })?.then(text => {
-                let x2jsone: any = new x2js();
-                this.Layers = [];
-                this.TileMatrixSets = [];
-                let contents = x2jsone.xml2js(text).Capabilities.Contents;
+            // Resource.fetchText({ url: url })
+            this.fetchWithTimeout(url, { timeout: 8000 })
+                ?.then(text => {
+                    let x2jsone: any = new x2js();
+                    this.Layers = [];
+                    this.TileMatrixSets = [];
+                    let contents = x2jsone.xml2js(text).Capabilities.Contents;
 
-                //先处理所有 tilematrixset
-                if (contents.TileMatrixSet instanceof Array) {
-                    contents.TileMatrixSet.forEach((t: any) => {
-                        this.addTileMatrixSet(t);
-                    });
-                } else if (contents.TileMatrixSet) {
-                    this.addTileMatrixSet(contents.TileMatrixSet);
-                }
+                    //先处理所有 tilematrixset
+                    if (contents.TileMatrixSet instanceof Array) {
+                        contents.TileMatrixSet.forEach((t: any) => {
+                            this.addTileMatrixSet(t);
+                        });
+                    } else if (contents.TileMatrixSet) {
+                        this.addTileMatrixSet(contents.TileMatrixSet);
+                    }
 
-                //再处理layer
-                if (contents.Layer instanceof Array) {
-                    contents.Layer.forEach((layer: any) => {
-                        this.addLayer(layer);
-                    });
-                } else if (contents.Layer) {
-                    this.addLayer(contents.Layer);
-                }
+                    //再处理layer
+                    if (contents.Layer instanceof Array) {
+                        contents.Layer.forEach((layer: any) => {
+                            this.addLayer(layer);
+                        });
+                    } else if (contents.Layer) {
+                        this.addLayer(contents.Layer);
+                    }
 
-                resolve(this.Layers);
-            })
+                    resolve(this.Layers);
+                })
                 .catch(err => {
                     reject(err);
                 })

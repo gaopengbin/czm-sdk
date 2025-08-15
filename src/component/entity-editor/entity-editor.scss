@@ -1,0 +1,49 @@
+.entity-editor {
+    padding: 10px;
+    // background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    // max-width: 300px;
+
+    form {
+        display: flex;
+        flex-direction: column;
+
+        div {
+            margin-bottom: 10px;
+
+            label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            input {
+                width: 100%;
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+            }
+
+            .form-check-input {
+                // width: auto;
+            }
+
+
+        }
+
+        .form-check {
+            padding-left: 0 !important;
+        }
+
+        .form-switch {
+            padding-left: 0 !important;
+
+            // width: auto;
+            .form-check-input {
+                // float: left;
+                margin-left: 0;
+            }
+        }
+    }
+}

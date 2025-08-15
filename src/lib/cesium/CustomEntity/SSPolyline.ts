@@ -1,37 +1,36 @@
-import { ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, Cartesian3, CallbackProperty, Color, PolygonGraphics, PolygonHierarchy, BoundingSphere, LabelStyle, VerticalOrigin, Cartesian2 } from "cesium";
+import { ScreenSpaceEventHandler, ScreenSpaceEventType, Viewer, Cartesian3, CallbackProperty, Color, ArcType, PolylineGraphics, BoundingSphere } from "cesium";
 import SSBaseObj from "./SSBaseObj";
-import { transformCartesianArrayToWGS84Array, transformWGS84ToCartesian } from "@/lib/cesium/measure";
+import { transformCartesianArrayToWGS84Array } from "@/lib/cesium/measure";
 
-class SSPolygon extends SSBaseObj {
+class SSPolyline extends SSBaseObj {
     [x: string]: any;
 
     _defaultOptions: any = {
-        name: 'Polygon',
-        material: Color.AQUA.withAlpha(0.2),
-        outline: false,
-        outlineColor: Color.AQUA,
-        outlineWidth: 3,
+        name: 'Polyline',
+        width: 3,
+        material: Color.AQUA,
+        depthFailMaterial: Color.RED,
+        arcType: ArcType.GEODESIC,
         clampToGround: true,
     }
 
-    _tooltipEntity: any = null; // 添加气泡提示实体属性
     _vertexEditPoints: any[] = []; // 添加顶点编辑控制点
     _centerEditPoint: any = null;  // 添加中心点编辑控制点
     _editingPoint: number | string | null = null; // 标记当前正在编辑的点索引或'center'
 
-    constructor(viewer: Viewer, options?: PolygonGraphics.ConstructorOptions) {
+    constructor(viewer: Viewer, options?: PolylineGraphics.ConstructorOptions) {
         super(viewer);
         if (!options) {
             this.options = this.defaultOptions;
         } else {
             this.options = Object.assign(this.defaultOptions, options);
         }
-        console.log('SSPolygon constructor');
+        this.type = 'SSPolyline';
+        console.log('SSPolyline constructor');
         this.viewer = viewer;
         this.positions = [];
         this.handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
-        this.polygon = null;
-        this.outline = null;
+        this.polyline = null;
         this.drawEnd = null;
         this._isEditing = false;
         this.isDragging = false;
@@ -40,7 +39,6 @@ class SSPolygon extends SSBaseObj {
     startDrawing() {
         const self = this;
         self.viewer.scene.globe.depthTestAgainstTerrain = true;
-
         this.handler.setInputAction((movement: any) => {
             const cartesian = self.viewer.scene.pickPosition(movement.endPosition);
             if (cartesian) {
@@ -55,42 +53,12 @@ class SSPolygon extends SSBaseObj {
                 } else {
                     self.movePoint.position = new CallbackProperty(() => cartesian, false);
                 }
-
-                // 更新气泡提示
-                self._updateTooltip(cartesian, self.positions.length === 0 ?
-                    '点击选择起点' :
-                    '继续点击添加节点，右键完成绘制');
-
                 if (self.positions.length > 0) {
-                    if (self.positions.length > 2) {
+                    if (self.positions.length > 1) {
                         self.positions.pop();
                     }
                     self.positions.push(cartesian);
                 }
-
-                if (!self.polygon && self.positions.length > 2) {
-                    self.polygon = self.viewer.entities.add({
-                        polygon: {
-                            hierarchy: new CallbackProperty(() => new PolygonHierarchy(self.positions), false),
-                            // height: 0,
-                            ...this.options
-                        },
-                        ssobject: self
-                    });
-                }
-
-                if (!self.outline && self.positions.length > 0) {
-                    self.outline = self.viewer.entities.add({
-                        polyline: {
-                            positions: new CallbackProperty(() => self.positions.concat(self.positions[0]), false),
-                            width: this.options.outlineWidth,
-                            material: this.options.outlineColor,
-                            clampToGround: true
-                        },
-                        ssobject: self
-                    });
-                }
-
             }
         }, ScreenSpaceEventType.MOUSE_MOVE);
 
@@ -98,11 +66,14 @@ class SSPolygon extends SSBaseObj {
             const cartesian = self.viewer.scene.pickPosition(movement.position);
             if (cartesian) {
                 self.positions.push(cartesian);
-                console.log(self.positions);
-
-                // 更新第一个点击后的气泡提示
-                if (self.positions.length === 1) {
-                    self._updateTooltip(cartesian, '继续点击添加节点，右键完成绘制');
+                if (!self.polyline) {
+                    self.polyline = self.viewer.entities.add({
+                        polyline: {
+                            positions: new CallbackProperty(() => self.positions, false),
+                            ...this.options
+                        },
+                        ssobject: self,
+                    });
                 }
             }
         }, ScreenSpaceEventType.LEFT_CLICK);
@@ -120,11 +91,6 @@ class SSPolygon extends SSBaseObj {
             this.viewer.entities.remove(this.movePoint);
             this.movePoint = null;
         }
-        // 移除气泡提示
-        if (this._tooltipEntity) {
-            this.viewer.entities.remove(this._tooltipEntity);
-            this._tooltipEntity = null;
-        }
         this.handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
         this.handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
         this.handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
@@ -133,44 +99,9 @@ class SSPolygon extends SSBaseObj {
     destroy() {
         this.stopDrawing();
         this.stopDragging();
-        if (this.polygon) {
-            this.viewer.entities.remove(this.polygon);
-            this.polygon = null;
-        }
-        if (this.outline) {
-            this.viewer.entities.remove(this.outline);
-            this.outline = null;
-        }
-        // 确保气泡提示被移除
-        if (this._tooltipEntity) {
-            this.viewer.entities.remove(this._tooltipEntity);
-            this._tooltipEntity = null;
-        }
-    }
-
-    // 添加更新气泡提示的方法
-    _updateTooltip(position: Cartesian3, message: string) {
-        if (!this._tooltipEntity) {
-            this._tooltipEntity = this.viewer.entities.add({
-                position: position,
-                label: {
-                    text: message,
-                    font: '14px sans-serif',
-                    fillColor: Color.WHITE,
-                    style: LabelStyle.FILL_AND_OUTLINE,
-                    outlineWidth: 2,
-                    outlineColor: Color.BLACK,
-                    verticalOrigin: VerticalOrigin.BOTTOM,
-                    pixelOffset: new Cartesian2(0, -10),
-                    backgroundColor: new Color(0.165, 0.165, 0.165, 0.8),
-                    showBackground: true,
-                    backgroundPadding: new Cartesian2(7, 5),
-                    disableDepthTestDistance: Number.POSITIVE_INFINITY
-                }
-            });
-        } else {
-            this._tooltipEntity.position = position;
-            this._tooltipEntity.label.text = message;
+        if (this.polyline) {
+            this.viewer.entities.remove(this.polyline);
+            this.polyline = null;
         }
     }
 
@@ -181,29 +112,48 @@ class SSPolygon extends SSBaseObj {
     }
 
     get nodePositions() {
-        let positions = transformCartesianArrayToWGS84Array(this.viewer, this.positions)?.map((pos: any) => {
+        return transformCartesianArrayToWGS84Array(this.viewer, this.positions)?.map((pos: any) => {
             return [pos.lon, pos.lat, pos.alt];
         });
-        if (positions) {
-            positions.push(positions[0]);
-        }
-        return positions;
-    }
-
-    set show(show: boolean) {
-        if (this.polygon) {
-            this.polygon.show = show;
-        }
-        if (this.outline) {
-            this.outline.show = show
-        }
     }
 
     get show() {
-        if (this.polygon) {
-            return this.polygon.show;
+        if (this.polyline) {
+            return this.polyline.show;
         } else {
             return false;
+        }
+    }
+
+    set show(value: boolean) {
+        if (this.polyline) {
+            this.polyline.show = value;
+        }
+    }
+
+    get width() {
+        if (this.polyline) {
+            return this.polyline.polyline.width.getValue();
+        }
+        return this.options.width;
+    }
+
+    set width(value: number) {
+        if (this.polyline) {
+            this.polyline.polyline.width = value;
+        }
+    }
+
+    get material() {
+        if (this.polyline) {
+            return this.polyline.polyline.material.color.getValue();
+        }
+        return this.options.material;
+    }
+
+    set material(value: Color) {
+        if (this.polyline) {
+            this.polyline.polyline.material = value;
         }
     }
 
@@ -211,49 +161,47 @@ class SSPolygon extends SSBaseObj {
         return this.options.name;
     }
 
-    set name(name: string) {
-        this.options.name = name;
+    set name(value: string) {
+        this.options.name = value;
     }
 
-    get material() {
-        if (this.polygon) {
-            return this.polygon.polygon.material.color.getValue();
+    get depthFailMaterial() {
+        if (this.polyline) {
+            return this.polyline.polyline.depthFailMaterial.color.getValue();
         }
-        return this.options.material;
+        return this.options.depthFailMaterial;
     }
 
-    set material(color: Color) {
-        this.options.material = color;
-        if (this.polygon) {
-            this.polygon.polygon.material.color = color;
-        }
-    }
-
-    get outlineColor() {
-        if (this.outline) {
-            return this.outline.polyline.material.color.getValue();
-        }
-        return this.options.outlineColor;
-    }
-
-    set outlineColor(color: Color) {
-        this.options.outlineColor = color;
-        if (this.outline) {
-            this.outline.polyline.material.color = color;
+    set depthFailMaterial(value: Color) {
+        if (this.polyline) {
+            this.polyline.polyline.depthFailMaterial = value;
         }
     }
 
-    get outlineWidth() {
-        if (this.outline) {
-            return this.outline.polyline.width.getValue();
+    get arcType() {
+        if (this.polyline) {
+            return this.polyline.polyline.arcType.getValue();
         }
-        return this.options.outlineWidth;
+        return this.options.arcType;
     }
 
-    set outlineWidth(width: number) {
-        this.options.outlineWidth = width;
-        if (this.outline) {
-            this.outline.polyline.width = width;
+    set arcType(value: ArcType) {
+        this.options.arcType = value;
+        if (this.polyline) {
+            this.polyline.polyline.arcType = value;
+        }
+    }
+
+    get clampToGround() {
+        if (this.polyline) {
+            return this.polyline.polyline.clampToGround.getValue();
+        }
+        return this.options.clampToGround;
+    }
+
+    set clampToGround(value: boolean) {
+        if (this.polyline) {
+            this.polyline.polyline.clampToGround = value;
         }
     }
 
@@ -263,7 +211,7 @@ class SSPolygon extends SSBaseObj {
 
     set isEditing(isEditing: boolean) {
         this._isEditing = isEditing;
-        if (this.polygon) {
+        if (this.polyline) {
             if (isEditing) {
                 this.startDragging();
             } else {
@@ -309,18 +257,11 @@ class SSPolygon extends SSBaseObj {
                 const cartesian = this.viewer.scene.pickPosition(movement.endPosition);
                 if (cartesian) {
                     if (this._editingPoint === 'center') {
-                        // 中心点拖动 - 移动整个多边形
-                        this._movePolygon(cartesian);
+                        // 中心点拖动 - 移动整条线
+                        this._movePolyline(cartesian);
                     } else if (typeof this._editingPoint === 'number') {
                         // 顶点拖动 - 调整单个顶点位置
                         this.positions[this._editingPoint] = cartesian;
-                        
-                        // 更新轮廓线的位置
-                        if (this.outline) {
-                            this.outline.polyline.positions = new CallbackProperty(() => {
-                                return [...this.positions, this.positions[0]]; // 确保闭合
-                            }, false);
-                        }
                     }
                     
                     // 更新编辑点位置
@@ -338,10 +279,10 @@ class SSPolygon extends SSBaseObj {
         }, ScreenSpaceEventType.LEFT_UP);
     }
 
-    // 移动整个多边形
-    _movePolygon(newCenterPosition: Cartesian3) {
-        // 计算当前多边形的中心点
-        const center = this._getPolygonCenter();
+    // 移动整条线
+    _movePolyline(newCenterPosition: Cartesian3) {
+        // 计算当前线的中心点
+        const center = this._getPolylineCenter();
         
         // 计算偏移量
         const offset = Cartesian3.subtract(newCenterPosition, center, new Cartesian3());
@@ -350,17 +291,10 @@ class SSPolygon extends SSBaseObj {
         for (let i = 0; i < this.positions.length; i++) {
             this.positions[i] = Cartesian3.add(this.positions[i], offset, new Cartesian3());
         }
-        
-        // 更新轮廓线的位置
-        if (this.outline) {
-            this.outline.polyline.positions = new CallbackProperty(() => {
-                return [...this.positions, this.positions[0]]; // 确保闭合
-            }, false);
-        }
     }
 
-    // 计算多边形的中心点
-    _getPolygonCenter(): Cartesian3 {
+    // 计算线的中心点
+    _getPolylineCenter(): Cartesian3 {
         if (this.positions.length === 0) {
             return new Cartesian3();
         }
@@ -396,7 +330,7 @@ class SSPolygon extends SSBaseObj {
         
         // 创建中心点编辑控制点
         this._centerEditPoint = this.viewer.entities.add({
-            position: new CallbackProperty(() => this._getPolygonCenter(), false),
+            position: new CallbackProperty(() => this._getPolylineCenter(), false),
             point: {
                 pixelSize: 12,
                 color: Color.YELLOW,
@@ -418,7 +352,7 @@ class SSPolygon extends SSBaseObj {
         
         // 更新中心点位置
         if (this._centerEditPoint) {
-            this._centerEditPoint.position = new CallbackProperty(() => this._getPolygonCenter(), false);
+            this._centerEditPoint.position = new CallbackProperty(() => this._getPolylineCenter(), false);
         }
     }
 
@@ -450,112 +384,113 @@ class SSPolygon extends SSBaseObj {
     }
 
     zoomTo() {
-        if (this.nodePositions) {
-            const cartesians = Cartesian3.fromDegreesArrayHeights(this.nodePositions.flat())
-            const boundingSphere = BoundingSphere.fromPoints(cartesians);
+        if (this.polyline && this.nodePositions) {
+            // const cartesians = Cartesian3.fromDegreesArrayHeights(this.nodePositions.flat())
+            const boundingSphere = BoundingSphere.fromPoints(this.positions);
             this.viewer.camera.flyToBoundingSphere(boundingSphere, {
                 duration: 1
             });
         }
     }
 
-    toGeoJson() {
-        const positions = transformCartesianArrayToWGS84Array(this.viewer, this.positions)?.map((pos: any) => {
-            return [pos.lon, pos.lat, pos.alt];
-        })
-        return {
-            type: 'Feature',
-            geometry: {
-                type: 'Polygon',
-                coordinates: [positions]
-            },
-            properties: this.toJSON()
-        }
-    }
-
     toJSON() {
         return {
-            type: 'sspolygon',
+            type: 'SSPolyline',
             guid: this.guid,
-            name: this.options.name,
+            name: this.name,
             positions: this.nodePositions,
-            material: this.polygon.polygon.material.color.getValue().toCssColorString(),
-            outlineColor: this.outline.polyline.material.color.getValue().toCssColorString(),
-            outlineWidth: this.outline.polyline.width.getValue(),
-        }
-
+            show: this.show,
+            width: this.polyline?.polyline?.width.getValue(),
+            material: this.polyline?.polyline?.material.color.getValue().toCssColorString(),
+        };
     }
 
     createFromJson(json: any) {
         this.destroy();
         this.options.name = json.name;
+        this.options.width = json.width;
         this.options.material = Color.fromCssColorString(json.material);
-        this.options.outlineColor = Color.fromCssColorString(json.outlineColor);
-        this.options.outlineWidth = json.outlineWidth;
-
-        this.options = Object.assign(this.defaultOptions, this.options);
-
+        this.options.show = json.show;
+        this.options.positions = json.positions;
         const positions = json.positions.map((pos: any) => {
-            return transformWGS84ToCartesian(this.viewer, { lon: pos[0], lat: pos[1], alt: pos[2] });
+            return Cartesian3.fromDegrees(pos[0], pos[1], pos[2]);
         });
-
+        console.log(positions);
         this.positions = positions;
-
-        this.polygon = this.viewer.entities.add({
-            polygon: {
-                hierarchy: new CallbackProperty(() => new PolygonHierarchy(positions), false),
-                ...this.options
-            },
-            ssobject: this
-        });
-        this.outline = this.viewer.entities.add({
+        this.polyline = this.viewer.entities.add({
             polyline: {
+                ...this.options,
                 positions: new CallbackProperty(() => positions, false),
-                width: this.options.outlineWidth,
-                material: this.options.outlineColor,
-                clampToGround: true
             },
-            ssobject: this
+            ssobject: this,
         });
+        this.polyline.show = this.options.show;
+        console.log(this.polyline);
     }
 }
 
-export const SSPolygonOptions = [
+export const SSPolylineOptions = [
     {
         name: '名称',
         type: 'string',
         key: 'name',
-        default: 'Polygon',
-        description: 'Polygon name',
+        default: 'Polyline',
+        description: 'Polyline name',
     },
     {
-        name: '填充颜色',
+        name: '宽度',
+        type: 'number',
+        key: 'width',
+        default: 3,
+        description: 'Width of the polyline',
+    },
+    {
+        name: '颜色',
         type: 'color',
         key: 'material',
-        default: Color.AQUA.withAlpha(0.2),
-        description: 'Polygon fill color',
-    },
-    {
-        name: '边框颜色',
-        type: 'color',
-        key: 'outlineColor',
         default: Color.AQUA,
-        description: 'Polygon outline color',
+        description: 'Color of the polyline',
     },
     {
-        name: '边框宽度',
-        type: 'number',
-        key: 'outlineWidth',
-        default: 3,
-        description: 'Polygon outline width',
+        name: '深度测试颜色',
+        type: 'color',
+        key: 'depthFailMaterial',
+        default: Color.RED,
+        description: 'Depth test color of the polyline',
+    },
+    // {
+    //     name: '弧类型',
+    //     type: 'select',
+    //     key: 'arcType',
+    //     options: [
+    //         {
+    //             name: 'GEODESIC',
+    //             value: ArcType.GEODESIC,
+    //         },
+    //         {
+    //             name: 'NONE',
+    //             value: ArcType.NONE,
+    //         },
+    //         {
+    //             name: 'RHUMB',
+    //             value: ArcType.RHUMB,
+    //         }
+    //     ],
+    // },
+    {
+        name: '地面贴合',
+        type: 'boolean',
+        key: 'clampToGround',
+        default: true,
+        description: 'Clamp to ground or not',
     },
     {
         name: '编辑',
         type: 'boolean',
         key: 'isEditing',
         default: false,
-        description: 'Enable editing mode for the polygon.',
+        description: 'Enable editing mode for the polyline.',
     }
 ]
 
-export default SSPolygon;
+export default SSPolyline;

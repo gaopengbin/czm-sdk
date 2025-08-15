@@ -54,7 +54,36 @@ export default class BaseLayer extends BaseWidget {
 
         for (let i = 0; i < this.layerList.length; i++) {
             const layer = this.layerList[i];
-            if (layer.type === 'terrain') {
+            if (layer.type === 'group') {
+                let providers: any = [];
+                for (let j = 0; j < layer.children.length; j++) {
+                    const childLayer = layer.children[j];
+                    let provider: any;
+                    if (layer.type === 'terrain') {
+                        provider = await createProvider(childLayer);
+                    } else {
+                        provider = await createProvider(childLayer);
+                    }
+                    providers.push(provider)
+
+                }
+                imageryViewModels.push(
+                    new ProviderViewModel({
+                        name: layer.name,
+                        iconUrl: layer.iconUrl,
+                        tooltip: layer.tooltip,
+                        creationFunction: () => {
+                            return providers;
+                        }
+                    })
+                );
+                if (layer.isDefault) {
+                    this._selectedImageryIndex = terrainViewModels.length - 1;
+                    this._selectedImageryProviderViewModel = imageryViewModels[imageryViewModels.length - 1];
+                }
+
+            }
+            else if (layer.type === 'terrain') {
                 let provider = await createProvider(layer);
                 terrainViewModels.push(
                     new ProviderViewModel({

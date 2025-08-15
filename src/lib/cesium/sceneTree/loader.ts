@@ -24,16 +24,20 @@ import {
     CallbackProperty,
 } from "cesium";
 import { createArcGisMapServer, createGeoJson, createIonTileset, createSSMapServer, createTerrain, createTileset, createWMS, createWMTS, createXYZ } from "./creator";
+import SSTileset from "../CustomEntity/SSTileset";
 import { BaseWidget, getSceneTree } from "@/component";
-import { SSPolygon, SSRectangle } from "../CustomEntity";
+import { SSCircle, SSLabel, SSPoint, SSPolygon, SSPolyline, SSRectangle } from "../CustomEntity";
 
 export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOptions) => {
     try {
         const opt = JSON.parse(JSON.stringify(options));
         const esri = await createSSMapServer(options);
+        console.log(options)
+        const rectangle = options.rectangle instanceof Rectangle ? options.rectangle : undefined;
+        console.log('rectangle', rectangle);
         const constructorOptions = {
             ...opt,
-            rectangle: options.rectangle ? Rectangle.fromDegrees(...opt.rectangle) : undefined,
+            rectangle: null
         }
         let ssMapServerLayer: SSImageryLayer = new ImageryLayer(esri, constructorOptions as any);
         viewer.imageryLayers.add(ssMapServerLayer);
@@ -44,9 +48,7 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
             guid: options.guid ?? uuid(),
         });
         ssMapServerLayer.show = defaultValue(options.show, true);
-        if (options.zoomTo) {
-            viewer.zoomTo(ssMapServerLayer);
-        }
+
 
         const leaf: Leaf = {
             name: options.name,
@@ -58,7 +60,15 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
                 ssMapServerLayer.show = visible;
             },
             zoomTo: () => {
-                viewer.zoomTo(ssMapServerLayer);
+                // viewer.zoomTo(ssMapServerLayer);
+                if (rectangle) {
+                    viewer.camera.flyTo({
+                        destination: rectangle,
+                        duration: 0,
+                    })
+                } else {
+                    viewer.zoomTo(ssMapServerLayer);
+                }
             },
             get show() {
                 return ssMapServerLayer.show;
@@ -84,6 +94,9 @@ export const SSMapServerLoader = async (viewer: Viewer, options: SSArcGisLayerOp
                 ] : undefined;
             },
             toJSON: toJSON
+        }
+        if (options.zoomTo) {
+            leaf.zoomTo();
         }
         function toJSON() {
             return {
@@ -234,59 +247,63 @@ export const ArcGisMapServerLoader = async (viewer: Viewer, options: SSArcGisLay
 
 export const TilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
     const opt = JSON.parse(JSON.stringify(options));
-    const tileset: SSTilesetLayer | undefined = await createTileset(options);
-    if (!tileset) return;
-    viewer.scene.primitives.add(tileset);
-    if (opt.style) {
-        tileset.style = new Cesium3DTileStyle(opt.style);
-    }
+    // const tileset: SSTilesetLayer | undefined = await createTileset(options);
+    const t = new SSTileset(viewer, options);
+    await t.createTileset(options);
+    return t;
+    // const tileset: SSTilesetLayer | undefined = await t.createTileset(options);
+    // if (!tileset) return;
+    // viewer.scene.primitives.add(tileset);
+    // if (opt.style) {
+    //     tileset.style = new Cesium3DTileStyle(opt.style);
+    // }
 
-    tileset.name = options.name;
-    tileset.show = defaultValue(options.show, true);
-    if (options.zoomTo) {
-        viewer.zoomTo(tileset);
-    }
-    const leaf: Leaf = {
-        name: options.name,
-        guid: options.guid ?? uuid(),
-        customProps: options.customProps,
-        _zIndex: defaultValue(options.zIndex, 0),
-        setVisible: (visible: boolean) => {
-            tileset.show = visible;
-        },
-        zoomTo: () => {
-            viewer.zoomTo(tileset);
-        },
-        get show() {
-            return tileset.show;
-        },
-        set show(value: boolean) {
-            tileset.show = value;
-        },
-        _tileset: tileset,
-        set zIndex(value: number) {
-            leaf._zIndex = value;
-        },
-        get zIndex() {
-            return leaf._zIndex;
-        },
-        toJSON: toJSON
-    }
-    function toJSON() {
-        return {
-            ...opt,
-            type: "tileset",
-            name: leaf.name,
-            show: leaf.show,
-            guid: leaf.guid,
-            url: leaf?._tileset?.resource?.url,
-            ionAssetId: options.ionAssetId,
-            zIndex: leaf.zIndex,
-            zoomTo: false,
-            style: leaf?._tileset?.style?.style,
-        }
-    }
-    return leaf;
+    // tileset.name = options.name;
+    // tileset.show = defaultValue(options.show, true);
+    // if (options.zoomTo) {
+    //     viewer.zoomTo(tileset);
+    // }
+    // const leaf: Leaf = {
+    //     name: options.name,
+    //     guid: options.guid ?? uuid(),
+    //     customProps: options.customProps,
+    //     _zIndex: defaultValue(options.zIndex, 0),
+    //     setVisible: (visible: boolean) => {
+    //         tileset.show = visible;
+    //     },
+    //     zoomTo: () => {
+    //         viewer.zoomTo(tileset);
+    //     },
+    //     get show() {
+    //         return tileset.show;
+    //     },
+    //     set show(value: boolean) {
+    //         tileset.show = value;
+    //     },
+    //     _tileset: tileset,
+    //     set zIndex(value: number) {
+    //         leaf._zIndex = value;
+    //     },
+    //     get zIndex() {
+    //         return leaf._zIndex;
+    //     },
+    //     toJSON: toJSON
+    // }
+    // function toJSON() {
+    //     return {
+    //         ...opt,
+    //         type: "tileset",
+    //         name: leaf.name,
+    //         show: leaf.show,
+    //         guid: leaf.guid,
+    //         url: leaf?._tileset?.resource?.url,
+    //         ionAssetId: options.ionAssetId,
+    //         zIndex: leaf.zIndex,
+    //         zoomTo: false,
+    //         style: leaf?._tileset?.style?.style,
+    //     }
+    // }
+    // return leaf;
 }
 
 export const IonTilesetLoader = async (viewer: Viewer, options: SSLayerOptions) => {
@@ -587,7 +604,13 @@ export const XYZLoader = async (viewer: Viewer, options: SSXYZLayerOptions) => {
             xyzLayer.show = visible;
         },
         zoomTo: () => {
-            viewer.zoomTo(xyzLayer);
+            if (opt.rectangle) {
+                viewer.camera.flyTo({
+                    destination: Rectangle.fromDegrees(...opt.rectangle),
+                    duration: 0,
+                })
+            }
+            // viewer.zoomTo(xyzLayer);
         },
         get show() {
             return xyzLayer.show;
@@ -919,13 +942,13 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     // mapView: this.mapView,
                     viewer: viewer,
                     config: {
-                        "label": leaf.name,
+                        "label": leaf.name ?? '全景',
                         icon: "bi bi-list",
                         position: {
                             top: 100,
-                            left: 300,
-                            width: '400px',
-                            height: '400px',
+                            left: 500,
+                            width: '1200px',
+                            height: '800px',
                         }
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
@@ -940,9 +963,9 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                         urls: leaf.panoramas,
                         position: {
                             top: 100,
-                            left: 300,
-                            width: '400px',
-                            height: '400px',
+                            left: 500,
+                            width: '1200px',
+                            height: '800px',
                         }
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
@@ -956,13 +979,13 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     // mapView: this.mapView,
                     viewer: viewer,
                     config: {
-                        "label": leaf.link,
+                        "label": leaf.name ?? 'flv视频流',
                         icon: "bi bi-list",
                         position: {
                             top: 100,
-                            left: 300,
-                            width: '600px',
-                            height: '400px',
+                            left: 500,
+                            width: '1200px',
+                            height: '800px',
                         }
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
@@ -1018,7 +1041,7 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     flvPlayer.load();
                 })
                 video.style.width = '100%';
-                video.style.height = '100%';
+                video.style.height = '98%';
                 panel.onClose = () => {
                     console.log('close');
                     if (leaf._flvPlayer) {
@@ -1037,23 +1060,38 @@ export const ModelLoader = async (viewer: Viewer, options: any) => {
                     // mapView: this.mapView,
                     viewer: viewer,
                     config: {
-                        "label": leaf.link,
+                        "label": leaf.name ?? '超链接',
                         icon: "bi bi-list",
                         position: {
                             top: 100,
-                            left: 300,
-                            width: '400px',
-                            height: '400px',
+                            left: 500,
+                            width: '1200px',
+                            height: '800px',
                         }
                     },
                     globalConfig: BaseWidget.prototype.globalConfig,
                 })
                 document.querySelector('.czm-widget-manager')?.appendChild(panel)
-                const iframe = document.createElement('iframe');
-                iframe.src = leaf.link;
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
-                panel.querySelector('.widget-content')?.appendChild(iframe)
+                //判断是否是视频
+                const isVideo = leaf.link.endsWith('.mp4') || leaf.link.endsWith('.flv') || leaf.link.endsWith('.avi') || leaf.link.endsWith('.mov') || leaf.link.endsWith('.wmv') || leaf.link.endsWith('.mkv');
+                if (isVideo) {
+                    const video = document.createElement('video');
+                    video.src = leaf.link;
+                    video.controls = true;
+                    video.autoplay = true;
+                    video.muted = true;
+                    video.loop = true;
+                    video.style.width = '100%';
+                    video.style.height = '98%';
+                    panel.querySelector('.widget-content')?.appendChild(video)
+                } else {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = leaf.link;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '98%';
+                    panel.querySelector('.widget-content')?.appendChild(iframe)
+                }
+
             }
         }
     }
@@ -1090,6 +1128,30 @@ export const SSRectangleLoader = async (viewer: Viewer, options: any) => {
     const rectangle = new SSRectangle(viewer);
     rectangle.createFromJson(options);
     return rectangle;
+}
+
+export const SSPolylineLoader = async (viewer: Viewer, options: any) => {
+    const polyline = new SSPolyline(viewer);
+    polyline.createFromJson(options);
+    return polyline;
+}
+
+export const SSPointLoader = async (viewer: Viewer, options: any) => {
+    const point = new SSPoint(viewer);
+    point.createFromJson(options);
+    return point;
+}
+
+export const SSLabelLoader = async (viewer: Viewer, options: any) => {
+    const label = new SSLabel(viewer);
+    label.createFromJson(options);
+    return label;
+}
+
+export const SSCircleLoader = async (viewer: Viewer, options: any) => {
+    const circle = new SSCircle(viewer);
+    circle.createFromJson(options);
+    return circle;
 }
 
 // 根据图层的zIndex属性大小顺序设置图层的顺序

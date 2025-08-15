@@ -6,7 +6,7 @@ import {
 
 import { SSLayerOptions, SceneTreeLeaf, SSWMSLayerOptions, SSXYZLayerOptions, SSTerrainLayerOptions } from "./types";
 import { debounce } from "../../common/debounce";
-import { ArcGisMapServerLoader, GeoJsonLoader, IonTilesetLoader, ModelLoader, SSMapServerLoader, SSPolygonLoader, SSRectangleLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
+import { ArcGisMapServerLoader, GeoJsonLoader, IonTilesetLoader, ModelLoader, SSCircleLoader, SSLabelLoader, SSMapServerLoader, SSPointLoader, SSPolygonLoader, SSPolylineLoader, SSRectangleLoader, TerrainLoader, TilesetLoader, WMSLoader, WMTSLoader, XYZLoader, setLayersZIndex } from "./loader";
 import uuid from "../../common/uuid";
 import { buildLayers } from "./creator";
 // import { CesiumPolygon, CesiumPolyline } from "../draw/core/Graphic";
@@ -296,6 +296,31 @@ class SceneTree {
         return leaf;
     }
 
+    createSSPolylineLayer(options: SSLayerOptions) {
+        let leaf = SSPolylineLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createSSCircleLayer(options: SSLayerOptions) {
+        let leaf = SSCircleLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createSSPointLayer(options: SSLayerOptions) {
+        let leaf = SSPointLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+    createSSLabelLayer(options: SSLayerOptions) {
+        let leaf = SSLabelLoader(this._viewer, options);
+        this.updateSceneTree();
+        return leaf;
+    }
+
+
     createLayer(options: SSLayerOptions) {
         const type = options.type.toLocaleLowerCase();
         switch (type) {
@@ -321,6 +346,10 @@ class SceneTree {
                 return this.createMarkerLayer(options);
             case "label":
                 return this.createLabelLayer(options);
+            case "sspolygon":
+                return this.createSSPolygonLayer(options);
+            case "ssrectangle":
+                return this.createSSRectangleLayer(options);
             default:
                 return this.createWMSLayer(options as SSWMSLayerOptions);
         }

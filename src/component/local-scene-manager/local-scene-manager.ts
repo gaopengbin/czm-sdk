@@ -70,6 +70,7 @@ export default class LocalSceneManager extends BaseWidget {
             const value = res.map((group: any) => {
                 return group.toJSON();
             });
+            console.log("updateEvent", value);
             this.treeView2?.updateTree(value);
             if (this.querySelector('.contextmenu')) return;
             const menuHTML =
@@ -235,6 +236,7 @@ export default class LocalSceneManager extends BaseWidget {
                         icon: (node: any) => {
                             if (node.children) {
                                 node = this.sceneTree.getLayerByGuid(node.guid);
+                                console.log(node);
                                 const showStatus = node.showStatus;
                                 if (showStatus === "all") {
                                     return "bi bi-check-square";
@@ -244,6 +246,7 @@ export default class LocalSceneManager extends BaseWidget {
                                     return "bi bi-square";
                                 }
                             } else {
+                                node = this.sceneTree.getLayerByGuid(node.guid);
                                 return node.show ? "bi bi-check-square" : "bi bi-square"
                             }
 
@@ -456,26 +459,46 @@ export default class LocalSceneManager extends BaseWidget {
                         name: layer.name,
                         guid: layer.guid,
                     }
+                    if (child.type === 'model') {
+                        const feature = {
+                            type: "Feature",
+                            geometry: {
+                                type: "Point",
+                                coordinates: child.position,
+                            },
+                            properties: child,
+                        };
+                        geojson.features = geojson.features.concat(feature);
+                    } else {
+                        console.log('child', child)
+                        const l = this.sceneTree.getLayerByGuid(child.guid);
+                        if (l) {
+                            geojson.features = geojson.features.concat(l.toGeoJson());
+                        }
+                    }
+
+                });
+            } else {
+
+                if (layer.type === 'model') {
                     const feature = {
                         type: "Feature",
                         geometry: {
                             type: "Point",
-                            coordinates: child.position,
+                            coordinates: layer.position,
                         },
-                        properties: child,
+                        properties: layer,
                     };
                     geojson.features = geojson.features.concat(feature);
-                });
-            } else {
-                const feature = {
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: layer.position,
-                    },
-                    properties: layer,
-                };
-                geojson.features = geojson.features.concat(feature);
+                } else {
+                    console.log('child', layer)
+                    const l = this.sceneTree.getLayerByGuid(layer.guid);
+                    if (l) {
+                        geojson.features = geojson.features.concat(l.toGeoJson());
+                    }
+                }
+
+
             }
 
 

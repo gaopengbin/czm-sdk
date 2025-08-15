@@ -24,7 +24,12 @@ export default class BaseEarth extends BaseWidget {
         this.globalConfig = this.config;
         Ion.defaultAccessToken = this.config.earth.ionDefaultToken;
         this.Browser = getBrowserInfo();
-        this.initViewer();
+        let options: any = {};
+        if (this.config.earth.viewer) {
+            options = this.config.earth.viewer.options;
+        }
+
+        this.initViewer(options);
         setTimeout(async () => {
             const { viewer } = this.config.earth;
             if (viewer) {
@@ -57,8 +62,9 @@ export default class BaseEarth extends BaseWidget {
         return true
     }
 
-    initViewer() {
-        let viewer = initScene('earth', {
+    initViewer(options?: any) {
+
+        let opt = Object.assign({
             baseLayerPicker: false,
             baseLayer: false,
             projectionPicker: false,
@@ -78,8 +84,11 @@ export default class BaseEarth extends BaseWidget {
                     preserveDrawingBuffer: true
                 },
                 requestWebgl1: !isWebGL2Supported(),
+                // requestWebgl1: true,
             }
-        });
+        }, options);
+
+        let viewer = initScene('earth', opt);
 
         this.viewer = viewer;
         this.graphicManager = new GraphicManager(viewer);

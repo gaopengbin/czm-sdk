@@ -16,6 +16,8 @@ interface SSLayerOptions {
     guid?: string;
     customProps?: object;
     ionAssetId?: number;
+    style?: any;
+    position?: any;
 }
 export type SSArcGisLayerOptions = Omit<WebMapServiceImageryProvider.ConstructorOptions, 'rectangle' | 'tilingScheme'> & SSLayerOptions & {
     rectangle?: Rectangle | Array<number>;

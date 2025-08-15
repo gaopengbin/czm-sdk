@@ -166,7 +166,10 @@ export default class LoaderUI extends BaseWidget {
         parser.parser(parser.addUrlParam(url)).then((res) => {
             this.loading = false;
             this.$data.wmtsParserLayers = res;
-        });
+        }).catch((err) => {
+            this.loading = false;
+            console.error(err);
+        })
     }
 
     async loadWMS() {
@@ -186,7 +189,11 @@ export default class LoaderUI extends BaseWidget {
         parser.parser(parser.addUrlParam(url)).then((res) => {
             this.loading = false;
             this.$data.wmtsParserLayers = res;
-        });
+            console.log(res);
+        }).catch((err) => {
+            this.loading = false;
+            console.error(err);
+        })
     }
 
     async loadWMTS() {

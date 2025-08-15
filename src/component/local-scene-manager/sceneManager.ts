@@ -62,35 +62,47 @@ export class SceneManager {
       // });
       const propertyNames = entity.properties?.propertyNames;
       const position = entity.position?.getValue(new Cesium.JulianDate());
-      if (!position) continue;
-      let pos = transformCartesianToWGS84(viewer, position);
-      if (!propertyNames) continue;
-      const options: any = {};
-      propertyNames.forEach((name) => {
-        options[name] = entity.properties ? entity.properties[name].getValue() : undefined;
-      });
-      options.position = [pos?.lon, pos?.lat, pos?.alt];
-      try {
-        if (options.parent) {
-          const parent = sceneTree.getLayerByGuid(options.parent.guid);
-          if (parent) {
-            const m: any = await sceneTree.createLayer(options);
-            m.showLabel = false
-            parent.addLayer(m);
+      if (position) {
+        let pos = transformCartesianToWGS84(viewer, position);
+        if (!propertyNames) continue;
+        const options: any = {};
+        propertyNames.forEach((name) => {
+          options[name] = entity.properties ? entity.properties[name].getValue() : undefined;
+        });
+        options.position = [pos?.lon, pos?.lat, pos?.alt];
+        try {
+          if (options.parent) {
+            const parent = sceneTree.getLayerByGuid(options.parent.guid);
+            if (parent) {
+              const m: any = await sceneTree.createLayer(options);
+              m.showLabel = false
+              parent.addLayer(m);
+            } else {
+              const g = sceneTree.createGroup(options.parent.name, options.parent.guid)
+              const m: any = await sceneTree.createLayer(options);
+              m.showLabel = false
+              g.addLayer(m);
+              group.addLayer(g);
+            }
           } else {
-            const g = sceneTree.createGroup(options.parent.name, options.parent.guid)
             const m: any = await sceneTree.createLayer(options);
             m.showLabel = false
-            g.addLayer(m);
-            group.addLayer(g);
+            group.addLayer(m);
           }
-        } else {
+        } catch (error) {
+
+        }
+      } else {
+        if (entity.polygon) {
+          if (!propertyNames) continue;
+          const options: any = {};
+          propertyNames.forEach((name) => {
+            options[name] = entity.properties ? entity.properties[name].getValue() : undefined;
+          });
+          console.log(options)
           const m: any = await sceneTree.createLayer(options);
-          m.showLabel = false
           group.addLayer(m);
         }
-      } catch (error) {
-
       }
 
     }

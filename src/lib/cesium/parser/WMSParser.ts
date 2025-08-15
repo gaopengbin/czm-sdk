@@ -45,33 +45,44 @@ class WMSParser {
 
         return url + '?' + objectToQuery(queryParameters);
     }
+    async fetchWithTimeout(url: string, options = { timeout: 8000 }) {
+        const { timeout = 8000 } = options;
 
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response.text();
+    }
     parser(url: string) {
         return new Promise((resolve, reject) => {
-            Resource.fetchText({
-                url: url
-            })?.then(text => {
-                var x2jsone: any = new x2js();
-                this.Layers = [];
-                let contents = x2jsone.xml2js(text).WMS_Capabilities.Capability.Layer;
-                let getMap = x2jsone.xml2js(text).WMS_Capabilities.Capability.Request.GetMap;
-                let requestURL = getMap.DCPType.HTTP.Get.OnlineResource['_xlink:href'];
-                let format = getMap.Format;
-                let urls = {
-                    url: requestURL,
-                    format: format
-                }
-                //处理layer
-                this.parseLayer(contents.Layer, urls)
-                // if (contents.Layer instanceof Array) {
-                //     contents.Layer.forEach(layer => {
-                //         this.addLayer(layer, urls)
-                //     })
-                // } else if (contents.Layer) {
-                //     this.addLayer(contents.Layer, urls)
-                // }
-                resolve(this.Layers)
-            })
+            // Resource.fetchText({ url: url })
+            this.fetchWithTimeout(url, { timeout: 8000 })
+                ?.then(text => {
+                    var x2jsone: any = new x2js();
+                    this.Layers = [];
+                    let contents = x2jsone.xml2js(text).WMS_Capabilities.Capability.Layer;
+                    let getMap = x2jsone.xml2js(text).WMS_Capabilities.Capability.Request.GetMap;
+                    let requestURL = getMap.DCPType.HTTP.Get.OnlineResource['_xlink:href'];
+                    let format = getMap.Format;
+                    let urls = {
+                        url: requestURL,
+                        format: format
+                    }
+                    //处理layer
+                    this.parseLayer(contents.Layer, urls)
+                    // if (contents.Layer instanceof Array) {
+                    //     contents.Layer.forEach(layer => {
+                    //         this.addLayer(layer, urls)
+                    //     })
+                    // } else if (contents.Layer) {
+                    //     this.addLayer(contents.Layer, urls)
+                    // }
+                    resolve(this.Layers)
+                })
             // .catch(err => {
             //     reject(err)
             // })

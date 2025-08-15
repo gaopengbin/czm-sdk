@@ -551,46 +551,51 @@ export default class Identify extends BaseWidget {
     }
 
     clearHighLight(onlySelected: boolean = false) {
-        if (this.highLightEntity) {
-            this.viewer.dataSources.remove(this.highLightEntity);
-            this.highLightEntity = null;
-        }
-        if (this.highLightAll && this.highLightAll.length > 0 && !onlySelected) {
-            this.highLightAll.forEach((item: any) => {
-                this.viewer.dataSources.remove(item);
-            })
-            this.highLightAll = [];
+        try {
+            if (this.highLightEntity) {
+                this.viewer.dataSources.remove(this.highLightEntity);
+                this.highLightEntity = null;
+            }
+            if (this.highLightAll && this.highLightAll.length > 0 && !onlySelected) {
+                this.highLightAll.forEach((item: any) => {
+                    this.viewer.dataSources.remove(item);
+                })
+                this.highLightAll = [];
 
-        }
-        if (!onlySelected) {
-            this.$data.count = 0
-        }
-        if (this.viewer.selectedEntity && 'feature' in this.viewer.selectedEntity && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
-            this.viewer.selectedEntity.feature.color = this.lastFeatureColor;
-        }
-        if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Model) {
-            this.viewer.selectedEntity.feature.silhouetteSize = 0;
-        }
-        if (this.viewer.selectedEntity) {
-            if (this.viewer.selectedEntity.polygon) {
-                this.viewer.selectedEntity.polygon.material = this.lastPolygonMaterial;
             }
-            if (this.viewer.selectedEntity.polyline) {
-                this.viewer.selectedEntity.polyline.material = this.lastPolylineMaterial;
+            if (!onlySelected) {
+                this.$data.count = 0
             }
-            if (this.viewer.selectedEntity.billboard) {
-                this.viewer.selectedEntity.billboard.color = this.lastBillboardColor;
+            if (this.viewer.selectedEntity && 'feature' in this.viewer.selectedEntity && this.viewer.selectedEntity.feature instanceof Cesium3DTileFeature) {
+                this.viewer.selectedEntity.feature.color = this.lastFeatureColor;
             }
-            if (this.viewer.selectedEntity.model) {
-                this.viewer.selectedEntity.model.silhouetteSize = 0;
+            if (this.viewer.selectedEntity && this.viewer.selectedEntity.feature && this.viewer.selectedEntity.feature instanceof Model) {
+                this.viewer.selectedEntity.feature.silhouetteSize = 0;
             }
+            if (this.viewer.selectedEntity) {
+                if (this.viewer.selectedEntity.polygon) {
+                    this.viewer.selectedEntity.polygon.material = this.lastPolygonMaterial;
+                }
+                if (this.viewer.selectedEntity.polyline) {
+                    this.viewer.selectedEntity.polyline.material = this.lastPolylineMaterial;
+                }
+                if (this.viewer.selectedEntity.billboard) {
+                    this.viewer.selectedEntity.billboard.color = this.lastBillboardColor;
+                }
+                if (this.viewer.selectedEntity.model) {
+                    this.viewer.selectedEntity.model.silhouetteSize = 0;
+                }
 
+            }
+            this.$data.title = '';
+            // this.infoBox.innerHTML = '';
+            this.$data.isEmpty = true;
+            this.$data.attrs = [];
+            // this.results = [];
+        } catch (error) {
+            console.log(error);
         }
-        this.$data.title = '';
-        // this.infoBox.innerHTML = '';
-        this.$data.isEmpty = true;
-        this.$data.attrs = [];
-        // this.results = [];
+
     }
 
     formatHtml(html: string) {
@@ -652,9 +657,9 @@ export default class Identify extends BaseWidget {
                     // urls: leaf.panoramas,
                     position: {
                         top: 100,
-                        left: 300,
-                        width: '400px',
-                        height: '400px',
+                        left: 500,
+                        width: '1200px',
+                        height: '800px',
                     }
                 },
                 globalConfig: this.globalConfig,
@@ -667,13 +672,13 @@ export default class Identify extends BaseWidget {
                 mapView: this.mapView,
                 viewer: this.viewer,
                 config: {
-                    "label": attr.key + ":" + attr.value,
+                    "label": '链接查看',
                     icon: "bi bi-list",
                     position: {
                         top: 100,
-                        left: 300,
-                        width: '400px',
-                        height: '400px',
+                        left: 500,
+                        width: '1200px',
+                        height: '800px',
                     }
                 },
                 globalConfig: this.globalConfig

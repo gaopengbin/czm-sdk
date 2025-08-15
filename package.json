@@ -1,7 +1,7 @@
 {
   "name": "ssczm",
   "private": true,
-  "version": "0.0.406",
+  "version": "0.0.422",
   "type": "module",
   "files": [
     "dist",
@@ -23,7 +23,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "build2": "vite build && npm pack"
+    "build2": "vite build && npm pack",
+    "serve": "vite preview"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",

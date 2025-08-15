@@ -100,6 +100,13 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
         } catch (error) { }
     }
 
+    if (rectangle) {
+        options.rectangle = rectangle;
+    }
+    else {
+        options.rectangle = Rectangle.fromDegrees(-180.0, -90.0, 180.0, 90.0);
+    }
+
     if (options.tilingScheme) {
         if (typeof options.tilingScheme === 'string') {
             if (options.tilingScheme === 'geographic') {
@@ -113,7 +120,7 @@ export async function createSSMapServer(options: SSArcGisLayerOptions) {
     }
     const esri = await SSMapServerProvider.fromUrl(options.url, {
         ...options as ArcGisMapServerImageryProvider.ConstructorOptions,
-        rectangle: rectangle,
+        rectangle: null,
     });
     return esri;
 }
@@ -212,7 +219,7 @@ export async function createWMTS(options: any) {
         }
 
     } catch (error) {
-
+        console.error(error)
     }
 
     if (options.rectangle && Array.isArray(options.rectangle)) {
@@ -459,6 +466,10 @@ const initObjects: any = {
     "iontileset": "createIonTilesetLayer",
     "sspolygon": "createSSPolygonLayer",
     "ssrectangle": "createSSRectangleLayer",
+    "sspolyline": "createSSPolylineLayer",
+    "sscircle": "createSSCircleLayer",
+    "sspoint": "createSSPointLayer",
+    "sslabel": "createSSLabelLayer",
 }
 
 export const initEarth = async (sceneTree: SceneTree, config: any) => {

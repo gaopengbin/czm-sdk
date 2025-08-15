@@ -4,13 +4,16 @@ import { Viewer } from "cesium";
 export default class SSBaseObj {
     _defaultOptions: any;
     guid: string;
-    constructor(viewer: Viewer) {
-        console.log('SSBaseObj constructor');
-        this.guid = uuid()
+    type: string;
+    viewer: Viewer;
+    constructor(viewer: Viewer, id?: string) {
+        this.guid = id ?? uuid()
+        this.type = 'SSBaseObj';
+        this.viewer = viewer;
     }
 
     flyTo() {
-        console.log('SSBaseObj flyTo');
+        // console.log('SSBaseObj flyTo');
     }
 
     set defaultOptions(value: any) {
@@ -19,5 +22,9 @@ export default class SSBaseObj {
 
     get defaultOptions() {
         return this._defaultOptions;
+    }
+
+    destroy() {
+        console.log('SSBaseObj destroy');
     }
 }

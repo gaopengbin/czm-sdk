@@ -4,12 +4,12 @@ import BaseWidget from "../earth/base-widget";
 import Template from "./test.html?raw";
 import "./test.scss";
 import { Color, ScreenSpaceEventType } from "cesium";
-import SSPolyline from "./SSPolyline";
-import SSRectangle from "./SSRectangle";
-import SSCircle from "./SSCircle";
-import SSPolygon from "./SSPolygon";
-import SSPoint from "./SSPoint";
-import SSLabel from "./SSLabel";
+import { SSRectangle, SSPolygon, SSCircle, SSLabel, SSPoint, SSPolyline } from "@/lib/cesium/CustomEntity";
+import EntityEditor from "../entity-editor/entity-editor";
+import Viewshed from "@/lib/cesium/analysis/viewshed";
+import { createTileset } from "@/lib/cesium/sceneTree/creator";
+import { PositionEdit } from "@/lib/cesium/Edit/PositionEdit";
+import { RotationEdit } from "@/lib/cesium/Edit/RotationEdit";
 
 @Component({
     tagName: "czm-test",
@@ -31,6 +31,38 @@ export default class Test extends BaseWidget {
         // 禁止双击事件
         this.viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
+        this.handler = this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((movement: any) => {
+            const pickedObject = this.viewer.scene.pick(movement.position);
+            if (pickedObject && pickedObject.id && pickedObject.id.ssobject) {
+                console.log(pickedObject.id.ssobject);
+                // pickedObject.id.ssobject.positionEdit()
+                this.editor.editEntity(pickedObject.id.ssobject);
+            }
+        }, ScreenSpaceEventType.LEFT_CLICK);
+
+        this.moveHandler = this.viewer.cesiumWidget.screenSpaceEventHandler.setInputAction((movement: any) => {
+            const pickedObject = this.viewer.scene.pick(movement.endPosition);
+            if (pickedObject && pickedObject.id && pickedObject.id.ssobject) {
+                document.body.style.cursor = 'pointer';
+            } else {
+                document.body.style.cursor = 'auto';
+            }
+        }, ScreenSpaceEventType.MOUSE_MOVE);
+        this.viewer.scene.globe.depthTestAgainstTerrain = true
+        let tileset: any = await this.sceneTree.addTilesetLayer({
+            type: "tileset",
+            name: "this.$data.name",
+            url: "http://localhost/data/out/tileset.json",
+            show: true,
+            zoomTo: false,
+        });
+        this.sceneTree.root?.addLayer(tileset);
+        tileset?.zoomTo();
+        // tileset.positionEditing = true;
+        console.log(tileset);
+        // new RotationEdit(this.viewer, tileset._tileset)
+        // new PositionEdit(this.viewer, tileset._tileset)
+
     }
 
     async afterInit() {
@@ -38,86 +70,19 @@ export default class Test extends BaseWidget {
         popoverTriggerList.forEach((element: any) => {
             new Popover(element);
         });
+        this.editor = document.querySelector('czm-entity-editor') as EntityEditor;
+        console.log(this.editor);
     }
 
     draw(type: number) {
-        this.clear();
+        // this.clear();
         switch (type) {
             case 1:
-                const polyline = new SSPolyline(this.viewer);
-                this.polyline = polyline;
-                polyline.on('drawEnd', (self: any) => {
-                    console.log(self);
+                const viewshed = new Viewshed(this.viewer, {
+                    qdOffset: 2,
+                    zdOffset: 2
                 });
-                polyline.startDrawing();
-                break;
-            case 2:
-                const rectangle = new SSRectangle(this.viewer, {
-                    material: Color.AQUA.withAlpha(0.1),
-                    outlineColor: Color.AQUA,
-                    outlineWidth: 4
-                });
-                this.rectangle = rectangle;
-                rectangle.on('drawEnd', (self: any) => {
-                    console.log(self);
-                    this.nodePositions = self.nodePositions;
-                });
-                rectangle.startDrawing();
-                break;
-            case 3:
-                const circle = new SSCircle(this.viewer, {
-                    material: Color.AQUA.withAlpha(0.2),
-                    outlineColor: Color.AQUA,
-                    outlineWidth: 3,
-                });
-                this.circle = circle;
-                circle.on('drawEnd', (self: any) => {
-                    console.log(self);
-                });
-                circle.startDrawing();
-                break;
-            case 4:
-                const polygon = new SSPolygon(this.viewer, {
-                    material: Color.AQUA.withAlpha(0.2),
-                    outlineColor: Color.AQUA,
-                    outlineWidth: 3,
-                });
-                this.polygon = polygon;
-                polygon.on('drawEnd', (self: any) => {
-                    console.log(self);
-                    this.nodePositions = self.nodePositions;
-                });
-                polygon.startDrawing();
-                break;
-            case 5:
-                const point = new SSPoint(this.viewer, {
-                    pixelSize: 10,
-                    color: Color.AQUA,
-                    outlineColor: Color.BLACK,
-                    outlineWidth: 2,
-                    heightReference: 1,
-                });
-                this.point = point;
-                point.on('drawEnd', (self: any) => {
-                    console.log(self);
-                });
-                point.startDrawing();
-                break;
-            case 6:
-                const label = new SSLabel(this.viewer, {
-                    text: '测试文字',
-                    fillColor: Color.AQUA,
-                    outlineColor: Color.BLACK,
-                    outlineWidth: 2,
-                    style: 2,
-                    verticalOrigin: 1,
-                    heightReference: 1,
-                });
-                this.label = label;
-                label.on('drawEnd', (self: any) => {
-                    console.log(self);
-                });
-                label.startDrawing();
+                console.log(viewshed);
                 break;
         }
     }

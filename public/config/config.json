@@ -2,64 +2,25 @@
   "earth": {
     "layers": [
       {
-        "name": "新建分组",
-        "guid": "0e2a0d63-b6d4-4f0d-bf5d-55950d7ee885",
-        "expand": false,
-        "children": [
-          {
-            "type": "tileset",
-            "name": "road",
-            "url": "https://rc-cdn.wzw.cn/project3D/3DTiles/Elevated3D/road/tileset.json",
-            "show": true,
-            "zoomTo": false,
-            "guid": "65682abf-ae14-4261-9f9a-11dd6ce10b6c",
-            "zIndex": 0
-          }
-        ]
-      },
-      {
-        "url": "http://jojo1986.cn:16080/services/中国行政区划/MapServer",
-        "type": "ssmapserver",
-        "name": "中国省市区",
-        "show": false
-      },
-      {
-        "type": "ssmapserver",
-        "name": "大雁塔矢量",
-        "url": "http://jojo1986.cn:16080/services/大雁塔矢量/MapServer",
+        "type": "tileset",
+        "name": "倾斜",
         "show": true,
-        "guid": "b29a51f6-17ea-4270-b922-245686bdeef0",
-        "rectangle": [
-          108.95198698500002, 34.20881631750001, 108.96682394400005,
-          34.232086057100105
-        ]
+        "guid": "501a11ea-453a-4f0d-b8ec-9ce4502268ee",
+        "url": "http://localhost:81/cdata/%E9%B9%A4%E6%BA%AA%E5%9B%AD%E5%85%AC%E5%A2%93%E5%80%BE%E6%96%9C/tileset.json",
+        "zoomTo": false,
+        "position": [122.2223355277515, 41.29435781785882, 16.05134444134492]
       },
       {
-        "type": "sspolygon",
-        "name": "Polygon",
-        "positions": [
-          [116.80049399483137, 40.167829110548716, 0],
-          [116.80052232770042, 40.16783131717256, 0],
-          [116.8032548576957, 40.167965992231494, 0],
-          [116.8034603396635, 40.16941481530383, 0],
-          [116.81151765576955, 40.16839963939976, 0],
-          [116.81014650439433, 40.16054799452753, 0],
-          [116.8002500294618, 40.16138502381529, 0],
-          [116.80049399483137, 40.167829110548716, 0]
-        ],
-        "material": "rgba(0,255,255,0.2)",
-        "outlineColor": "rgb(0,255,255)",
-        "outlineWidth": 3
-      },
-      {
-        "type": "ssrectangle",
-        "positions": [
-          [116.81649530358351, 40.170809918433214, -0.10662511312592741],
-          [116.82601162015085, 40.165241734586466, -0.11520878380705192]
-        ],
-        "material": "rgba(0,255,255,0.1)",
-        "outlineColor": "rgb(0,255,255)",
-        "outlineWidth": 4
+        "type": "tileset",
+        "name": "白模",
+        "show": true,
+        "url": "http://localhost:81/cdata/baimo/tileset.json",
+        "zoomTo": false,
+        "position": [122.22215789407315, 41.29423584163379, 11.581144366256758],
+        "classificationType": 2,
+        "style": {
+          "color": "color('#ffffff', 0.01)"
+        }
       }
     ],
     "baseLayers": [
@@ -76,6 +37,47 @@
       },
       {
         "type": "wmts",
+        "name": "天地图矢量注记",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+        "url": "http://t0.tianditu.gov.cn/cva_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "cva",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c",
+        "isDefault": false
+      },
+      {
+        "type": "group",
+        "name": "天地图矢量+注记",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+        "isDefault": false,
+        "children": [
+          {
+            "type": "wmts",
+            "name": "天地图矢量",
+            "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+            "url": "http://t0.tianditu.gov.cn/vec_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+            "layer": "vec",
+            "style": "default",
+            "format": "tiles",
+            "tileMatrixSetID": "c",
+            "isDefault": false
+          },
+          {
+            "type": "wmts",
+            "name": "天地图矢量注记",
+            "iconUrl": "http://lbs.tianditu.gov.cn/images/vec_c.png",
+            "url": "http://t0.tianditu.gov.cn/cva_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+            "layer": "cva",
+            "style": "default",
+            "format": "tiles",
+            "tileMatrixSetID": "c",
+            "isDefault": false
+          }
+        ]
+      },
+      {
+        "type": "wmts",
         "name": "天地图影像",
         "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
         "url": "http://t0.tianditu.gov.cn/img_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
@@ -86,13 +88,61 @@
         "isDefault": false
       },
       {
+        "type": "wmts",
+        "name": "天地图影像注记",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "url": "http://t0.tianditu.gov.cn/cia_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+        "layer": "cia",
+        "style": "default",
+        "format": "tiles",
+        "tileMatrixSetID": "c",
+        "isDefault": false
+      },
+      {
+        "type": "group",
+        "name": "天地图影像+注记",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "isDefault": true,
+        "children": [
+          {
+            "type": "wmts",
+            "name": "天地图影像",
+            "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+            "url": "http://t0.tianditu.gov.cn/img_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+            "layer": "img",
+            "style": "default",
+            "format": "tiles",
+            "tileMatrixSetID": "c"
+          },
+          {
+            "type": "wmts",
+            "name": "天地图影像注记",
+            "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+            "url": "http://t0.tianditu.gov.cn/cia_c/wmts?tk=cf7c0b94d43b4d5e1f27a5712b147c70",
+            "layer": "cia",
+            "style": "default",
+            "format": "tiles",
+            "tileMatrixSetID": "c"
+          }
+        ]
+      },
+      {
         "type": "xyz",
         "name": "高德地图",
         "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
         "tooltip": "高德地图",
         "url": "http://webst01.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
         "maximumLevel": 16,
-        "isDefault": true
+        "isDefault": false
+      },
+      {
+        "type": "xyz",
+        "name": "高德电子地图",
+        "iconUrl": "http://lbs.tianditu.gov.cn/images/img_c.png",
+        "tooltip": "高德电子地图",
+        "url": "https://webrd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}",
+        "maximumLevel": 20,
+        "isDefault": false
       },
       {
         "type": "xyz",
@@ -108,15 +158,21 @@
       {
         "type": "xyz",
         "name": "Natural Earth II",
-        "iconUrl": "./libs/cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
+        "iconUrl": "libs/cesium/Widgets/Images/ImageryProviders/naturalEarthII.png",
         "url": "NaturalEarthII",
         "isDefault": false
+      },
+      {
+        "type": "terrain",
+        "name": "超图Terrain",
+        "iconUrl": "http://localhost:5173/node_modules/cesium/Build/Cesium/Widgets/Images/TerrainProviders/CesiumWorldTerrain.png",
+        "url": "http://www.supermapol.com/realspace/services/3D-stk_terrain/rest/realspace/datas/info/data/path"
       }
     ],
     "viewer": {
       "ionDefaultToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyY2E0MTUzOC00MGU0LTQ5ZjMtYjA4ZC03NWI1MjYzMmYyNTIiLCJpZCI6NDQ0NDAsImlhdCI6MTczMTA0OTI5MX0.YfgY7nZONHMq0wLDKGIjVdVi3-Rx_7g9X3ruPItik-A",
-      "position": [116.80798340254988, 40.155193765097614, 323.21095542094633],
-      "hpr": [354.6853661992352, -24.66007658903388, 0.0011978982492255276]
+      "position": [122.22184763481167, 41.29404129209197, 34.01089280771158],
+      "hpr": [58.34386306675625, -22.78670971986537, 0.000013238791440554272]
     }
   },
   "widgets": [
@@ -513,6 +569,34 @@
         "user": "demo",
         "zipName": "河流"
       }
+    },
+    {
+      "label": "绘制工具",
+      "tagName": "czm-draw-tool",
+      "position": {
+        "left": "auto",
+        "right": "60px",
+        "bottom": "auto",
+        "top": "10px",
+        "width": "340px"
+      },
+      "inPanel": true,
+      "icon": "bi-emoji-expressionless",
+      "group": "2"
+    },
+    {
+      "label": "test",
+      "tagName": "czm-test",
+      "position": {
+        "left": "auto",
+        "right": "150px",
+        "bottom": "auto",
+        "top": "10px",
+        "width": "340px"
+      },
+      "inPanel": true,
+      "icon": "bi-emoji-expressionless",
+      "group": "2"
     }
   ]
 }

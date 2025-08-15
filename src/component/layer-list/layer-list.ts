@@ -31,6 +31,10 @@ export default class LayerList extends BaseWidget {
             showZIndexItem: false,
             menuItems: [
                 {
+                    name: "平移",
+                    id: "positionEdit",
+                },
+                {
                     name: "删除",
                     id: "delete",
                 },
@@ -66,6 +70,7 @@ export default class LayerList extends BaseWidget {
             const menuHTML =
                 `
                     <ul>
+                        <li id="positionEdit">平移</li>
                         <li data-bs-toggle="modal" data-bs-target="#confirmModal" id="delete">删除</li>
                         <li data-bs-toggle="modal" data-bs-target="#exampleModal" id="ZIndex">设置层级</li>
                         <li id="legend">图例</li>
@@ -89,9 +94,15 @@ export default class LayerList extends BaseWidget {
                     this.$data.menuItems.forEach((item: any) => {
                         contextmenu.querySelector(`#${item.id}`).style.display = this.showMenuCondition(item.id, type) ? 'block' : 'none'
                     })
+
                     contextmenu.querySelector('#delete').addEventListener('click', () => {
                         this.$data.layer = layer
                     })
+                    if (this.showMenuCondition('positionEdit', type)) {
+                        contextmenu.querySelector('#positionEdit').addEventListener('click', () => {
+                            this.positionEdit(layer, this)
+                        })
+                    }
                     if (this.showMenuCondition('legend', type)) {
                         contextmenu.querySelector('#legend').addEventListener('click', () => {
                             showLegend(layer, this)
@@ -343,6 +354,10 @@ export default class LayerList extends BaseWidget {
         this.$data.layer.zIndex = this.$data.zIndex;
     }
 
+    positionEdit = (layer: any, _this: any) => {
+        layer.positionEditing = true;
+    }
+
     // 根据图层类型显示右键菜单项
     showMenuCondition = (itemType: string, layerType: string) => {
         if (itemType === 'ZIndex') {
@@ -354,6 +369,10 @@ export default class LayerList extends BaseWidget {
         }
         if (itemType === 'style') {
             return true;
+        }
+        if (itemType === 'positionEdit') {
+            return layerType === 'tileset' || layerType === 'iontileset';
+
         }
         return true
     }

@@ -43,6 +43,7 @@
     setTimeout(() => {
       console.log('earth:', earth);
       const viewer = earth.viewer;
+      // viewer.scene.globe.depthTestAgainstTerrain = false;
       window.viewer = viewer;
       viewer.container.addEventListener('dragover', (event) => {
         event.preventDefault();

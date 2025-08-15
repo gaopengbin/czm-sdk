@@ -8,11 +8,24 @@
 </div> -->
 <div class="input-group input-group-sm mt-2">
     <span class="input-group-text">绘制范围：</span>
-    <button type="button" class="btn btn-outline-primary" onclick="this.draw(2)"><i class="bi bi-square"></i>矩形</button>
-    <button type="button" class="btn btn-outline-primary" onclick="this.draw(3)"><i class="bi bi-circle"></i>圆形</button>
-    <button type="button" class="btn btn-outline-primary" onclick="this.draw(4)"><i
-            class="bi bi-heptagon"></i>多边形</button>
-    <button type="button" class="btn btn-outline-primary" onclick="this.clear()"><i class="bi bi-eraser"></i>清除</button>
+
+    <!-- <div class="btn-group" role="group" aria-label="Basic radio toggle button group"> -->
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio1" onclick="this.draw(2)"><i
+                class="bi bi-square"></i>矩形</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio2" onclick="this.draw(3)"><i
+                class="bi bi-circle"></i>圆形</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio3" onclick="this.draw(4)"><i
+                class="bi bi-heptagon"></i>多边形</label>
+
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off">
+        <label class="btn btn-outline-primary" for="btnradio4" onclick="this.clear()"><i
+                class="bi bi-eraser"></i>清除</label>
+    <!-- </div> -->
 </div>
 <div class="input-group input-group-sm mt-2">
     <span class="input-group-text">导出格式：</span>
